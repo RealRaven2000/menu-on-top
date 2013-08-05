@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="menuOnTop-options.css" type="text/css"?>
+
+<prefwindow xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	windowtype = "addon:MenuOnTop"
+	buttons="accept,extra1,extra2"
+	id="MenuOnTop-preferences" 
+	title="Menu On Top Preferences" 
+	persist="screenX, screenY"
+	onload="MenuOnTop.Options.onLoad();"
+	ondialogaccept="MenuOnTop.Options.accept();"
+	onunload="MenuOnTop.Options.onUnload();"
+	
+	buttonlabelextra1="Version History..."
+	ondialogextra1="MenuOnTop.Util.openURL(null,'http://quickfolders.mozdev.org/menuOnTop.html#history');"
+	
+	buttonlabelextra2="More Information..."
+	buttonaccesskeyextra2="I"
+	tooltipextra2="Go to the support web site..."
+	ondialogextra2="MenuOnTop.Util.openURL(null,'http://quickfolders.mozdev.org/menuOnTop.html');"
+>
+
+<script type="application/x-javascript;version=1.7" src="chrome://menuontop/content/menuOnTop.js"/>
+<script type="application/x-javascript;version=1.7" src="chrome://menuontop/content/menuOnTop_options.js"/>
+
+
+
+<prefpane id="mot-options-prefpane" label="Title">
+
+	<hbox id="mot-options-header" >
+		<label 
+		    class="dialogheader-title"
+			value="Menu On Top"
+			flex="1"/>
+	</hbox>
+
+	<preferences>
+		<preference id="NegativeMargin"  name="extensions.menuontop.negativeMargin" type="int"  instantApply="true" />
+		<preference id="MenuMargin"      name="extensions.menuontop.menuMargin" type="int"  instantApply="true" />
+		<preference id="MaxHeight"       name="extensions.menuontop.maxHeight" type="int"  instantApply="true" />
+		<preference id="MenuBackground"  name="extensions.menuontop.menuBackground" type="string" instantApply="true" />
+		<preference id="MenuFontColor"   name="extensions.menuontop.menuFontColor" type="string" instantApply="true" />
+		<preference id="MenuRadius"      name="extensions.menuontop.menuRadius" type="string" instantApply="true" />
+		<preference id="MenuRadiusLeft"  name="extensions.menuontop.menuRadiusLeft" type="bool" instantApply="true" />
+		<preference id="MenuRadiusRight" name="extensions.menuontop.menuRadiusRight" type="bool" instantApply="true" />
+		<preference id="boolMenuShadow"  name="extensions.menuontop.textShadow" type="bool" instantApply="true" />
+		<preference id="Debug"           name="extensions.menuontop.debug" type="bool" instantApply="true" />
+		<preference id="ShowStatusIcon"  name="extensions.menuontop.statusIcon" type="bool" instantApply="true" />
+	</preferences>
+
+	<vbox id="mot-options-main" flex="10">
+		<hbox>
+			<groupbox orient="vertical">
+				<caption label="Spacing"/>
+				<hbox>
+					<label control="txtNegativeMargin">Negative toolbar margin (in pixels):</label>
+					<spacer flex="1" />
+					<textbox id="txtNegativeMargin" 
+							 preference="NegativeMargin"  
+							 tooltiptext="Enter a number to move menu up by. High values can lead to truncated menu!"
+							 />
+				</hbox>
+				<hbox>
+					<label control="txtMenuMargin">Menu panel margin (in pixels):</label>
+					<spacer flex="1"/>
+					<textbox id="txtMenuMargin" 
+							 preference="MenuMargin"  
+							 tooltiptext="Enter a number to move menu up by. High values can lead to truncated menu!"
+							 />
+				</hbox>
+			</groupbox>
+			<spacer flex="3" />
+			<vbox>
+				<spacer flex="1" />
+				<hbox>
+					<label control="styleDefaults">choose a flavor:</label>
+					<menulist id="styleDefaults"
+							  sizetopopup="none"
+							  oncommand="MenuOnTop.Options.selectScheme(this.value);">
+						<menupopup>
+							<menuitem label="Select one to set"
+									  value="-1"/>
+							<menuitem label="default - Australis"
+									  value="0"/>
+							<menuitem label="night - TT deepdark"
+									  value="1"/>
+							<menuitem label="naval - Nautipolis"
+									  value="2"/>
+							<menuitem label="blue - Nuvola"
+									  value="3"/>
+							<menuitem label="orange glass - Lantana"
+									  value="4"/>
+							<menuitem label="fudge - Charamel"
+									  value="5"/>
+							<menuitem label="glass - Noja Extreme"
+									  value="6"/> 
+							<menuitem label="Walnut 2"
+									  value="7"/>
+							<menuitem label="small icons - Littlebird"
+									  value="8"/>
+							<menuitem label="red - Robin"
+									  value="9"/>
+							<menuitem label="Phoenity - Shredder"
+									  value="10"/>
+						</menupopup>
+					</menulist>
+				</hbox>
+				<spacer flex="2" />
+			</vbox>
+			
+		</hbox>
+		<groupbox orient="vertical">
+			<caption label="Menu styles"/>
+			<checkbox id="chkMenuShadow" 
+			          preference="boolMenuShadow" 
+					  label="Menu Shadow"/>
+			<hbox>
+				<label control="txtMenuBackground">Menu background:</label>
+				<textbox id="txtMenuBackground" 
+						 preference="MenuBackground"  
+						 tooltiptext="Enter a valid css background (background-image or background-color)."
+						 flex = "2"
+						 />
+			</hbox>
+			<hbox>
+				<label control="txtMenuFontColor">Menu font color:</label>
+				<textbox id="txtMenuFontColor" 
+						 preference="MenuFontColor"  
+						 tooltiptext="Enter a valid css color."
+						 flex = "1"
+						 />
+				<spacer flex = "1" />
+			</hbox>
+			
+			<hbox>
+				<label control="txtMaxHeight">Maximum menu item height (in pixels):</label>
+				<textbox id="txtMaxHeight" 
+						 preference="MaxHeight"  
+						 tooltiptext="Enter a number."
+						 />
+				<spacer flex="2" />
+			</hbox>
+			<hbox>
+				<label control="txtMenuRadius">Corner Radius (em):</label>
+				<textbox id="txtMenuRadius" 
+						 preference="MenuRadius"  
+						 tooltiptext="Enter a number."
+						 />
+			<checkbox preference="MenuRadiusLeft" 
+					  label="Left Side"/>
+			<checkbox preference="MenuRadiusRight" 
+					  label="Right Side"/>
+						 
+				<spacer flex="2" />
+			</hbox>
+			
+				
+		</groupbox >
+			<hbox>
+			
+				<checkbox id="chkStatus" 
+						  preference="ShowStatusIcon" 
+						  label="Status bar icon"
+						  oncommand = "MenuOnTop.Options.onStatusCheck(this);"/>
+				<spacer flex="1" />
+				<checkbox id="chkDebug" 
+						  preference="Debug" 
+						  label="debug mode"/>
+			</hbox>
+
+		
+		<spacer flex="1" />
+
+	</vbox>
+</prefpane>
+
+</prefwindow>
