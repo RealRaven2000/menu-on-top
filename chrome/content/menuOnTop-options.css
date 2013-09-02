@@ -14,7 +14,10 @@
   margin-right: 0;
 }
 
-#txtNegativeMargin, #txtMenuMargin, #txtMaxHeight {
+
+
+/* #txtNegativeMargin, #txtMenuMargin, #txtMaxHeight, #txtMenuIconSmall, #txtMenuIconNormal  */
+.threeDigits {
   width:3em;
 }
 #txtMenuRadius {

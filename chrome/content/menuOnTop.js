@@ -58,9 +58,11 @@ END LICENSE BLOCK
     #  Reuse preferences window if it is already open.
     #  Improved debug log feature.
 
-  0.9.3 - WIP
-	  # more css specificity for corner radius rules
+  0.9.4 - WIP
+	  # Choices for corner radius rules (left, right)
 		# removed ROTT specific code to eliminate mail-toolbar3 dependencies
+		# Added icon size setting
+		# Added transparency switch for menu background (for light themes)
 		# to do: better css tidy up routine! disable only works once in a session.
 		
 		
@@ -80,30 +82,52 @@ var MenuOnTop = {
 			css.setAttribute("type", "text/css");
 			css.id = "menuOnTop-style";
 			
-			let m = '-' + (Math.abs(MenuOnTop.Preferences.negativeMargin)).toString();
-			let bg = MenuOnTop.Preferences.menuBackground; // linear-gradient(to bottom, rgba(255,255,255,0.5),rgba(255,255,255,0.5))
-			let col = MenuOnTop.Preferences.menuFontColor;
+			let Prefs = MenuOnTop.Preferences;
+			let m = '-' + (Math.abs(Prefs.negativeMargin)).toString();
+			let bg = Prefs.menuBackground; // linear-gradient(to bottom, rgba(255,255,255,0.5),rgba(255,255,255,0.5))
+			let col = Prefs.menuFontColor;
 			let colorString = col ?  '#mail-menubar > menu > label {color: ' + col + ' !important;} ' : ''; // style only the top level items!
 			
-			let shadowString = MenuOnTop.Preferences.isTextShadow ? 'text-shadow: 1px 1px 1px rgba(128, 128, 128, 0.6) !important;' : '';
-			let maxHeightString = MenuOnTop.Preferences.maxHeight ? 'max-height: ' + MenuOnTop.Preferences.maxHeight + 'px;' : '';
+			let shadowString = Prefs.isTextShadow ? 'text-shadow: 1px 1px 1px rgba(128, 128, 128, 0.6) !important;' : '';
+			let maxHeightString = Prefs.maxHeight ? 'max-height: ' + Prefs.maxHeight + 'px;' : '';
 			let menuItemString = (shadowString + maxHeightString) ? '#mail-menubar > menu  {' + shadowString + maxHeightString + '}' : '';
-			let menuMargin = 'margin-top: ' + MenuOnTop.Preferences.menuMargin + 'px !important;';
-			let menuRadiusValue = MenuOnTop.Preferences.menuRadius;
-			let left  = MenuOnTop.Preferences.menuRadiusLeft ? menuRadiusValue + 'em' : '0';
-			let right  = MenuOnTop.Preferences.menuRadiusRight ? menuRadiusValue + 'em' : '0';
+			let menuMargin = 'margin-top: ' + Prefs.menuMargin + 'px !important;';
+			let menuRadiusValue = Prefs.menuRadius;
+			let left  = Prefs.menuRadiusLeft ? menuRadiusValue + 'em' : '0';
+			let right  = Prefs.menuRadiusRight ? menuRadiusValue + 'em' : '0';
 			let radiusString = 'border-radius: ' + left + ' ' + right + ' ' + right + ' ' + left +' !important;'
+			let smallIconSize = Prefs.iconSizeSmall ? Prefs.iconSizeSmall + 'px' : 'auto';
+			let normalIconSize = Prefs.iconSizeNormal ? Prefs.iconSizeNormal + 'px' : 'auto';
+			if (Prefs.isForceIconSize) {
+			  smallIconSize += ' !important';
+				normalIconSize += ' !important';
+			}
+			let icsSmall = (smallIconSize.indexOf('auto')==0) ? '' : 'toolbar[iconsize="small"].chromeclass-menubar toolbarbutton.toolbarbutton-1 > image.toolbarbutton-icon { width: ' + smallIconSize + ';  height: ' + smallIconSize + '; } ';
+			let icsNormal = (normalIconSize.indexOf('auto')==0) ? '' : 'toolbar:not([iconsize="small"]).chromeclass-menubar toolbarbutton.toolbarbutton-1 > image.toolbarbutton-icon { width: ' + normalIconSize + ';  height: ' + normalIconSize + '; } ';
+			let dropDownSmall =  (smallIconSize.indexOf('auto')==0) ? '' : 'toolbar[iconsize="small"].chromeclass-menubar toolbarbutton.toolbarbutton-menubutton-button > image.toolbarbutton-icon { width: ' + smallIconSize + ';  height: ' + smallIconSize + '; } ';
+			let dropDownNormal = (normalIconSize.indexOf('auto')==0) ? '' : 'toolbar:not([iconsize="small"]).chromeclass-menubar toolbarbutton.toolbarbutton-menubutton-button > image.toolbarbutton-icon { width: ' + normalIconSize + ';  height: ' + normalIconSize + '; } ';
+			let menubar = Prefs.menuTransparent ? 
+			      '#mail-toolbar-menubar2:-moz-lwtheme { background-image: none !important;} ' 
+						+ '#mail-toolbar-menubar2:not(:-moz-lwtheme) { background:none !important;} '
+						: ''; // linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5) 50%); 
 			
-			// MenuOnTop.Preferences.isMenuShadow // later!
+			// Prefs.isMenuShadow // later!
 
 			// Inject some css!
 			// we override min-height for charamel!
-			var csstext = '#tabs-toolbar {-moz-box-ordinal-group: 20 !important;} ' +
+			
+			// chrome://messenger/skin/primaryToolbar.css
+			let csstext = '#tabs-toolbar {-moz-box-ordinal-group: 20 !important;} ' +
 										'#mail-bar3{-moz-box-ordinal-group: 30 !important;} ' +
+										icsSmall +
+										icsNormal +
+										dropDownSmall + 
+										dropDownNormal +
+										menubar +
 										'#mail-toolbar-menubar2 {-moz-box-ordinal-group: 10 !important;border-color: transparent !important;} ' +
 										'#mail-toolbar-menubar2 toolbarbutton {border-color: transparent !important;} ' +
 										'#mail-toolbar-menubar2:not([inactive]) {margin-top: ' + m + 'px;} ' +
-										'#menubar-items > #mail-menubar[id] { background:' + bg + ' !important;' + radiusString +'  min-height:' + MenuOnTop.Preferences.maxHeight + 'px;} ' +
+										'#menubar-items > #mail-menubar[id] { background:' + bg + ' !important;' + radiusString +'  min-height:' + Prefs.maxHeight + 'px;} ' +
 										'#menubar-items:not(:-moz-lwtheme){ background-color: transparent !important; } ' + // Nautipolis!
 										'#menubar-items > menubar { background: none; ' + menuMargin + ' } ' + // TT deepdark!
 										'#navigation-toolbox > #mail-toolbar-menubar2:not(:-moz-lwtheme) { background-color: transparent !important; background-image:none; } ' +
@@ -160,8 +184,11 @@ var MenuOnTop = {
 		menuRadius: "0.5",
 		menuRadiusLeft: false,
 		menuRadiusRight: true,
+		menubarTransparent: true,
 		menuBackground: "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3))",
 		menuFontColor: "rgb(15,15,15)",
+		iconSizeSmall: 16,
+		iconSizeNormal: 16,
 		textShadow: false,
 		debug: false,
 		statusIcon: true
@@ -349,6 +376,18 @@ MenuOnTop.Preferences = {
 	},
 	
 	// GET: specific settings
+	get iconSizeNormal() {
+		return this.getIntPref('iconSize.normal');
+	} ,
+	
+	get iconSizeSmall() {
+		return this.getIntPref('iconSize.small');
+	} ,
+	
+	get isForceIconSize() {
+		return this.getBoolPref('iconSize.force'); 
+	} ,
+	
 	get negativeMargin() {
 		return this.getIntPref('negativeMargin');
 	} ,
@@ -379,6 +418,10 @@ MenuOnTop.Preferences = {
 	
 	get menuFontColor() {
 		return this.getCharPref('menuFontColor');
+	} ,
+	
+	get menuTransparent() {
+		return this.getBoolPref('menubar.transparent');
 	} ,
 	
 	get isTextShadow() {
