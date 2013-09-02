@@ -39,7 +39,11 @@
 	<preferences>
 		<preference id="NegativeMargin"  name="extensions.menuontop.negativeMargin" type="int"  instantApply="true" />
 		<preference id="MenuMargin"      name="extensions.menuontop.menuMargin" type="int"  instantApply="true" />
+		<preference id="NormalIconSize"  name="extensions.menuontop.iconSize.normal" type="int"  instantApply="true" />
+		<preference id="SmallIconSize"   name="extensions.menuontop.iconSize.small" type="int"  instantApply="true" />
+		<preference id="forceIconSize"   name="extensions.menuontop.iconSize.force" type="bool"  instantApply="true" />
 		<preference id="MaxHeight"       name="extensions.menuontop.maxHeight" type="int"  instantApply="true" />
+		<preference id="boolMenuBarTransparent"  name="extensions.menuontop.menubar.transparent" type="bool" instantApply="true" />
 		<preference id="MenuBackground"  name="extensions.menuontop.menuBackground" type="string" instantApply="true" />
 		<preference id="MenuFontColor"   name="extensions.menuontop.menuFontColor" type="string" instantApply="true" />
 		<preference id="MenuRadius"      name="extensions.menuontop.menuRadius" type="string" instantApply="true" />
@@ -51,6 +55,48 @@
 	</preferences>
 
 	<vbox id="mot-options-main" flex="10">
+	
+		<hbox>
+		    <spacer flex="1" />
+			<label control="styleDefaults">choose a flavor:</label>
+			<menulist id="styleDefaults"
+					  sizetopopup="none"
+					  oncommand="MenuOnTop.Options.selectScheme(this.value);">
+				<menupopup>
+					<menuitem label="Select one to set"
+							  value="-1"/>
+					<menuitem label="Australis - default"
+							  value="0"/>
+					<menuitem label="TT deepdark - night"
+							  value="1"/>
+					<menuitem label="Nautipolis - naval"
+							  value="2"/>
+					<menuitem label="Nuvola - silver"
+							  value="3"/>
+					<menuitem label="Lantana - orange glass"
+							  value="4"/>
+					<menuitem label="Charamel - fudge"
+							  value="5"/>
+					<menuitem label="Noja Extreme - glass"
+							  value="6"/> 
+					<menuitem label="Walnut 2"
+							  value="7"/>
+					<menuitem label="Littlebird - small icons"
+							  value="8"/>
+					<menuitem label="Robin - red"
+							  value="9"/>
+					<menuitem label="Phoenity - shredder"
+							  value="10"/>
+					<menuitem label="SilverMel - silver"
+							  value="11"/>
+					<menuitem label="Mountain - blue"
+							  value="12"/>
+					<menuitem label="Parakeet - green"
+							  value="13"/>
+				</menupopup>
+			</menulist>
+		</hbox>
+	
 		<hbox>
 			<groupbox orient="vertical">
 				<caption label="Spacing"/>
@@ -58,6 +104,7 @@
 					<label control="txtNegativeMargin">Negative toolbar margin (in pixels):</label>
 					<spacer flex="1" />
 					<textbox id="txtNegativeMargin" 
+					         class = "threeDigits"
 							 preference="NegativeMargin"  
 							 tooltiptext="Enter a number to move menu up by. High values can lead to truncated menu!"
 							 />
@@ -66,56 +113,48 @@
 					<label control="txtMenuMargin">Menu panel margin (in pixels):</label>
 					<spacer flex="1"/>
 					<textbox id="txtMenuMargin" 
+					         class = "threeDigits"
 							 preference="MenuMargin"  
 							 tooltiptext="Enter a number to move menu up by. High values can lead to truncated menu!"
 							 />
 				</hbox>
 			</groupbox>
 			<spacer flex="3" />
-			<vbox>
-				<spacer flex="1" />
+			<groupbox orient="vertical">
+				<caption label="Icon Size"/>
 				<hbox>
-					<label control="styleDefaults">choose a flavor:</label>
-					<menulist id="styleDefaults"
-							  sizetopopup="none"
-							  oncommand="MenuOnTop.Options.selectScheme(this.value);">
-						<menupopup>
-							<menuitem label="Select one to set"
-									  value="-1"/>
-							<menuitem label="default - Australis"
-									  value="0"/>
-							<menuitem label="night - TT deepdark"
-									  value="1"/>
-							<menuitem label="naval - Nautipolis"
-									  value="2"/>
-							<menuitem label="blue - Nuvola"
-									  value="3"/>
-							<menuitem label="orange glass - Lantana"
-									  value="4"/>
-							<menuitem label="fudge - Charamel"
-									  value="5"/>
-							<menuitem label="glass - Noja Extreme"
-									  value="6"/> 
-							<menuitem label="Walnut 2"
-									  value="7"/>
-							<menuitem label="small icons - Littlebird"
-									  value="8"/>
-							<menuitem label="red - Robin"
-									  value="9"/>
-							<menuitem label="Phoenity - Shredder"
-									  value="10"/>
-						</menupopup>
-					</menulist>
+					<label control="txtMenuIconSmall">Small Icons:</label>
+					<spacer flex="1" />
+					<textbox id="txtMenuIconSmall" 
+					         class = "threeDigits"
+							 preference="SmallIconSize"  
+							 tooltiptext="Size of small icons in menu (in pixels) - 0 for default"
+							 />
 				</hbox>
-				<spacer flex="2" />
-			</vbox>
-			
+				<hbox>
+					<label control="txtMenuIconNormal">Normal Icons:</label>
+					<spacer flex="1"/>
+					<textbox id="txtMenuIconNormal" 
+					         class = "threeDigits"
+							 preference="NormalIconSize"  
+							 tooltiptext="Size of normal icons in menu (in pixels) - 0 for default"
+							 />
+				</hbox>
+				<checkbox preference = "forceIconSize"
+				          label = "force with !important" />
+			</groupbox>
 		</hbox>
+		
 		<groupbox orient="vertical">
 			<caption label="Menu styles"/>
-			<checkbox id="chkMenuShadow" 
-			          preference="boolMenuShadow" 
-					  label="Menu Shadow"/>
+			<hbox> 
+			    <checkbox id="chkMenubarTransparent"
+						  preference="boolMenuBarTransparent" 
+						  label="Transparent toolbar" />
+				<checkbox id="chkMenuShadow" 
+						  preference="boolMenuShadow" 
+						  label="Menu Shadow"/>
+			</hbox>
 			<hbox>
 				<label control="txtMenuBackground">Menu background:</label>
 				<textbox id="txtMenuBackground" 
@@ -137,6 +176,7 @@
 			<hbox>
 				<label control="txtMaxHeight">Maximum menu item height (in pixels):</label>
 				<textbox id="txtMaxHeight" 
+						 class = "threeDigits"
 						 preference="MaxHeight"  
 						 tooltiptext="Enter a number."
 						 />
