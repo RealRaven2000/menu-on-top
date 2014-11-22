@@ -97,7 +97,7 @@ startup = function(data, reason){
   var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"].
                       getService(Components.interfaces.nsIWindowMediator);
   // Start in all current windows:
-  var enumerator = wm.getEnumerator("mail:3pane");
+  var enumerator = wm.getEnumerator(MenuOnTop.Util.MainWindowXulId); // "mail:3pane"
 	Components.manager.addBootstrappedManifestLocation(data.installPath);
 	
   while (enumerator.hasMoreElements()) {
@@ -134,13 +134,16 @@ shutdown = function(data, reason){
 
 var start = function(window){
   // We're starting up in a window
-  
+  let util = MenuOnTop.Util;
+  util.logDebug ("MenuOnTop.start()");
   let document = window.document;
   // let toolbar = document.getElementById("mail-bar3"); // toolbar with buttons
-  let navigationBox = document.getElementById("navigation-toolbox");
-	let menubar =  document.getElementById("mail-toolbar-menubar2");
-  if (!(menubar && navigationBox))
+  let navigationBox = document.getElementById(MenuOnTop.Util.ToolboxId);
+	let menubar =  document.getElementById(MenuOnTop.Util.ToolbarId);
+  if (!(menubar && navigationBox)) {
+    util.logDebug ("MenuOnTop.start(): early exit, no navigation-toolbox or menubar found");
     return; // We're only interested in windows with the menubar in it
+  }
   windows.unshift(window);
   
   // Save the position for restoring if we get disabled / uninstalled, also our attrchange handler
@@ -150,7 +153,8 @@ var start = function(window){
   };
   
   // Move the menu toolbar to the very top
-	// ╔╤═══════════════════════════  #navigation-toolbox ═════════════════════════╤╗
+  // 
+	// ╔╤══THUNDERBIRD══════════════  #navigation-toolbox ═════════════════════════╤╗
 	// ║│ ┌───────────────────────────────────────────────────────────────────────┐│║
 	// ║│ │   #mail-toolbar-menubar2                                              ││║
 	// ║│ └───────────────────────────────────────────────────────────────────────┘│║
@@ -158,7 +162,26 @@ var start = function(window){
 	// ║│ │   #tabs-toolbar                                                       ││║
 	// ║│ └───────────────────────────────────────────────────────────────────────┘│║
 	// ╚╧══════════════════════════════════════════════════════════════════════════╧╝
-	navigationBox.insertBefore(menubar, navigationBox.firstChild);
+  // 
+	// ╔╤═══FIREFOX═════════════════  #navigator-toolbox  ═════════════════════════╤╗
+	// ║│ ┌───────────────────────────────────────────────────────────────────────┐│║
+	// ║│ │   #toolbar-menubar                                                    ││║
+	// ║│ └───────────────────────────────────────────────────────────────────────┘│║
+	// ║│ ┌───────────────────────────────────────────────────────────────────────┐│║
+	// ║│ │   #TabsToolbar                                                        ││║
+	// ║│ └───────────────────────────────────────────────────────────────────────┘│║
+	// ╚╧══════════════════════════════════════════════════════════════════════════╧╝
+  let first = navigationBox.firstChild;
+  if (util.Application=='Firefox' && util.AppVersion>20.0) {
+    util.logDebug("No change in menubar order");
+  }
+  else {
+    util.logDebug("inserting menubar before: " + first + '\n'
+                  + first.tagName + ': ['
+                  + (first.id ? first.id : '') + ']');
+    navigationBox.insertBefore(menubar, first);
+    menubar.menuOnTop.restacked = true;
+  }
 
   // Inject CSS for themes with the menubar under the tabbar, which looks terrible after moving the toolbar up
 	MenuOnTop.loadCSS(window);
@@ -173,24 +196,19 @@ var stop = function(window){
   // We're shutting down in a window
   var document = window.document;
   // Undo changes
-  try{
-		// restore original order: 
-		// ╔╤═══════════════════════════  #navigation-toolbox ═════════════════════════╤╗
-		// ║│ ┌───────────────────────────────────────────────────────────────────────┐│║
-		// ║│ │   #tabs-toolbar                                                       ││║
-		// ║│ └───────────────────────────────────────────────────────────────────────┘│║
-		// ║│ ┌───────────────────────────────────────────────────────────────────────┐│║
-		// ║│ │   #mail-toolbar-menubar2                                              ││║
-		// ║│ └───────────────────────────────────────────────────────────────────────┘│║
-		// ╚╧══════════════════════════════════════════════════════════════════════════╧╝
-		let menubar =  window.document.getElementById("mail-toolbar-menubar2");
-		//insertBefore(what = tabs-toolbar, reference element = mail-toolbar-menubar2)
-    menubar.menuOnTop.parent.insertBefore(menubar.menuOnTop.next, menubar);
-		
+  try {
+		let menubar =  window.document.getElementById(MenuOnTop.Util.ToolbarId);
+    
+		// restore original toolbar order
+		// insertBefore(what = tabs-toolbar, reference element = mail-toolbar-menubar2)
+    if (menubar.menuOnTop.restacked)
+      menubar.menuOnTop.parent.insertBefore(menubar.menuOnTop.next, menubar);
     delete menubar.menuOnTop;
+    
 		MenuOnTop.resetCSS(window);
 		MenuOnTop.hideAddonButton(window);
-  } catch (e){}
+  } catch (e) {}
+  
   // Remove closed window out of list
   for (var i = 0; i < windows.length; i++)
     if (windows[i] == window)

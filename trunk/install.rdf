@@ -5,7 +5,7 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>menuOnTop@agrude.com</em:id>
-    <em:version>0.9.4</em:version>
+    <em:version>0.9.9pre33</em:version>
     <em:type>2</em:type>
 	<em:optionsURL>chrome://menuontop/content/menuOnTop_options.xul</em:optionsURL>
    
@@ -14,12 +14,20 @@
       <Description>
         <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
         <em:minVersion>11.0</em:minVersion>
-        <em:maxVersion>25.*</em:maxVersion>
+        <em:maxVersion>36.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+	  <!-- Firefox -->
+    <em:targetApplication>
+      <Description>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+        <em:minVersion>24.0</em:minVersion>
+        <em:maxVersion>36.*</em:maxVersion>
       </Description>
     </em:targetApplication>
    
     <em:name>Menu On Top</em:name>
-    <em:description>Moves the Thunderbird menu bar to the top.</em:description>
+    <em:description>Moves the main menu bar to the Top and adds Style.</em:description>
     <em:creator>Axel Grude</em:creator>
 		
 		<!-- this might get installed/uninstalled on the fly -->

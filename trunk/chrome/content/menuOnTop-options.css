@@ -9,29 +9,10 @@
   padding: 5px !important;
 }
 
-.dialogheader-title label {
-  margin-left: 0;
-  margin-right: 0;
-}
-
-
-
-/* #txtNegativeMargin, #txtMenuMargin, #txtMaxHeight, #txtMenuIconSmall, #txtMenuIconNormal  */
-.threeDigits {
-  width:3em;
-}
-#txtMenuRadius {
-  width:4em;
-}
-
 #txtMenuBackground {
-  min-width:42em;
-}
-#mot-options-prefpane {
-  min-width:47em;
+  min-with: 50em;
 }
 
-/* do something about the ugly vertical top alignments... */
-label[control] {
-  padding-top: 0.4em;
+#txtCustomMenu {
+  min-width: 20em;
 }
