@@ -55,203 +55,226 @@
 			 oncontextmenu="MenuOnTop.Util.openURL(null,'http://quickfolders.mozdev.org/menuOnTop.html#history');" />
 
     </hbox>
-    <separator class="thin" />
 	
-	<hbox align="center">
-	    <spacer flex="1" />
-		<label control="styleDefaults" 
-			   value="Choose a flavor:" />
-		<menulist id="styleDefaults"
-				  oncommand="MenuOnTop.Options.selectScheme(this.value);">
-		  <menupopup>
-			<menuitem label="Select one to set"
-					  value="-1" />
-			<menuitem label="Australis - default"
-					  value="0" />
-			<menuitem label="TT deepdark - night"
-					  value="1" />
-			<menuitem label="Nautipolis - naval"
-					  value="2" />
-			<menuitem label="Nuvola - silver"
-					  value="3" />
-			<menuitem label="Lantana - orange glass"
-					  value="4" />
-			<menuitem label="Charamel - fudge"
-					  value="5" />
-			<menuitem label="Noja Extreme - glass"
-					  value="6" /> 
-			<menuitem label="Walnut 2"
-					  value="7" />
-			<menuitem label="Littlebird - small icons"
-					  value="8" />
-			<menuitem label="Robin - red"
-					  value="9" />
-			<menuitem label="Phoenity - shredder"
-					  value="10" />
-			<menuitem label="SilverMel - silver"
-					  value="11" />
-			<menuitem label="Mountain - blue"
-					  value="12" />
-			<menuitem label="Parakeet - green"
-					  value="13" />
-			<menuitem label="Tangerine - orange"
-					  value="14" />
-		  </menupopup>
-		</menulist>
-	</hbox>
-    <hbox align="center">
-		<checkbox preference="CustomMenu"
-				  label="Custom menu item" 
-				  oncommand="MenuOnTop.Options.onCustomMenu(this);" />
-		<textbox id="txtCustomMenu"
-				 preference="CustomMenuTitle"
-				 tooltiptext="Enter name of custom menu item" />
-	</hbox>
+	<tabbox orient="vertical" flex="6" id="quickFilters-Options-Tabbox">
+	<tabs>
+		<tab label="Style" id="mot-style" />
+		<tab label="Advanced" id="mot-advanced" />
+	</tabs>
+
+	<tabpanels >
 	
-    <groupbox>
-      <caption label="Style" />
-      <hbox> 
-        <checkbox id="chkMenubarTransparent"
-                  preference="boolMenuBarTransparent" 
-                  label="Transparent toolbar" />
-      </hbox>
-      <hbox align="center">
-        <label control="txtMenuFontColor" value="Menu font color:" />
-        <colorpicker id="txtMenuFontColor"
-                     type="button"
-                     color="rgb(0,0,0)"
-                     preference="MenuFontColor"
-                     tooltiptext="Choose a color"/>
-        <checkbox id="chkMenuShadow" 
-                  preference="boolMenuShadow" 
-                  label="Font Shadow" />
-      </hbox>
-      <hbox align="center">
-        <label control="txtMaxHeight" value="Maximum menu item height:" />
-        <textbox id="txtMaxHeight" 
-                 type="number" width="40" min="20"
-                 preference="MaxHeight"  
-                 tooltiptext="Set a number" />
-        <label value="px" />
-        <spacer flex="2" />
-      </hbox>
-      <hbox align="center">
-        <label control="txtMenuBackground" value="Menu background:" />
-        <textbox id="txtMenuBackground" flex="1"
-                 preference="MenuBackground"  
-                 tooltiptext="Enter a valid css background (background-image or background-color)" />
-      </hbox>
-    </groupbox>
-	
-    <groupbox>
-		<caption label="Borders" />
-		<hbox align="center">
-		  <label control="txtMenuBorderColor" value="Menu border color:" />
-		  <colorpicker id="txtMenuBorderColor" 
-					   type="button"
-					   color="rgb(255,255,255)"
-					   preference="MenuBorderColor"  
-					   tooltiptext="Choose a color" />
-		</hbox>
-        <hbox align="center">
-          <label control="txtMenuBorderWidth" value="Menu border width (0=none):" />
-          <textbox id="txtMenuBorderWidth" 
-                   type="number" width="40"
-                   preference="MenuBorderWidth"  
-                   tooltiptext="Set border width" />
-          <label value="px" />
-        </hbox>
-      <hbox align="center">
-        <label control="txtMenuRadius" value="Corner Radius:" />
-        <textbox id="txtMenuRadius" 
-                 type="number" width="40"
-                 preference="MenuRadius"  
-                 tooltiptext="Set a number" />
-        <label value="em" />
-        <checkbox preference="MenuRadiusLeft" 
-                  label="Left Side" />
-        <checkbox preference="MenuRadiusRight" 
-                  label="Right Side" />
-        <spacer flex="2" />
-      </hbox>
-    </groupbox>
-    <hbox>
-      <groupbox>
-        <caption label="Spacing" />
-        <grid flex="1">
-          <columns>
-            <column />
-            <column />
-          </columns>
-          <rows>
-            <row align="center">
-              <label control="txtNegativeMargin" value="Negative toolbar margin:" />
-              <textbox id="txtNegativeMargin" 
-                       type="number" width="40"
-                       preference="NegativeMargin"  
-                       tooltiptext="Set a number to move menu up by. High values can lead to truncated menu!" />
-              <label value="px" />
-            </row>
-            <row align="center">
-              <label control="txtMenuMarginTop" value="Menu panel top margin:" />
-              <textbox id="txtMenuMarginTop" 
-                       type="number" width="40"
-                       preference="MenuMarginTop"  
-                       tooltiptext="Moves menu down by this many pixels. High values can lead to truncated menu!" />
-              <label value="px" />
-            </row>
-            <row align="center">
-              <label control="txtMenuMarginLeft" value="Menu panel left margin:" />
-              <textbox id="txtMenuMarginLeft" 
-                       type="number" width="40"
-                       preference="MenuMarginLeft"  
-                       tooltiptext="Moves menu to the right by this many pixels. High values can lead to truncated menu!" />
-              <label value="px" />
-            </row>
-          </rows>
-        </grid>
-      </groupbox>
-      <groupbox>
-        <caption label="Icon Size" />
-        <grid flex="1">
-          <columns>
-            <column />
-            <column />
-          </columns>
-          <rows>
-            <row align="center">
-              <label control="txtMenuIconSmall" value="Small Icons:" />
-              <textbox id="txtMenuIconSmall" 
-                       type="number" width="40"
-                       preference="SmallIconSize"  
-                       tooltiptext="Size of small icons in menu (0 for default)" />
-              <label value="px" />
-            </row>
-            <row align="center">
-              <label control="txtMenuIconNormal" value="Normal Icons:" />
-              <textbox id="txtMenuIconNormal" 
-                       type="number" width="40"
-                       preference="NormalIconSize"  
-                       tooltiptext="Size of normal icons in menu (0 for default)" />
-              <label value="px" />
-            </row>
-          </rows>
-        </grid>
-        <checkbox preference="forceSizeWithImportant"
-                  label="Enforce rules with !important" />
-        <checkbox preference="ForceSmallIcons"
-                  label="Force small menu Icons" />
-      </groupbox>
-      </hbox>
-      <hbox>
-        <checkbox id="chkStatus" 
-                  preference="ShowStatusIcon" 
-                  label="Status bar icon"
-                  oncommand = "MenuOnTop.Options.onStatusCheck(this);" />
-        <spacer flex="1" />
-        <checkbox id="chkDebug" 
-                  preference="Debug" 
-                  label="Debug mode" />
-      </hbox>
+		<tabpanel id="mot-Options-style"
+				  orient="vertical" 
+				  label="Style" 
+				  style="position:relative;">
+				  
+			<hbox align="center">
+				<spacer flex="1" />
+				<label control="styleDefaults" 
+					   value="Choose a flavor:" />
+				<menulist id="styleDefaults"
+						  oncommand="MenuOnTop.Options.selectScheme(this.value);">
+				  <menupopup>
+					<menuitem label="Select one to set"
+							  value="-1" />
+					<menuitem label="Australis - default"
+							  value="0" />
+					<menuitem label="TT deepdark - night"
+							  value="1" />
+					<menuitem label="Nautipolis - naval"
+							  value="2" />
+					<menuitem label="Nuvola - silver"
+							  value="3" />
+					<menuitem label="Lantana - orange glass"
+							  value="4" />
+					<menuitem label="Charamel - fudge"
+							  value="5" />
+					<menuitem label="Noja Extreme - glass"
+							  value="6" /> 
+					<menuitem label="Walnut 2"
+							  value="7" />
+					<menuitem label="Littlebird - small icons"
+							  value="8" />
+					<menuitem label="Robin - red"
+							  value="9" />
+					<menuitem label="Phoenity - shredder"
+							  value="10" />
+					<menuitem label="SilverMel - silver"
+							  value="11" />
+					<menuitem label="Mountain - blue"
+							  value="12" />
+					<menuitem label="Parakeet - green"
+							  value="13" />
+					<menuitem label="Tangerine - orange"
+							  value="14" />
+				  </menupopup>
+				</menulist>
+			</hbox>
+			
+			<groupbox>
+			  <caption label="Style" />
+			  <hbox> 
+				<checkbox id="chkMenubarTransparent"
+						  preference="boolMenuBarTransparent" 
+						  label="Transparent toolbar" />
+			  </hbox>
+			  <hbox align="center">
+				<label control="txtMenuFontColor" value="Menu font color:" />
+				<colorpicker id="txtMenuFontColor"
+							 type="button"
+							 color="rgb(0,0,0)"
+							 preference="MenuFontColor"
+							 tooltiptext="Choose a color"/>
+				<checkbox id="chkMenuShadow" 
+						  preference="boolMenuShadow" 
+						  label="Font Shadow" />
+			  </hbox>
+			  <hbox align="center">
+				<label control="txtMaxHeight" value="Maximum menu item height:" />
+				<textbox id="txtMaxHeight" 
+						 type="number" width="40" min="20"
+						 preference="MaxHeight"  
+						 tooltiptext="Set a number" />
+				<label value="px" />
+				<spacer flex="2" />
+			  </hbox>
+			  <hbox align="center">
+				<label control="txtMenuBackground" value="Background:" />
+				<textbox id="txtMenuBackground" flex="1"
+						 preference="MenuBackground"  
+						 tooltiptext="Enter a valid css background (background-image or background-color)" />
+			  </hbox>
+			</groupbox>
+			
+			<groupbox>
+				<caption label="Borders" />
+				<hbox align="center">
+				  <label control="txtMenuBorderColor" value="Menu border color:" />
+				  <colorpicker id="txtMenuBorderColor" 
+							   type="button"
+							   color="rgb(255,255,255)"
+							   preference="MenuBorderColor"  
+							   tooltiptext="Choose a color" />
+				</hbox>
+				<hbox align="center">
+				  <label control="txtMenuBorderWidth" value="Menu border width (0=none):" />
+				  <textbox id="txtMenuBorderWidth" 
+						   type="number" width="40"
+						   preference="MenuBorderWidth"  
+						   tooltiptext="Set border width" />
+				  <label value="px" />
+				</hbox>
+			  <hbox align="center">
+				<label control="txtMenuRadius" value="Corner Radius:" />
+				<textbox id="txtMenuRadius" 
+						 type="number" width="40"
+						 preference="MenuRadius"  
+						 tooltiptext="Set a number" />
+				<label value="em" />
+				<checkbox preference="MenuRadiusLeft" 
+						  label="Left Side" />
+				<checkbox preference="MenuRadiusRight" 
+						  label="Right Side" />
+				<spacer flex="2" />
+			  </hbox>
+			</groupbox>
+			<hbox>
+			  <groupbox>
+				<caption label="Spacing" />
+				<grid flex="1">
+				  <columns>
+					<column />
+					<column />
+				  </columns>
+				  <rows>
+					<row align="center">
+					  <label control="txtNegativeMargin" value="Negative toolbar margin:" />
+					  <textbox id="txtNegativeMargin" 
+							   type="number" width="40"
+							   preference="NegativeMargin"  
+							   tooltiptext="Set a number to move menu up by. High values can lead to truncated menu!" />
+					  <label value="px" />
+					</row>
+					<row align="center">
+					  <label control="txtMenuMarginTop" value="Menu panel top margin:" />
+					  <textbox id="txtMenuMarginTop" 
+							   type="number" width="40"
+							   preference="MenuMarginTop"  
+							   tooltiptext="Moves menu down by this many pixels. High values can lead to truncated menu!" />
+					  <label value="px" />
+					</row>
+					<row align="center">
+					  <label control="txtMenuMarginLeft" value="Menu panel left margin:" />
+					  <textbox id="txtMenuMarginLeft" 
+							   type="number" width="40"
+							   preference="MenuMarginLeft"  
+							   tooltiptext="Moves menu to the right by this many pixels. High values can lead to truncated menu!" />
+					  <label value="px" />
+					</row>
+				  </rows>
+				</grid>
+			  </groupbox>
+			  <groupbox>
+				<caption label="Icon Size" />
+				<grid flex="1">
+				  <columns>
+					<column />
+					<column />
+				  </columns>
+				  <rows>
+					<row align="center">
+					  <label control="txtMenuIconSmall" value="Small Icons:" />
+					  <textbox id="txtMenuIconSmall" 
+							   type="number" width="40"
+							   preference="SmallIconSize"  
+							   tooltiptext="Size of small icons in menu (0 for default)" />
+					  <label value="px" />
+					</row>
+					<row align="center">
+					  <label control="txtMenuIconNormal" value="Normal Icons:" />
+					  <textbox id="txtMenuIconNormal" 
+							   type="number" width="40"
+							   preference="NormalIconSize"  
+							   tooltiptext="Size of normal icons in menu (0 for default)" />
+					  <label value="px" />
+					</row>
+				  </rows>
+				</grid>
+				<checkbox preference="forceSizeWithImportant"
+						  label="Enforce rules with !important" />
+				<checkbox preference="ForceSmallIcons"
+						  label="Force small menu Icons" />
+			  </groupbox>
+		    </hbox>
+		</tabpanel>
+		<tabpanel id="mot-Options-advanced"
+				  orient="vertical" 
+				  label="Advanced" 
+				  style="position:relative;">
+			<hbox align="center">
+				<checkbox preference="CustomMenu"
+						  label="Custom menu item" 
+						  oncommand="MenuOnTop.Options.onCustomMenu(this);" />
+				<textbox id="txtCustomMenu"
+						 preference="CustomMenuTitle"
+						 tooltiptext="Enter name of custom menu item" />
+			</hbox>
+			<spacer flex="3" />
+			<hbox>
+				<checkbox id="chkStatus" 
+						  preference="ShowStatusIcon" 
+						  label="Status bar icon"
+						  oncommand = "MenuOnTop.Options.onStatusCheck(this);" />
+				<spacer flex="1" />
+				<checkbox id="chkDebug" 
+						  preference="Debug" 
+						  label="Debug mode" />
+			</hbox>
+		</tabpanel>
+	  
+	</tabpanels >
+	</tabbox>
+	  
   </prefpane>
 </prefwindow>
