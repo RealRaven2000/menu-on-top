@@ -257,6 +257,8 @@ var MenuOnTop = {
     // create a menu item to th8e left of file menu
     if (menubar) {
       if (visible) {
+        if (doc.getElementById(menuId))
+          return;
         let menu = doc.createElement('menu');
         // menu.id=menuId;
         menu.setAttribute("id", menuId);
@@ -272,6 +274,15 @@ var MenuOnTop = {
           menubar.removeChild(menu);
       }
     }  
+  } ,
+  
+  hideCustomMenu: function hideCustomMenu(win) {
+    let doc = win.document;
+    let menuId = "menuOnTop-menu-Custom";
+    let menubar = doc.getElementById(MenuOnTop.Util.MenubarId);
+    let menu = doc.getElementById(menuId);
+    if (menu)
+      menubar.removeChild(menu);
   } ,
   
 	ensureMenuBarVisible: function(win) {
@@ -297,7 +308,7 @@ var MenuOnTop = {
           }
         );
       }
-      
+      MenuOnTop.showCustomMenu(win);
       // MenuOnTop.showCustomMenu(win);
     }
     catch(ex) {
