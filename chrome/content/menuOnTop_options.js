@@ -65,7 +65,9 @@ MenuOnTop.Options = {
 	  function setElementValue(id, val) {
 			let doc = window.document;
 			let element = doc.getElementById(id);
-			if (typeof val == 'boolean')
+      if (element.tagName=='colorpicker') 
+        element.color = val;
+			else if (typeof val == 'boolean')
 				element.checked = val;
 			else
 				element.value = val;
