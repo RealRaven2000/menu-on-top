@@ -207,6 +207,7 @@ var stop = function(window){
     
 		MenuOnTop.resetCSS(window);
 		MenuOnTop.hideAddonButton(window);
+    MenuOnTop.hideCustomMenu(window);
   } catch (e) {}
   
   // Remove closed window out of list
