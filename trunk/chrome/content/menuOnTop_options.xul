@@ -115,28 +115,6 @@
                   preference="boolMenuBarTransparent" 
                   label="Transparent toolbar" />
       </hbox>
-      <hbox align="center" hidden="true">
-        <label control="txtMenuBackground" value="Menu background:" />
-        <textbox id="txtMenuBackground" flex="1"
-                 preference="MenuBackground"  
-                 tooltiptext="Enter a valid css background (background-image or background-color)" />
-      </hbox>
-      <hbox>
-        <hbox align="center">
-          <label control="txtMenuBorderWidth" value="Menu border width (0=none):" />
-          <textbox id="txtMenuBorderWidth" 
-                   type="number" width="40"
-                   preference="MenuBorderWidth"  
-                   tooltiptext="Set border width" />
-          <label value="px" />
-        </hbox>
-      </hbox>
-		<hbox align="center">
-		  <label control="txtMenuBackground" value="Menu background:" />
-		  <textbox id="txtMenuBackground" flex="1"
-				   preference="MenuBackground"  
-				   tooltiptext="Enter a valid css background (background-image or background-color)" />
-		</hbox>
       <hbox align="center">
         <label control="txtMenuFontColor" value="Menu font color:" />
         <colorpicker id="txtMenuFontColor"
@@ -157,6 +135,12 @@
         <label value="px" />
         <spacer flex="2" />
       </hbox>
+      <hbox align="center">
+        <label control="txtMenuBackground" value="Menu background:" />
+        <textbox id="txtMenuBackground" flex="1"
+                 preference="MenuBackground"  
+                 tooltiptext="Enter a valid css background (background-image or background-color)" />
+      </hbox>
     </groupbox>
 	
     <groupbox>
@@ -169,6 +153,14 @@
 					   preference="MenuBorderColor"  
 					   tooltiptext="Choose a color" />
 		</hbox>
+        <hbox align="center">
+          <label control="txtMenuBorderWidth" value="Menu border width (0=none):" />
+          <textbox id="txtMenuBorderWidth" 
+                   type="number" width="40"
+                   preference="MenuBorderWidth"  
+                   tooltiptext="Set border width" />
+          <label value="px" />
+        </hbox>
       <hbox align="center">
         <label control="txtMenuRadius" value="Corner Radius:" />
         <textbox id="txtMenuRadius" 
