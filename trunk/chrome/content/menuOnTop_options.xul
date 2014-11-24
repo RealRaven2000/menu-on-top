@@ -133,7 +133,8 @@
 			  <hbox align="center">
 				<label control="txtMaxHeight" value="Maximum menu item height:" />
 				<textbox id="txtMaxHeight" 
-						 type="number" width="40" min="20"
+						 type="number" 
+						 min="20"
 						 preference="MaxHeight"  
 						 tooltiptext="Set a number" />
 				<label value="px" />
@@ -160,7 +161,7 @@
 				<hbox align="center">
 				  <label control="txtMenuBorderWidth" value="Menu border width (0=none):" />
 				  <textbox id="txtMenuBorderWidth" 
-						   type="number" width="40"
+						   type="number" 
 						   preference="MenuBorderWidth"  
 						   tooltiptext="Set border width" />
 				  <label value="px" />
@@ -168,7 +169,9 @@
 			  <hbox align="center">
 				<label control="txtMenuRadius" value="Corner Radius:" />
 				<textbox id="txtMenuRadius" 
-						 type="number" width="40"
+						 type="number" 
+						 decimalplaces="1"
+						 increment="0.2"
 						 preference="MenuRadius"  
 						 tooltiptext="Set a number" />
 				<label value="em" />
@@ -191,7 +194,7 @@
 					<row align="center">
 					  <label control="txtNegativeMargin" value="Negative toolbar margin:" />
 					  <textbox id="txtNegativeMargin" 
-							   type="number" width="40"
+							   type="number" 
 							   preference="NegativeMargin"  
 							   tooltiptext="Set a number to move menu up by. High values can lead to truncated menu!" />
 					  <label value="px" />
@@ -199,7 +202,7 @@
 					<row align="center">
 					  <label control="txtMenuMarginTop" value="Menu panel top margin:" />
 					  <textbox id="txtMenuMarginTop" 
-							   type="number" width="40"
+							   type="number" 
 							   preference="MenuMarginTop"  
 							   tooltiptext="Moves menu down by this many pixels. High values can lead to truncated menu!" />
 					  <label value="px" />
@@ -207,7 +210,7 @@
 					<row align="center">
 					  <label control="txtMenuMarginLeft" value="Menu panel left margin:" />
 					  <textbox id="txtMenuMarginLeft" 
-							   type="number" width="40"
+							   type="number" 
 							   preference="MenuMarginLeft"  
 							   tooltiptext="Moves menu to the right by this many pixels. High values can lead to truncated menu!" />
 					  <label value="px" />
@@ -226,7 +229,7 @@
 					<row align="center">
 					  <label control="txtMenuIconSmall" value="Small Icons:" />
 					  <textbox id="txtMenuIconSmall" 
-							   type="number" width="40"
+							   type="number" 
 							   preference="SmallIconSize"  
 							   tooltiptext="Size of small icons in menu (0 for default)" />
 					  <label value="px" />
@@ -234,7 +237,7 @@
 					<row align="center">
 					  <label control="txtMenuIconNormal" value="Normal Icons:" />
 					  <textbox id="txtMenuIconNormal" 
-							   type="number" width="40"
+							   type="number" 
 							   preference="NormalIconSize"  
 							   tooltiptext="Size of normal icons in menu (0 for default)" />
 					  <label value="px" />
