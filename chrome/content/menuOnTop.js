@@ -148,8 +148,10 @@ var MenuOnTop = {
 			colorString += col ?  '#' + util.MenubarId + ' > menu[_moz-menuactive="true"]:not([open="true"]):not([disabled="true"]) > label {color: ' + col + ' !important;} ' : ''; 
 			col = Prefs.menuFontColorActive;
 			colorString += col ?  '#' + util.MenubarId + ' > menu[open="true"] > label {color: ' + col + ' !important;} ' : ''; 
-      let backgroundStringHover = '#menubar-items > #' + util.MenubarId + '[_moz-menuactive="true"]:not([open="true"]):not([disabled="true"]) { background:' + Prefs.menuBackgroundHover + ' !important;} '
-      let backgroundStringActive = '#menubar-items > #' + util.MenubarId + '[open="true"] { background:' + Prefs.menuBackgroundActive + ' !important;} '
+      let backgroundStringHover = 
+        '#menubar-items > #' + util.MenubarId + '[id][_moz-menuactive="true"]:not([open="true"]):not([disabled="true"]) { background-image:' + Prefs.menuBackgroundHover + ' !important;} '
+      let backgroundStringActive = 
+        '#menubar-items > #' + util.MenubarId + '[id][open="true"]:not([disabled="true"]) { background-image:' + Prefs.menuBackgroundActive + ' !important;} '
 
 			// Inject some css!
 			// we override min-height for charamel!

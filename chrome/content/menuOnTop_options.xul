@@ -35,8 +35,8 @@
       <preference id="boolMenuBarTransparent"  name="extensions.menuontop.menubar.transparent" type="bool" instantApply="true" />
       <preference id="MenuBackground"  name="extensions.menuontop.menuBackground" type="string" instantApply="true" />
       <preference id="MenuFontColor"   name="extensions.menuontop.menuFontColor" type="string" instantApply="true" />
-      <preference id="MenuBackgroundHover"  name="extensions.menuontop.menuBackground.hover" type="string" instantApply="true" />
-      <preference id="MenuFontColorHover"   name="extensions.menuontop.menuFontColor.hover" type="string" instantApply="true" />
+      <preference id="MenuBackgroundHover"   name="extensions.menuontop.menuBackground.hover" type="string" instantApply="true" />
+      <preference id="MenuFontColorHover"    name="extensions.menuontop.menuFontColor.hover" type="string" instantApply="true" />
       <preference id="MenuBackgroundActive"  name="extensions.menuontop.menuBackground.active" type="string" instantApply="true" />
       <preference id="MenuFontColorActive"   name="extensions.menuontop.menuFontColor.active" type="string" instantApply="true" />
       <preference id="MenuRadius"      name="extensions.menuontop.menuRadius" type="string" instantApply="true" />
