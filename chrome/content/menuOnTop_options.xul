@@ -3,6 +3,7 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xml-stylesheet href="menuOnTop-options.css" type="text/css"?>
 
+<!-- tabsize = 2 -->
 <prefwindow xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
             windowtype = "addon:MenuOnTop"
             id="MenuOnTop-preferences"
@@ -34,6 +35,10 @@
       <preference id="boolMenuBarTransparent"  name="extensions.menuontop.menubar.transparent" type="bool" instantApply="true" />
       <preference id="MenuBackground"  name="extensions.menuontop.menuBackground" type="string" instantApply="true" />
       <preference id="MenuFontColor"   name="extensions.menuontop.menuFontColor" type="string" instantApply="true" />
+      <preference id="MenuBackgroundHover"  name="extensions.menuontop.menuBackground.hover" type="string" instantApply="true" />
+      <preference id="MenuFontColorHover"   name="extensions.menuontop.menuFontColor.hover" type="string" instantApply="true" />
+      <preference id="MenuBackgroundActive"  name="extensions.menuontop.menuBackground.active" type="string" instantApply="true" />
+      <preference id="MenuFontColorActive"   name="extensions.menuontop.menuFontColor.active" type="string" instantApply="true" />
       <preference id="MenuRadius"      name="extensions.menuontop.menuRadius" type="string" instantApply="true" />
       <preference id="MenuRadiusLeft"  name="extensions.menuontop.menuRadiusLeft" type="bool" instantApply="true" />
       <preference id="MenuRadiusRight" name="extensions.menuontop.menuRadiusRight" type="bool" instantApply="true" />
@@ -128,9 +133,9 @@
 									orient="vertical" 
 									label="Default" 
 									style="position:relative;">
-							<hbox align="center">
-								<label control="txtMenuFontColor" value="Menu font color:" />
-								<colorpicker id="txtMenuFontColor"
+							<hbox align="left">
+								<label control="txtMenuFontColorDefault" value="Font color:" />
+								<colorpicker id="txtMenuFontColorDefault"
 											 type="button"
 											 color="rgb(0,0,0)"
 											 preference="MenuFontColor"
@@ -139,24 +144,59 @@
 											preference="boolMenuShadow" 
 											label="Font Shadow" />
 							</hbox>
-							<hbox align="center">
-								<label control="txtMenuBackground" value="Background:" />
-								<textbox id="txtMenuBackground" flex="1"
-										 preference="MenuBackground"  
-										 tooltiptext="Enter a valid css background (background-image or background-color)" />
+							<hbox align="left">
+								<label control="txtMenuBackgroundDefault" value="Background:" />
+								<textbox 
+										id="txtMenuBackgroundDefault" 
+										flex="1"
+										class="backgroundCSS"
+										preference="MenuBackground"  
+										tooltiptext="Enter a valid css background (background-image or background-color)" />
 							</hbox>
 						</tabpanel>
 						<tabpanel id="mot-Color-Hover"
 									orient="vertical" 
 									label="Hover" 
 									style="position:relative;">
-							
+							<hbox align="left">
+								<label control="txtMenuFontColorHover" value="Font color:" />
+								<colorpicker id="txtMenuFontColorHover"
+											 type="button"
+											 color="rgb(0,0,0)"
+											 preference="MenuFontColorHover"
+											 tooltiptext="Choose a color"/>
+							</hbox>
+							<hbox align="center">
+								<label control="txtMenuBackgroundHover" value="Background:" />
+								<textbox 
+										id="txtMenuBackgroundHover"
+										flex="1"
+										class="backgroundCSS"
+										preference="MenuBackgroundHover"  
+										tooltiptext="Enter a valid css background (background-image or background-color)" />
+							</hbox>
 						</tabpanel>
 						<tabpanel id="mot-Color-Active"
 									orient="vertical" 
 									label="Active" 
 									style="position:relative;">
-							
+							<hbox align="center">
+								<label control="txtMenuFontColorActive" value="Font color:" />
+								<colorpicker id="txtMenuFontColorActive"
+											 type="button"
+											 color="rgb(0,0,0)"
+											 preference="MenuFontColorActive"
+											 tooltiptext="Choose a color"/>
+							</hbox>
+							<hbox align="center">
+								<label control="txtMenuBackgroundActive" value="Background:" />
+								<textbox 
+										id="txtMenuBackgroundActive"
+										flex="1"
+										class="backgroundCSS"
+										preference="MenuBackgroundActive"  
+										tooltiptext="Enter a valid css background (background-image or background-color)" />
+							</hbox>
 						</tabpanel>
 					</tabpanels>	
 				</tabbox>
