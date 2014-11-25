@@ -120,10 +120,10 @@ MenuOnTop.Options = {
 				setElementValue('txtNegativeMargin', 2);
 				setElementValue('txtMenuRadius', '0.5');
 				setElementValue('chkMenuShadow', false);
-				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(215, 215, 215, 0.9))');
+        setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(215, 215, 215, 0.9))');
 				setElementValue('txtMenuFontColorDefault', 'rgb(15,15,15)');
-				setElementValue('txtMenuBackgroundHover',  'linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(215, 215, 215, 0.9))');
-				setElementValue('txtMenuFontColorHover', 'rgb(15,15,15)');
+				setElementValue('txtMenuBackgroundHover',  'background-color: rgb(204, 204, 255)');
+				setElementValue('txtMenuFontColorHover', 'rgb(0,0,0)');
 				setElementValue('txtMenuBackgroundActive',  'linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(215, 215, 215, 0.9))');
 				setElementValue('txtMenuFontColorActive', 'rgb(15,15,15)');
 				setElementValue('txtMenuBorderColor', 'transparent');

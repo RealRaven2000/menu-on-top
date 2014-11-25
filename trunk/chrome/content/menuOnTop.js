@@ -145,11 +145,11 @@ var MenuOnTop = {
 			let col = Prefs.menuFontColor;
 			let colorString = col ?  '#' + util.MenubarId + ' > menu > label {color: ' + col + ' !important;} ' : ''; 
 			col = Prefs.menuFontColorHover;
-			colorString += col ?  '#' + util.MenubarId + ' > menu:hover > label {color: ' + col + ' !important;} ' : ''; 
+			colorString += col ?  '#' + util.MenubarId + ' > menu[_moz-menuactive="true"]:not([open="true"]):not([disabled="true"]) > label {color: ' + col + ' !important;} ' : ''; 
 			col = Prefs.menuFontColorActive;
-			colorString += col ?  '#' + util.MenubarId + ' > menu:active > label {color: ' + col + ' !important;} ' : ''; 
-      let backgroundStringHover = '#menubar-items > #' + util.MenubarId + '[id]:hover { background:' + Prefs.menuBackgroundHover + ' !important;} '
-      let backgroundStringActive = '#menubar-items > #' + util.MenubarId + '[id]:active { background:' + Prefs.menuBackgroundActive + ' !important;} '
+			colorString += col ?  '#' + util.MenubarId + ' > menu[open="true"] > label {color: ' + col + ' !important;} ' : ''; 
+      let backgroundStringHover = '#menubar-items > #' + util.MenubarId + '[_moz-menuactive="true"]:not([open="true"]):not([disabled="true"]) { background:' + Prefs.menuBackgroundHover + ' !important;} '
+      let backgroundStringActive = '#menubar-items > #' + util.MenubarId + '[open="true"] { background:' + Prefs.menuBackgroundActive + ' !important;} '
 
 			// Inject some css!
 			// we override min-height for charamel!
