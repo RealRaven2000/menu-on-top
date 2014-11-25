@@ -782,11 +782,32 @@ MenuOnTop.Preferences = {
 	}
 };  // Preferences
 
+MenuOnTop.Bookmarks = {
+  getFxMarks: function() {
+    var bmsvc = Components.classes["@mozilla.org/browser/nav-bookmarks-service;1"]
+                      .getService(Components.interfaces.nsINavBookmarksService);
+    var menuFolder = bmsvc.toolbarFolder; // Bookmarks toolbar folder
+    let parentFolder;
+    parentFolderId = bmsvc.getChildFolder(menuFolder, "MenuOnTop");
+    if (!parentFolder)
+      parentFolder = bmsvc.createFolder(menuFolder, "MenuOnTop", bmsvc.DEFAULT_INDEX); 
+    var rootNode = parentFolder.root;
+    rootNode.containerOpen = true;
+    // iterate over the immediate children of this folder and dump to console
+    for (var i = 0; i < rootNode.childCount; i ++) {
+      var node = rootNode.getChild(i);
+      dump("Child: " + node.title + "\n");
+    }
+
+    // close a container after using it!
+    rootNode.containerOpen = false;
+  }
+};  // Bookmarks
 
 MenuOnTop.Interface = {
   addCustomMenuItem: function addCustomMenuItem(el) {
     alert('To do:  add custom menu items...');
   }
-};
+};  // Interface
 
 
