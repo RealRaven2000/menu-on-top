@@ -56,14 +56,12 @@
 
     </hbox>
 	
-	<tabbox orient="vertical" flex="6" id="quickFilters-Options-Tabbox">
+	<tabbox orient="vertical" flex="6" id="mot-Options-Tabbox">
 	<tabs>
 		<tab label="Style" id="mot-style" />
 		<tab label="Advanced" id="mot-advanced" />
 	</tabs>
-
-	<tabpanels >
-	
+	<tabpanels>
 		<tabpanel id="mot-Options-style"
 				  orient="vertical" 
 				  label="Style" 
@@ -113,39 +111,55 @@
 			</hbox>
 			
 			<groupbox>
-			  <caption label="Style" />
-			  <hbox> 
-				<checkbox id="chkMenubarTransparent"
-						  preference="boolMenuBarTransparent" 
-						  label="Transparent toolbar" />
-			  </hbox>
-			  <hbox align="center">
-				<label control="txtMenuFontColor" value="Menu font color:" />
-				<colorpicker id="txtMenuFontColor"
-							 type="button"
-							 color="rgb(0,0,0)"
-							 preference="MenuFontColor"
-							 tooltiptext="Choose a color"/>
-				<checkbox id="chkMenuShadow" 
-						  preference="boolMenuShadow" 
-						  label="Font Shadow" />
-			  </hbox>
-			  <hbox align="center">
-				<label control="txtMaxHeight" value="Maximum menu item height:" />
-				<textbox id="txtMaxHeight" 
-						 type="number" 
-						 min="20"
-						 preference="MaxHeight"  
-						 tooltiptext="Set a number" />
-				<label value="px" />
-				<spacer flex="2" />
-			  </hbox>
-			  <hbox align="center">
-				<label control="txtMenuBackground" value="Background:" />
-				<textbox id="txtMenuBackground" flex="1"
-						 preference="MenuBackground"  
-						 tooltiptext="Enter a valid css background (background-image or background-color)" />
-			  </hbox>
+			  <caption label="Colors" />
+				<hbox> 
+					<checkbox id="chkMenubarTransparent"
+							  preference="boolMenuBarTransparent" 
+							  label="Transparent toolbar" />
+				</hbox>
+				<tabbox orient="vertical" flex="6" id="mot-Colors-Tabbox">
+					<tabs>
+						<tab label="Default" id="mot-col-default" />
+						<tab label="Hover" id="mot-col-hover" />
+						<tab label="Active" id="mot-col-active" />
+					</tabs>
+					<tabpanels>
+						<tabpanel id="mot-Color-Default"
+									orient="vertical" 
+									label="Default" 
+									style="position:relative;">
+							<hbox align="center">
+								<label control="txtMenuFontColor" value="Menu font color:" />
+								<colorpicker id="txtMenuFontColor"
+											 type="button"
+											 color="rgb(0,0,0)"
+											 preference="MenuFontColor"
+											 tooltiptext="Choose a color"/>
+								<checkbox id="chkMenuShadow" 
+											preference="boolMenuShadow" 
+											label="Font Shadow" />
+							</hbox>
+							<hbox align="center">
+								<label control="txtMenuBackground" value="Background:" />
+								<textbox id="txtMenuBackground" flex="1"
+										 preference="MenuBackground"  
+										 tooltiptext="Enter a valid css background (background-image or background-color)" />
+							</hbox>
+						</tabpanel>
+						<tabpanel id="mot-Color-Hover"
+									orient="vertical" 
+									label="Hover" 
+									style="position:relative;">
+							
+						</tabpanel>
+						<tabpanel id="mot-Color-Active"
+									orient="vertical" 
+									label="Active" 
+									style="position:relative;">
+							
+						</tabpanel>
+					</tabpanels>	
+				</tabbox>
 			</groupbox>
 			
 			<groupbox>
@@ -191,7 +205,7 @@
 					<column />
 				  </columns>
 				  <rows>
-					<row align="center">
+					<row align="left">
 					  <label control="txtNegativeMargin" value="Negative toolbar margin:" />
 					  <textbox id="txtNegativeMargin" 
 							   type="number" 
@@ -199,7 +213,7 @@
 							   tooltiptext="Set a number to move menu up by. High values can lead to truncated menu!" />
 					  <label value="px" />
 					</row>
-					<row align="center">
+					<row align="left">
 					  <label control="txtMenuMarginTop" value="Menu panel top margin:" />
 					  <textbox id="txtMenuMarginTop" 
 							   type="number" 
@@ -207,13 +221,23 @@
 							   tooltiptext="Moves menu down by this many pixels. High values can lead to truncated menu!" />
 					  <label value="px" />
 					</row>
-					<row align="center">
+					<row align="left">
 					  <label control="txtMenuMarginLeft" value="Menu panel left margin:" />
 					  <textbox id="txtMenuMarginLeft" 
 							   type="number" 
 							   preference="MenuMarginLeft"  
 							   tooltiptext="Moves menu to the right by this many pixels. High values can lead to truncated menu!" />
 					  <label value="px" />
+					</row>
+					<row align="left">
+						<label control="txtMaxHeight" value="Maximum menu item height:" />
+						<textbox id="txtMaxHeight" 
+								 type="number" 
+								 min="20"
+								 preference="MaxHeight"  
+								 tooltiptext="Set a number" />
+						<label value="px" />
+						<spacer flex="2" />
 					</row>
 				  </rows>
 				</grid>
@@ -262,6 +286,12 @@
 				<textbox id="txtCustomMenu"
 						 preference="CustomMenuTitle"
 						 tooltiptext="Enter name of custom menu item" />
+			</hbox>
+			<hbox align="center">
+				<button button="Test Bookmarks..."
+						oncommand = "MenuOnTop.Bookmarks.getFxMarks();"
+					/>
+				<spacer flex="1" />
 			</hbox>
 			<spacer flex="3" />
 			<hbox>
