@@ -16,8 +16,8 @@
   margin-top: 10px;
 }
 
-#txtMenuBackground {
-  min-with: 50em;
+.backgroundCSS {
+  min-width: 30em;
 }
 
 #txtCustomMenu {

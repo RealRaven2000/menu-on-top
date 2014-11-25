@@ -102,9 +102,6 @@ var MenuOnTop = {
 			
 			let Prefs = MenuOnTop.Preferences;
 			let m = '-' + (Math.abs(Prefs.negativeMargin)).toString();
-			let bg = Prefs.menuBackground; // linear-gradient(to bottom, rgba(255,255,255,0.5),rgba(255,255,255,0.5))
-			let col = Prefs.menuFontColor;
-			let colorString = col ?  '#' + util.MenubarId + ' > menu > label {color: ' + col + ' !important;} ' : ''; // style only the top level items!
 			
 			let shadowString = Prefs.isTextShadow ? 'text-shadow: 1px 1px 1px rgba(128, 128, 128, 0.6) !important;' : '';
 			let maxHeightString = Prefs.maxHeight ? 'max-height: ' + Prefs.maxHeight + 'px;' : '';
@@ -137,6 +134,22 @@ var MenuOnTop = {
 						: ''; // linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5) 50%); 
 			
 			// Prefs.isMenuShadow // later!
+      /**** COLORS ****/
+			// linear-gradient(to bottom, rgba(255,255,255,0.5),rgba(255,255,255,0.5))
+      // override border-top-style!
+      let backgroundString = '#menubar-items > #' + util.MenubarId + '[id] { background:' + Prefs.menuBackground + ' !important;'
+            + borderStyle 
+            + radiusString 
+            + '  min-height:' + Prefs.maxHeight + 'px;} ';
+
+			let col = Prefs.menuFontColor;
+			let colorString = col ?  '#' + util.MenubarId + ' > menu > label {color: ' + col + ' !important;} ' : ''; 
+			col = Prefs.menuFontColorHover;
+			colorString += col ?  '#' + util.MenubarId + ' > menu:hover > label {color: ' + col + ' !important;} ' : ''; 
+			col = Prefs.menuFontColorActive;
+			colorString += col ?  '#' + util.MenubarId + ' > menu:active > label {color: ' + col + ' !important;} ' : ''; 
+      let backgroundStringHover = '#menubar-items > #' + util.MenubarId + '[id]:hover { background:' + Prefs.menuBackgroundHover + ' !important;} '
+      let backgroundStringActive = '#menubar-items > #' + util.MenubarId + '[id]:active { background:' + Prefs.menuBackgroundActive + ' !important;} '
 
 			// Inject some css!
 			// we override min-height for charamel!
@@ -158,14 +171,14 @@ var MenuOnTop = {
                 '#'+ util.ToolbarId +' {' + ordinalTb +' border-color: transparent !important;} ' +
                 '#'+ util.ToolbarId +' toolbarbutton {border-color: transparent !important;} ' +
                 '#'+ util.ToolbarId +':not([inactive]) {margin-top: ' + m + 'px;} ' +
-                '#menubar-items > #' + util.MenubarId + '[id] { background:' + bg + ' !important;'   // override border-top-style!
-                   + borderStyle
-                   + radiusString +'  min-height:' + Prefs.maxHeight + 'px;} ' +
+                colorString + 
+                backgroundString +
+                backgroundStringHover +
+                backgroundStringActive +
                 '#menubar-items > #' + util.MenubarId + '[id][style] {' + borderWidth + '} ' +
                 '#menubar-items:not(:-moz-lwtheme){ background-color: transparent !important; } ' + // Nautipolis!
                 '#menubar-items > menubar { background: none; ' + menuMarginTop + '; ' + menuMarginLeft +'; } ' + // TT deepdark!
                 '#' + util.ToolboxId + ' > #'+ util.ToolbarId +':not(:-moz-lwtheme) { background-color: transparent !important; background-image:none; } ' +
-                colorString + 
                 menuItemString;
 
 			css.appendChild(document.createTextNode(cssCode));
@@ -347,6 +360,10 @@ var MenuOnTop = {
 		menubarTransparent: true,
 		menuBackground: "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3))",
 		menuFontColor: "rgb(15,15,15)",
+		menuBackgroundHover: "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3))",
+		menuFontColorHover: "rgb(15,15,15)",
+		menuBackgroundActive: "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3))",
+		menuFontColorActive: "rgb(15,15,15)",
 		iconSizeSmall: 16,
 		iconSizeNormal: 16,
     forceSmallIcons: true, // new setting to avoid smudged icons in menu bar!
@@ -761,6 +778,22 @@ MenuOnTop.Preferences = {
 		return this.getCharPref('menuFontColor');
 	} ,
 	
+	get menuBackgroundHover() {
+		return this.getCharPref('menuBackground.hover');
+	} ,
+	
+	get menuFontColorHover() {
+		return this.getCharPref('menuFontColor.hover');
+	} ,
+	
+	get menuBackgroundActive() {
+		return this.getCharPref('menuBackground.active');
+	} ,
+	
+	get menuFontColorActive() {
+		return this.getCharPref('menuFontColor.active');
+	} ,
+  
 	get menuTransparent() {
 		return this.getBoolPref('menubar.transparent');
 	} ,
