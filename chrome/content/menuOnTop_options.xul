@@ -111,6 +111,8 @@
 							  value="13" />
 					<menuitem label="Tangerine - orange"
 							  value="14" />
+					<menuitem label="Australis Redesign"
+							  value="15" />
 				  </menupopup>
 				</menulist>
 			</hbox>
@@ -328,7 +330,8 @@
 						 tooltiptext="Enter name of custom menu item" />
 			</hbox>
 			<hbox align="center">
-				<button button="Test Bookmarks..."
+				<button 
+						label="Test Bookmarks..."
 						oncommand = "MenuOnTop.Bookmarks.getFxMarks();"
 					/>
 				<spacer flex="1" />

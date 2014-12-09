@@ -287,6 +287,23 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuIconSmall', 16);
 				setElementValue('txtMenuIconNormal', 24);
 				break;	
+      case 15: // Australis Redesign
+				setElementValue('txtNegativeMargin', 2);
+				setElementValue('txtMenuMarginTop', 5);
+				setElementValue('txtMenuRadius', '0.4');
+				setElementValue('chkMenuShadow', false);
+				setElementValue('txtMenuBackgroundDefault',  '#EAF2FB');
+				setElementValue('txtMenuFontColorDefault', 'rgb(51, 102, 153)');
+				setElementValue('txtMenuBackgroundHover',  '#ffffff');
+				setElementValue('txtMenuFontColorHover', '#113366'); 
+				setElementValue('txtMenuBackgroundHover',  '#ffffff');
+				setElementValue('txtMenuFontColorActive', '#113366');
+				setElementValue('txtMenuBorderColor', '#7A8D9B');
+				setElementValue('txtMenuBorderWidth', '1px 1px 1px 0px');
+				setElementValue('txtMaxHeight', 24);
+				setElementValue('txtMenuIconSmall', 16);
+				setElementValue('txtMenuIconNormal', 24);
+				break;	
 		}
 		this.apply();
 		window.setTimeout( function() { 
