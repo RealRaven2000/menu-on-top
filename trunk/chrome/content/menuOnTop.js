@@ -85,6 +85,7 @@ END LICENSE BLOCK
 
 
 var MenuOnTop = {
+  mAppName: null,
   CSSid: "menuOnTop-style",
 	loadCSS: function loadCSS(window) {
 		// Inject CSS for themes with the menubar under the tabbar, which looks terrible after moving the toolbar up
@@ -213,7 +214,7 @@ var MenuOnTop = {
 		element.setAttribute(eventName, eventAction);	
 	} ,
   
-  makeMenuItem(doc, url, label, cmd) {
+  makeMenuItem : function makeMenuItem(doc, url, label, cmd) {
     let menuitem = doc.createElement('menuitem');
     menuitem.setAttribute('label', label);
     menuitem.className='menuitem-iconic';
@@ -421,16 +422,8 @@ var MenuOnTop = {
 		if (button)
 			button.parentNode.removeChild(button);
 	
-	} 
-	
-
-};
-
-
-Components.utils.import("resource://gre/modules/Services.jsm");
-
-MenuOnTop.Util = {
-  mAppName: null,
+	} ,
+  
   get Application() {
 		if (null == this.mAppName) {
 			var appInfo = Components.classes["@mozilla.org/xre/app-info;1"]
@@ -455,6 +448,19 @@ MenuOnTop.Util = {
 			}
 		}
 		return this.mAppName;  
+  }   
+
+};
+
+
+Components.utils.import("resource://gre/modules/Services.jsm");
+if (MenuOnTop.Application == 'Firefox') {
+  Components.utils.import("resource:///modules/Bookmarks.jsm");
+}
+
+MenuOnTop.Util = {
+  get Application() {
+    return MenuOnTop.Application;
   } ,
   
   get AppVersion() {
@@ -819,23 +825,43 @@ MenuOnTop.Preferences = {
 
 MenuOnTop.Bookmarks = {
   getFxMarks: function() {
-    var bmsvc = Components.classes["@mozilla.org/browser/nav-bookmarks-service;1"]
-                      .getService(Components.interfaces.nsINavBookmarksService);
-    var menuFolder = bmsvc.toolbarFolder; // Bookmarks toolbar folder
-    let parentFolder;
-    parentFolderId = bmsvc.getChildFolder(menuFolder, "MenuOnTop");
-    if (!parentFolder)
-      parentFolder = bmsvc.createFolder(menuFolder, "MenuOnTop", bmsvc.DEFAULT_INDEX); 
-    var rootNode = parentFolder.root;
-    rootNode.containerOpen = true;
-    // iterate over the immediate children of this folder and dump to console
-    for (var i = 0; i < rootNode.childCount; i ++) {
-      var node = rootNode.getChild(i);
-      dump("Child: " + node.title + "\n");
-    }
+    let util = MenuOnTop.Util;
+    util.logDebug('MenuOnTop.Bookmarks.getFxMarks()')
+    try {
+      var historyService = Components.classes["@mozilla.org/browser/nav-history-service;1"]
+                                 .getService(Components.interfaces.nsINavHistoryService);
+      var options = historyService.getNewQueryOptions();
+      var query = historyService.getNewQuery();
+    
+    
+      let bmsvc = Components.classes["@mozilla.org/browser/nav-bookmarks-service;1"]
+                        .getService(Components.interfaces.nsINavBookmarksService);
+      let menuFolder = bmsvc.toolbarFolder; // Bookmarks toolbar folder
+      
+      query.setFolders([menuFolder], 1);      
+      var result = historyService.executeQuery(query, options);
+      // should return a nsINavHistoryContainerResultNode (hopefully)
+      // or nsINavHistoryQueryResultNode.
+      
+      
+      let parentFolder;
+      parentFolder = bmsvc.getChildFolder(menuFolder, "MenuOnTop");
+      if (!parentFolder)
+        parentFolder = bmsvc.createFolder(menuFolder, "MenuOnTop", bmsvc.DEFAULT_INDEX); 
+      let rootNode = parentFolder.root;
+      rootNode.containerOpen = true;
+      // iterate over the immediate children of this folder and dump to console
+      for (let i = 0; i < rootNode.childCount; i ++) {
+        let node = rootNode.getChild(i);
+        util.logDebug("Child: " + node.title + "\n");
+      }
 
-    // close a container after using it!
-    rootNode.containerOpen = false;
+      // close a container after using it!
+      rootNode.containerOpen = false;
+    }
+    catch(ex) {
+      util.logException('Bookmarks.getFxMarks()', ex);
+    }
   }
 };  // Bookmarks
 
