@@ -27,3 +27,11 @@
 textbox[type="number"] {
   width: 3em;
 }
+#linkURL, #linkLabel {
+  min-width: 30em;
+	width: 100%;
+}
+#linkRow {
+	/* display: inline-flex; */
+	flex-grow: 3;
+}
