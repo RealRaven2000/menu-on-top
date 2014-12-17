@@ -4,7 +4,7 @@
 MenuOnTop.Options = {
 	prefService : null,
 	bypassObserver: false,
-	observe : function(aSubject, aTopic, aData) {
+	observe : function observe(aSubject, aTopic, aData) {
 		if (this.bypassObserver) 
 			return; // avoid too many css changes
 		if ("nsPref:changed" == aTopic) {
@@ -15,7 +15,7 @@ MenuOnTop.Options = {
 		}
 	},
 
-  onLoad: function() {
+  onLoad: function onLoad() {
 		MenuOnTop.ensureMenuBarVisible(MenuOnTop.Util.MainWindow); // more for testing, but it might have its place!
 	  // alert('test');
 		MenuOnTop.Util.logDebug ("MenuOnTop.Options.onLoad()");
@@ -27,15 +27,16 @@ MenuOnTop.Options = {
 		// => 'this' implements observe() interface
 		this.prefService.addObserver('extensions.menuontop.', this, false);
 		this.prefService.QueryInterface(Ci.nsIPrefBranch);
+    document.getElementById('tabsInTitle').checked = MenuOnTop.Util.getTabInTitle();
 	},
 	
-	onUnload: function() {
+	onUnload: function onUnload() {
 		MenuOnTop.Util.logDebug ("MenuOnTop.Options.onClose()");
 	  this.prefService.QueryInterface(Components.interfaces.nsIPrefBranch2);
     this.prefService.removeObserver('extensions.menuontop.', this);
 	},
 	
-	onStatusCheck: function(chk) {
+	onStatusCheck: function onStatusCheck(chk) {
 		let win = MenuOnTop.Util.MainWindow;
 		if (chk.checked)
 			MenuOnTop.showAddonButton(win);
@@ -44,23 +45,29 @@ MenuOnTop.Options = {
 			
 	},
   
-  onCustomMenu: function(chk) {
+  onCustomMenu: function onCustomMenu(chk) {
 		let win = MenuOnTop.Util.MainWindow;
     MenuOnTop.Preferences.setBoolPref('customMenu', chk.checked);
     MenuOnTop.showCustomMenu(win);
   } ,
 	
-	accept: function() {
+	accept: function accept() {
 		this.apply();
 	},
 	
-	apply: function() {
+	apply: function apply() {
 		let win = MenuOnTop.Util.MainWindow;
 		MenuOnTop.resetCSS(win);
 		MenuOnTop.loadCSS(win);
 	},
+  
+  toggleTabsInTitle: function toggleTabsInTitle(checkbox) {
+    let util = MenuOnTop.Util;
+    util.setTabInTitle(!util.getTabInTitle());
+    checkbox.checked = util.getTabInTitle();
+  },
 	
-	selectScheme: function(sel) {
+	selectScheme: function selectScheme(sel) {
 	  // set a value and notify the bound preference via an input event; thanks to John-Galt !!
 	  function setElementValue(id, val) {
 			let doc = window.document;
@@ -282,7 +289,7 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(255,183,107,1) 0%,rgba(255,167,61,1) 11%,rgba(255,124,0,1) 51%,rgba(255,127,4,1) 100%)');
 				setElementValue('txtMenuFontColorDefault', 'rgba(225, 255, 250, 0.99)');
 				setElementValue('txtMenuBorderColor', 'rgba(255,255,255,0.7)');
-				setElementValue('txtMenuBorderWidth', '1px 1px 1px 0px');
+				setElementValue('txtMenuBorderWidth', '1');
 				setElementValue('txtMaxHeight', 22);
 				setElementValue('txtMenuIconSmall', 16);
 				setElementValue('txtMenuIconNormal', 24);
@@ -299,7 +306,7 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuBackgroundHover',  '#ffffff');
 				setElementValue('txtMenuFontColorActive', '#113366');
 				setElementValue('txtMenuBorderColor', '#7A8D9B');
-				setElementValue('txtMenuBorderWidth', '1px 1px 1px 0px');
+				setElementValue('txtMenuBorderWidth', '1');
 				setElementValue('txtMaxHeight', 24);
 				setElementValue('txtMenuIconSmall', 16);
 				setElementValue('txtMenuIconNormal', 24);

@@ -56,9 +56,8 @@
 			 flex="1" />
 	  <label id = "lblVersion"
 	         value="0.9.9"
-			 tooltiptext="Right-click for versio history"
-			 oncontextmenu="MenuOnTop.Util.openURL(null,'http://quickfolders.mozdev.org/menuOnTop.html#history');" />
-
+					 tooltiptext="Right-click for version history"
+					 oncontextmenu="MenuOnTop.Util.openURL(null,'http://quickfolders.mozdev.org/menuOnTop.html#history');" />
     </hbox>
 	
 	<tabbox orient="vertical" flex="6" id="mot-Options-Tabbox">
@@ -73,6 +72,10 @@
 				  style="position:relative;">
 				  
 			<hbox align="center">
+			  <checkbox id="tabsInTitle"
+				          label="Paint menu in Titlebar"
+									tooltiptext="On some systems, this option might lead to invisible window controls (min/max/close buttons)"
+									oncommand="MenuOnTop.Options.toggleTabsInTitle(this);"/>
 				<spacer flex="1" />
 				<label control="styleDefaults" 
 					   value="Choose a flavor:" />
@@ -321,21 +324,72 @@
 				  orient="vertical" 
 				  label="Advanced" 
 				  style="position:relative;">
-			<hbox align="center">
-				<checkbox preference="CustomMenu"
-						  label="Custom menu item" 
-						  oncommand="MenuOnTop.Options.onCustomMenu(this);" />
-				<textbox id="txtCustomMenu"
-						 preference="CustomMenuTitle"
-						 tooltiptext="Enter name of custom menu item" />
-			</hbox>
-			<hbox align="center">
-				<button 
-						label="Test Bookmarks..."
-						oncommand = "MenuOnTop.Bookmarks.getFxMarks();"
-					/>
-				<spacer flex="1" />
-			</hbox>
+			<groupbox  orient="vertical" >
+				<caption label="Custom Menu"/>
+				<description>This is experimental technology! 
+				It is mainly meant for adding some top level bookmarks in Firefox and Branding</description>
+				<hbox>
+					<checkbox preference="CustomMenu"
+								label="Custom menu item" 
+								oncommand="MenuOnTop.Options.onCustomMenu(this);" />
+					<textbox id="txtCustomMenu"
+							 preference="CustomMenuTitle"
+							 tooltiptext="Enter name of custom menu item" />
+				</hbox>
+				
+				<listbox id="bookmarksList" flex="1">
+				</listbox>
+				
+				<hbox>
+				  <button
+							label="Remove"
+							oncommand = "MenuOnTop.TopMenu.remove();"
+							/>
+					<button 
+							label="Load"
+							oncommand = "MenuOnTop.TopMenu.loadCustomMenu();"
+						/>
+					<button 
+							label="Save"
+							oncommand = "MenuOnTop.TopMenu.saveCustomMenu();"
+						/>
+					<button 
+							label="Test Bookmarks..."
+							oncommand = "MenuOnTop.TopMenu.getFxMarks();"
+						/>
+					<spacer flex="1" />
+				</hbox>
+				<groupbox orient="horizontal" >
+				  <caption label="Bookmark"/>
+					<button
+							label="Add"
+							oncommand = "MenuOnTop.TopMenu.add();"
+							/>
+					<grid>
+						<columns>
+						<column />
+						<column />
+						</columns>
+						<rows>
+							<row align="left" id="labelRow">
+								<label control="linkLabel" value="label:" />
+								<textbox id="linkLabel" flex="1" />
+							</row>
+							<row align="left" id="linkRow">
+								<label control="linkURL" value="URL:" />
+								<textbox id="linkURL" flex="1"/>
+							</row>
+						</rows>
+					</grid>
+					<button
+							label="From current context"
+							oncommand = "MenuOnTop.TopMenu.getFromContext();"
+							/>
+					
+				</groupbox>
+				
+			</groupbox>
+					
 			<spacer flex="3" />
 			<hbox>
 				<checkbox id="chkStatus" 
