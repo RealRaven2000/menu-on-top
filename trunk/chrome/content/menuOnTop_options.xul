@@ -379,6 +379,10 @@
 								<label control="linkURL" value="URL:" />
 								<textbox id="linkURL" flex="1"/>
 							</row>
+							<row align="left" id="typeRow">
+								<label control="linkType" value="bookmark type:" />
+								<textbox id="linkType" flex="1" />
+							</row>
 						</rows>
 					</grid>
 					<button

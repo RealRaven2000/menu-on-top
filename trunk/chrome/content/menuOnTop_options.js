@@ -129,7 +129,7 @@ MenuOnTop.Options = {
 				setElementValue('chkMenuShadow', false);
         setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(215, 215, 215, 0.9))');
 				setElementValue('txtMenuFontColorDefault', 'rgb(15,15,15)');
-				setElementValue('txtMenuBackgroundHover',  'background-color: rgb(204, 204, 255)');
+				setElementValue('txtMenuBackgroundHover',  'rgb(204, 204, 255)');
 				setElementValue('txtMenuFontColorHover', 'rgb(0,0,0)');
 				setElementValue('txtMenuBackgroundActive',  'linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(215, 215, 215, 0.9))');
 				setElementValue('txtMenuFontColorActive', 'rgb(15,15,15)');
@@ -193,6 +193,10 @@ MenuOnTop.Options = {
 				setElementValue('chkMenuShadow', false);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(228, 208, 155, 0.95), rgba(228, 208, 155, 0.5))');
 				setElementValue('txtMenuFontColorDefault', 'rgb(15,15,15)');
+				setElementValue('txtMenuBackgroundHover',  'linear-gradient(to bottom, rgb(220,180,110), rgb(220,180,110))');
+				setElementValue('txtMenuFontColorHover', ' rgb(105,41,3)');
+				setElementValue('txtMenuBackgroundActive',  'linear-gradient(to bottom, rgb(105,41,3), rgb(105,41,3))');
+				setElementValue('txtMenuFontColorActive', 'rgb(255,255,255)');
 				setElementValue('txtMenuBorderColor', 'transparent');
 				setElementValue('txtMenuBorderWidth', '0');
 				setElementValue('txtMaxHeight', 21);
