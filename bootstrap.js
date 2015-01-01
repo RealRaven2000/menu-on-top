@@ -15,7 +15,13 @@
  *    For version history, please refer to the module chrome/content/menuOnTop.js
  */
 
-Components.utils.import("resource://gre/modules/Services.jsm");
+Components.utils.import("chrome://menuontopr/menuOnTop.jsm");
+MenuOnTop.Util = Cu.import("chrome://menuontopr/mot_util.jsm").MenuOnTop_Util;
+MenuOnTop.Preferences = Cu.import("chrome://menuontopr/mot_prefs.jsm").MenuOnTop_Preferences;
+MenuOnTop.TopMenu = Cu.import("chrome://menuontopr/mot_menus.jsm").MenuOnTop_TopMenu;
+ 
+const Cu = Components.utils;
+Cu.import("resource://gre/modules/Services.jsm");
 
 (function(global) global.include = function include(src) {
 var o = {};
@@ -25,7 +31,7 @@ src, null, o.Services.io.newURI(__SCRIPT_URI_SPEC__, null, null));
 o.Services.scriptloader.loadSubScript(uri.spec, global);
 })(this);
 
-include("chrome/content/menuOnTop.js");
+
 /*
 var mozIJSSubScriptLoader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
                             .getService(Components.interfaces.mozIJSSubScriptLoader);
