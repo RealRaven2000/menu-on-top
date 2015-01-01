@@ -27,6 +27,14 @@ src, null, o.Services.io.newURI(__SCRIPT_URI_SPEC__, null, null));
 o.Services.scriptloader.loadSubScript(uri.spec, global);
 })(this);
 
+var MOT = {};
+
+Cu.import("chrome://menuontopmod/content/menuontop.jsm", MOT); // => MOT.MenuOnTop
+Cu.import("chrome://menuontopmod/content/mot_util.jsm", MOT.MenuOnTop); // Add .Util
+Cu.import("chrome://menuontopmod/content/mot_prefs.jsm", MOT.MenuOnTop);  // Add .Preferences
+Cu.import("chrome://menuontopmod/content/mot_prefs.jsm", MOT.MenuOnTop);  // Add .TopMenu
+  
+
 
 /*
 var mozIJSSubScriptLoader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
@@ -43,8 +51,8 @@ const PREF_BRANCH = "extensions.menuontop.";
 
 function setDefaultPrefs() {
   let branch = Services.prefs.getDefaultBranch(PREF_BRANCH);
-  for (let [key, val] in Iterator( MenuOnTop.defaultPREFS )) {
-		MenuOnTop.Util.logDebug ("Loading default pref " + key + ": " + val);
+  for (let [key, val] in Iterator( MOT.MenuOnTop.defaultPREFS )) {
+		MOT.MenuOnTop.Util.logDebug ("Loading default pref " + key + ": " + val);
 		
     switch (typeof val) {
       case "boolean":
@@ -95,21 +103,13 @@ uninstall = function(data, reason){
 var MOT = {};
 
 startup = function(data, reason){
-  const Cu = Components.utils;
-  Cu.import("chrome://menuontopmod/menuontop.jsm", MOT); // => MOT.MenuOnTop
-  /*
-  MOT.MenuOnTop.Util = Cu.import("chrome://menuontopmod/mot_util.jsm", MOT).Util;
-  MOT.MenuOnTop.Preferences = Cu.import("chrome://menuontopmod/mot_prefs.jsm", MOT).Preferences;
-  MOT.MenuOnTop.TopMenu = Cu.import("chrome://menuontopmod/mot_menus.jsm", MOT).TopMenu;
-  */
-  
 	setDefaultPrefs(); // we need to do this every time!
   
   // We're starting up
   var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"].
                       getService(Components.interfaces.nsIWindowMediator);
   // Start in all current windows:
-  var enumerator = wm.getEnumerator(MenuOnTop.Util.MainWindowXulId); // "mail:3pane"
+  var enumerator = wm.getEnumerator(MOT.MenuOnTop.Util.MainWindowXulId); // "mail:3pane"
 	Components.manager.addBootstrappedManifestLocation(data.installPath);
 	
   while (enumerator.hasMoreElements()) {
@@ -120,7 +120,7 @@ startup = function(data, reason){
 		    || reason == ADDON_UPGRADE 
 				|| reason == ADDON_DOWNGRADE 
 				|| reason == ADDON_ENABLE) {
-			MenuOnTop.ensureMenuBarVisible(window);
+			MOT.MenuOnTop.ensureMenuBarVisible(window);
 		}
   }
   // Start in new windows:
@@ -146,12 +146,12 @@ shutdown = function(data, reason){
 
 var start = function(window){
   // We're starting up in a window
-  let util = MenuOnTop.Util;
+  let util = MOT.MenuOnTop.Util;
   util.logDebug ("MenuOnTop.start()");
   let document = window.document;
   // let toolbar = document.getElementById("mail-bar3"); // toolbar with buttons
-  let navigationBox = document.getElementById(MenuOnTop.Util.ToolboxId);
-	let menubar =  document.getElementById(MenuOnTop.Util.ToolbarId);
+  let navigationBox = document.getElementById(MOT.MenuOnTop.Util.ToolboxId);
+	let menubar =  document.getElementById(MOT.MenuOnTop.Util.ToolbarId);
   if (!(menubar && navigationBox)) {
     util.logDebug ("MenuOnTop.start(): early exit, no navigation-toolbox or menubar found");
     return; // We're only interested in windows with the menubar in it
@@ -196,11 +196,11 @@ var start = function(window){
   }
 
   // Inject CSS for themes with the menubar under the tabbar, which looks terrible after moving the toolbar up
-	MenuOnTop.loadCSS(window);
+	MOT.MenuOnTop.loadCSS(window);
 	
 	// if the option is active, we show the icon in the addon bar.
-	if (MenuOnTop.Preferences.isStatusIcon)
-		MenuOnTop.showAddonButton(window);
+	if (MOT.MenuOnTop.Preferences.isStatusIcon)
+		MOT.MenuOnTop.showAddonButton(window);
 	
 };
 
@@ -209,7 +209,7 @@ var stop = function(window){
   var document = window.document;
   // Undo changes
   try {
-		let menubar =  window.document.getElementById(MenuOnTop.Util.ToolbarId);
+		let menubar =  window.document.getElementById(MOT.MenuOnTop.Util.ToolbarId);
     
 		// restore original toolbar order
 		// insertBefore(what = tabs-toolbar, reference element = mail-toolbar-menubar2)
@@ -217,9 +217,9 @@ var stop = function(window){
       menubar.menuOnTop.parent.insertBefore(menubar.menuOnTop.next, menubar);
     delete menubar.menuOnTop;
     
-		MenuOnTop.resetCSS(window);
-		MenuOnTop.hideAddonButton(window);
-    MenuOnTop.hideCustomMenu(window);
+		MOT.MenuOnTop.resetCSS(window);
+		MOT.MenuOnTop.hideAddonButton(window);
+    MOT.MenuOnTop.hideCustomMenu(window);
   } catch (e) {}
   
   // Remove closed window out of list
