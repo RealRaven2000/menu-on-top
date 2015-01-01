@@ -3,8 +3,8 @@ Components.utils.import("resource://gre/modules/FileUtils.jsm");
 Components.utils.import("resource://gre/modules/Promise.jsm");
 //Components.utils.import("chrome://menuontop/content/menuOnTop.jsm");
 
-var EXPORTED_SYMBOLS = [ 'MenuOnTop_TopMenu' ];
-let MenuOnTop_TopMenu = {
+var EXPORTED_SYMBOLS = [ 'TopMenu' ];
+let TopMenu = {
   Entries: [],
   charset: "UTF-8",
   

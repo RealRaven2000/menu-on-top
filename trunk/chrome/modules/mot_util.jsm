@@ -1,6 +1,6 @@
 //Components.utils.import("chrome://menuontop/content/menuOnTop.jsm");
-var EXPORTED_SYMBOLS = [ 'MenuOnTop_Util' ];
-let MenuOnTop_Util = {
+var EXPORTED_SYMBOLS = [ 'Util' ];
+let Util = {
   get Application() {
     return MenuOnTop.Application;
   } ,

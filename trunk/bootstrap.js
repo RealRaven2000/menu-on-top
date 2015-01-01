@@ -92,13 +92,17 @@ uninstall = function(data, reason){
   // We'll get deleted and have to clean up
 };
 
-startup = function(data, reason){
+var MOT = {};
 
-  Components.utils.import("chrome://menuontopr/menuOnTop.jsm");
-  MenuOnTop.Util = Cu.import("chrome://menuontopr/mot_util.jsm").MenuOnTop_Util;
-  MenuOnTop.Preferences = Cu.import("chrome://menuontopr/mot_prefs.jsm").MenuOnTop_Preferences;
-  MenuOnTop.TopMenu = Cu.import("chrome://menuontopr/mot_menus.jsm").MenuOnTop_TopMenu;
- 
+startup = function(data, reason){
+  const Cu = Components.utils;
+  Cu.import("chrome://menuontopmod/menuontop.jsm", MOT); // => MOT.MenuOnTop
+  /*
+  MOT.MenuOnTop.Util = Cu.import("chrome://menuontopmod/mot_util.jsm", MOT).Util;
+  MOT.MenuOnTop.Preferences = Cu.import("chrome://menuontopmod/mot_prefs.jsm", MOT).Preferences;
+  MOT.MenuOnTop.TopMenu = Cu.import("chrome://menuontopmod/mot_menus.jsm", MOT).TopMenu;
+  */
+  
 	setDefaultPrefs(); // we need to do this every time!
   
   // We're starting up
