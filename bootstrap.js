@@ -29,11 +29,6 @@ o.Services.scriptloader.loadSubScript(uri.spec, global);
 
 var MOT = {};
 
-Cu.import("chrome://menuontopmod/content/menuontop.jsm", MOT); // => MOT.MenuOnTop
-Cu.import("chrome://menuontopmod/content/mot_util.jsm", MOT.MenuOnTop); // Add .Util
-Cu.import("chrome://menuontopmod/content/mot_prefs.jsm", MOT.MenuOnTop);  // Add .Preferences
-Cu.import("chrome://menuontopmod/content/mot_prefs.jsm", MOT.MenuOnTop);  // Add .TopMenu
-  
 
 
 /*
@@ -103,6 +98,11 @@ uninstall = function(data, reason){
 var MOT = {};
 
 startup = function(data, reason){
+  Cu.import("chrome://menuontopmod/content/menuontop.jsm", MOT); // => MOT.MenuOnTop
+  Cu.import("chrome://menuontopmod/content/mot_util.jsm", MOT.MenuOnTop); // Add .Util
+  Cu.import("chrome://menuontopmod/content/mot_prefs.jsm", MOT.MenuOnTop);  // Add .Preferences
+  Cu.import("chrome://menuontopmod/content/mot_prefs.jsm", MOT.MenuOnTop);  // Add .TopMenu
+  
 	setDefaultPrefs(); // we need to do this every time!
   
   // We're starting up
