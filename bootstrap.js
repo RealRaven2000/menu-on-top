@@ -15,12 +15,8 @@
  *    For version history, please refer to the module chrome/content/menuOnTop.js
  */
 
-Components.utils.import("chrome://menuontopr/menuOnTop.jsm");
-MenuOnTop.Util = Cu.import("chrome://menuontopr/mot_util.jsm").MenuOnTop_Util;
-MenuOnTop.Preferences = Cu.import("chrome://menuontopr/mot_prefs.jsm").MenuOnTop_Preferences;
-MenuOnTop.TopMenu = Cu.import("chrome://menuontopr/mot_menus.jsm").MenuOnTop_TopMenu;
- 
 const Cu = Components.utils;
+
 Cu.import("resource://gre/modules/Services.jsm");
 
 (function(global) global.include = function include(src) {
@@ -97,6 +93,12 @@ uninstall = function(data, reason){
 };
 
 startup = function(data, reason){
+
+  Components.utils.import("chrome://menuontopr/menuOnTop.jsm");
+  MenuOnTop.Util = Cu.import("chrome://menuontopr/mot_util.jsm").MenuOnTop_Util;
+  MenuOnTop.Preferences = Cu.import("chrome://menuontopr/mot_prefs.jsm").MenuOnTop_Preferences;
+  MenuOnTop.TopMenu = Cu.import("chrome://menuontopr/mot_menus.jsm").MenuOnTop_TopMenu;
+ 
 	setDefaultPrefs(); // we need to do this every time!
   
   // We're starting up
