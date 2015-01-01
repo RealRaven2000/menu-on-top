@@ -2,8 +2,8 @@ Components.utils.import("resource://gre/modules/osfile.jsm")
 Components.utils.import("resource://gre/modules/Services.jsm");
 //Components.utils.import("chrome://menuontop/content/menuOnTop.jsm");
 
-var EXPORTED_SYMBOLS = [ 'MenuOnTop_Preferences' ];
-let MenuOnTop_Preferences = {
+var EXPORTED_SYMBOLS = [ 'Preferences' ];
+let Preferences = {
 	service: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch),
 
 	getBoolPref: function getBoolPref(term) {
