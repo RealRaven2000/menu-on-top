@@ -499,4 +499,837 @@ let MenuOnTop = {
 
 };
 
+MenuOnTop.Util = {
+  get Application() {
+    return MenuOnTop.Application;
+  } ,
+  
+  get AppVersion() {
+		var appInfo = Components.classes["@mozilla.org/xre/app-info;1"]
+						.getService(Components.interfaces.nsIXULAppInfo);
+		return parseFloat(appInfo.version);
+  } ,
+  
+  get MainWindowXulId() {
+    switch(this.Application) {
+      case 'Thunderbird':
+        return "mail:3pane";
+      case 'Firefox':
+        return "navigator:browser";
+    }
+    return "";
+  } ,
+  
+	get MainWindow() {
+    var windowManager = Components.classes['@mozilla.org/appshell/window-mediator;1']
+        .getService(Components.interfaces.nsIWindowMediator);
+    switch(this.Application) {
+      case 'Thunderbird':
+      case 'Firefox':
+        let win = windowManager.getMostRecentWindow(this.MainWindowXulId);
+        return win;
+    }
+    return null;
+	} ,
+  
+  get MainWindowId() {
+    switch(this.Application) {
+      case 'Thunderbird':
+        return 'messengerWindow';
+      case 'Firefox':
+        return 'main-window';
+    }
+    return null;
+  } ,
+
+  get ToolbarId() {
+    switch(this.Application) {
+      case 'Thunderbird':
+        return 'mail-toolbar-menubar2';
+      case 'Firefox':
+        return 'toolbar-menubar';
+    }
+    return '';
+  } ,  
+  
+  get ToolboxId() {
+    switch(this.Application) {
+      case 'Thunderbird':
+        return 'navigation-toolbox';
+      case 'Firefox':
+        return 'navigator-toolbox';
+    }
+    return '';
+  } ,  
+  
+	get TabInTitleBoolPref() {
+		switch (this.Application) {
+			case 'Thunderbird':
+				return 'mail.tabs.drawInTitlebar';
+			case 'Firefox':
+				return 'browser.tabs.drawInTitlebar';
+			case 'Postbox': // not supported yet
+				return 'mail.tabs.drawInTitlebar';
+			case 'SeaMonkey': // not supported yet
+				return 'mail.tabs.drawInTitlebar';
+		}
+		return null;
+	} ,
+  
+  setTabInTitle: function setTabInTitle(flag) {
+    let service = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+    service.setBoolPref(this.TabInTitleBoolPref, flag);
+  } ,
+  
+  getTabInTitle: function getTabInTitle() {
+    let service = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+    return service.getBoolPref(this.TabInTitleBoolPref);
+  } ,
+  
+  get isLinux() {
+    // https://developer.mozilla.org/en-US/docs/OS_TARGET
+    let xulRuntime = Components.classes["@mozilla.org/xre/app-info;1"]
+                 .getService(Components.interfaces.nsIXULRuntime);  
+    return (xulRuntime.OS.indexOf('Linux')>=0);
+  } ,
+  
+  ButtonPanel: function ButtonPanel(win) {
+    // passing in win so we can toggle the button
+    // from options dialog (which is a child window)
+    let id='';
+    let bar = null;
+    if (!win) win=window;
+    switch(this.Application) {
+      case 'Thunderbird':
+        id = "status-bar";
+        bar = win.document.getElementById(id);
+        break;
+      case 'Firefox':
+        id = "addonbarteo-addon-bar";
+        bar = win.document.getElementById(id);
+        if (!bar) {
+          id = "nav-bar";
+          bar = win.document.getElementById(id);
+        }
+        // we could potentially look at last child of browser-bottombox (must be visible and have a toolbar tag)
+        if (!bar) {
+          let par = win.document.getElementById("browser-bottombox");
+          for (let i=0; i<par.childNodes.length; i++) {
+            let el = par.childNodes[i];
+            if (!el.hidden && el.tagName && el.tagName == 'toolbar') {
+              bar = el;
+              if (el.id) id = el.id;
+            }
+          }
+        }
+        break;
+    }
+    let txt = "ButtonPanel() returns:"+  bar;
+    if (id) {
+      txt += '\nDetermined id of button container:' + id;
+    }
+    MenuOnTop.Util.logDebug(txt);
+    return bar;
+  } ,
+  
+  get MenubarId() {
+    switch(this.Application) {
+      case 'Thunderbird':
+        return 'mail-menubar';
+      case 'Firefox':
+        return 'main-menubar';
+    }
+    return '';
+  } ,
+  
+	lastTime:0,
+  
+	logTime: function logTime() {
+		let timePassed = '';
+		let end = new Date();
+		try { // AG added time logging for test
+			let endTime = end.getTime();
+			if (this.lastTime==0) {
+				this.lastTime = endTime;
+				return "[logTime init]"
+			}
+			let elapsed = new String(endTime - this.lastTime); // time in milliseconds
+			timePassed = '[' + elapsed + ' ms]	 ';
+			this.lastTime = endTime; // remember last time
+		}
+		catch(e) {;}
+		return end.getHours() + ':' + end.getMinutes() + ':' + end.getSeconds() + '.' + end.getMilliseconds() + '  ' + timePassed;
+	},
+	
+	logToConsole: function logToConsole(msg, optionTag) {
+		Services.console.logStringMessage("MenuOnTop "
+			+ (optionTag ? '{' + optionTag.toUpperCase() + '} ' : '')
+			+ this.logTime() + "\n"+ msg);
+	},	
+
+  logDebug: function logDebug(msg) {
+	  if (MenuOnTop.Preferences.isDebug)
+			this.logToConsole(msg);	
+	},
+	
+	logDebugOptional: function logDebugOptional(option, msg) {
+		if (MenuOnTop.Preferences.isDebugOption(option))
+			this.logToConsole(msg, option);
+	},
+	
+	logError: function logError(aMessage, aSourceName, aSourceLine, aLineNumber, aColumnNumber, aFlags) {
+	  var consoleService = Components.classes["@mozilla.org/consoleservice;1"]
+	                                 .getService(Components.interfaces.nsIConsoleService);
+	  var aCategory = '';
+
+	  var scriptError = Components.classes["@mozilla.org/scripterror;1"].createInstance(Components.interfaces.nsIScriptError);
+	  scriptError.init(aMessage, aSourceName, aSourceLine, aLineNumber, aColumnNumber, aFlags, aCategory);
+	  consoleService.logMessage(scriptError);
+	} ,
+	
+	logException: function logException(msg, ex) {
+		var stack = ''
+		if (typeof ex.stack!='undefined')
+			stack= ex.stack.replace("@","\n  ");
+		// let's display a caught exception as a warning.
+		let fn = ex.fileName ? ex.fileName : "?";
+		this.logError(msg + "\n" + ex.message, fn, stack, ex.lineNumber, 0, 0x1);
+	},
+	
+  openURL: function openURL(evt,URL) { 
+		if (this.openURLInTab(URL) && null!=evt) {
+			evt.preventDefault();
+			evt.stopPropagation();
+		}
+	},
+	
+	openURLInTab: function openURLInTab(URL) {
+		try {
+			var sTabMode="";
+			var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                   .getService(Components.interfaces.nsIWindowMediator);
+			var mainWindow = wm.getMostRecentWindow("navigator:browser");
+			if (mainWindow) {
+				var newTab = mainWindow.gBrowser.addTab(URL);
+				mainWindow.gBrowser.selectedTab = newTab;
+				return true;
+			}
+
+			let tabmail;
+			tabmail = document.getElementById("tabmail");
+			if (!tabmail) {
+				// Try opening new tabs in an existing 3pane window
+				var mail3PaneWindow = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+										 .getService(Components.interfaces.nsIWindowMediator)
+										 .getMostRecentWindow("mail:3pane");
+				if (mail3PaneWindow) {
+					tabmail = mail3PaneWindow.document.getElementById("tabmail");
+					mail3PaneWindow.focus();
+				}
+			}
+			if (tabmail) {
+				sTabMode = "contentTab";
+				tabmail.openTab(sTabMode,
+				{contentPage: URL, clickHandler: "specialTabs.siteClickHandler(event, QuickPasswords_TabURIregexp._thunderbirdRegExp);"});
+			}
+			else
+				window.openDialog("chrome://messenger/content/", "_blank",
+								  "chrome,dialog=no,all", null,
+			  { tabType: "contentTab",
+			   tabParams: {contentPage: URL,
+			              clickHandler: "specialTabs.siteClickHandler(event, QuickPasswords_TabURIregexp._thunderbirdRegExp);", id:"QuickPasswords_Weblink"}
+			  } );
+		}
+		catch(e) {
+			this.logException("openURLInTab(" + URL + ")", e);
+			return false;
+		}
+		return true;
+	}	,
+
+  // open an email in a new tab
+  openMessageTabFromUri: function openMessageTabFromUri(messageUri) {
+    let tabmail = document.getElementById("tabmail");
+    let hdr = messenger.messageServiceFromURI(messageUri).messageURIToMsgHdr(messageUri);
+    
+    switch (MenuOnTop.Util.Application) {
+      case 'Thunderbird':
+        tabmail.openTab('message', {msgHdr: hdr, background: false});  
+        break;
+      case 'SeaMonkey':
+        let tabMode = tabmail.tabModes['3pane'];
+        let tabInfo = {mode: tabMode, canClose: true};
+        let modeBits = 2; // get current mode? (kTabShowFolderPane = 1, kTabShowMessagePane = 2, kTabShowThreadPane = 4)
+        // gMailNewsTabsType.modes['3pane'].openTab(tabInfo, modeBits, null, hdr);
+        tabmail.openTab('3pane', modeBits, null, hdr);
+        break;
+      case 'Postbox':
+				var win = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+										 .getService(Components.interfaces.nsIWindowMediator)
+										 .getMostRecentWindow("mail:3pane");          
+        // from src/mail/base/content/mailWindowOverlay.js
+        win.MsgOpenNewTabForMessageWithAnimation(
+               hdr.messageKey, 
+               hdr.folder.URI, //
+               '',       // aMode
+               false ,   // Background
+               true      // skipAnimation 
+               // [, aAccountURI (optional) ]
+               )
+        break;
+    }
+  }  
+};  // Util
+
+Components.utils.import("resource://gre/modules/osfile.jsm")
+Components.utils.import("resource://gre/modules/Services.jsm");
+
+MenuOnTop.Preferences = {
+	service: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch),
+
+	getBoolPref: function getBoolPref(term) {
+		try {
+			return this.service.getBoolPref("extensions.menuontop." + term);
+		}
+		catch(ex) {
+			MenuOnTop.Util.logException("getBoolPref(extensions.menuontop." + term + ")", ex);
+			return false;
+		}
+	},
+	
+  getCharPref: function getCharPref(p) {
+		try {
+      return this.service.getCharPref("extensions.menuontop." + p);
+		}
+		catch(ex) {
+			MenuOnTop.Util.logException("getCharPref(extensions.menuontop." + p + ")", ex);
+			return '';
+		}
+	},
+	
+	getIntPref: function getIntPref(p) {
+		try {
+      return this.service.getIntPref("extensions.menuontop." + p);
+		}
+		catch(ex) {
+			MenuOnTop.Util.logException("getIntPref(extensions.menuontop." + p + ")", ex);
+			return 0;
+		}
+	},
+	
+	setBoolPref: function setBoolPref(term, val) {
+		try {
+			return this.service.setBoolPref("extensions.menuontop." + term, val);
+		}
+		catch(ex) {
+			MenuOnTop.Util.logException("setBoolPref(extensions.menuontop." + term + ")", ex);
+		}
+	},  
+  
+	// GET: specific settings
+  get isCustomMenu() {
+		return this.getBoolPref('customMenu');
+  } ,
+  
+  get customMenuTitle() {
+		return this.getCharPref('customMenu.title');
+  } ,
+  
+	get iconSizeNormal() {
+		return this.getIntPref('iconSize.normal');
+	} ,
+	
+	get iconSizeSmall() {
+		return this.getIntPref('iconSize.small');
+	} ,
+	
+	get isForceIconSize() {
+		return this.getBoolPref('iconSize.force'); 
+	} ,
+  
+  get isForceIconSmall() {
+		return this.getBoolPref('iconSize.forceSmall'); 
+  } ,
+	
+	get negativeMargin() {
+		return this.getIntPref('negativeMargin');
+	} ,
+	
+	get menuMarginLeft() {
+		return this.getIntPref('menuMargin.left');
+	} ,
+  
+  get menuMarginTop() {
+		return this.getIntPref('menuMargin');
+	} ,
+	
+	get maxHeight() {
+		return this.getIntPref('maxHeight');
+	} ,
+	
+	get menuRadius() {
+		return this.getCharPref('menuRadius'); // in em!
+	} ,
+	
+	get menuBorderWidth() {
+		return this.getCharPref('menuBorderWidth'); // css string
+	},
+	
+	get menuBorderColor() {
+		return this.getCharPref('menuBorderColor'); 
+	},
+	
+	get menuRadiusLeft() {
+		return this.getBoolPref('menuRadiusLeft'); 
+	} ,
+	
+	get menuRadiusRight() {
+		return this.getBoolPref('menuRadiusRight'); 
+	} ,
+	
+	get menuBackground() {
+		return this.getCharPref('menuBackground');
+	} ,
+	
+	get menuFontColor() {
+		return this.getCharPref('menuFontColor');
+	} ,
+	
+	get menuBackgroundHover() {
+		return this.getCharPref('menuBackground.hover');
+	} ,
+	
+	get menuFontColorHover() {
+		return this.getCharPref('menuFontColor.hover');
+	} ,
+	
+	get menuBackgroundActive() {
+		return this.getCharPref('menuBackground.active');
+	} ,
+	
+	get menuFontColorActive() {
+		return this.getCharPref('menuFontColor.active');
+	} ,
+  
+	get menuTransparent() {
+		return this.getBoolPref('menubar.transparent');
+	} ,
+	
+	get isTextShadow() {
+		return this.getBoolPref('textShadow');
+	} ,
+	
+	get isDebug() {
+	  return this.getBoolPref('debug');
+	} ,
+	
+	get isStatusIcon() {
+	  return this.getBoolPref('statusIcon');
+	} ,
+	
+	isDebugOption: function isDebugOption(key) {
+	  return this.getBoolPref('debug.' + key );
+	}
+};  // Preferences
+ 
+Components.utils.import("resource://gre/modules/FileUtils.jsm");
+Components.utils.import("resource://gre/modules/Promise.jsm");
+
+MenuOnTop.TopMenu = {
+  Entries: [],
+  charset: "UTF-8",
+  
+  addItem: function addItem(url, label, bookmarkType) {
+    let listbox = document.getElementById('bookmarksList');
+    listbox.appendItem(label, url);
+  },
+  
+  clearList: function clearList() {
+    let listbox = document.getElementById('bookmarksList');
+    while(listbox.getRowCount())
+      listbox.removeItemAt(0);
+    while (this.Entries.length)
+      this.Entries.pop();
+  },
+  
+  add: function add() {
+    if (MenuOnTop.Preferences.isDebug) debugger;
+    let url = document.getElementById('linkURL').value;
+    let label = document.getElementById('linkLabel').value;
+    let bookmarkType = document.getElementById('linkType').value;
+    this.addItem(url, label, bookmarkType);
+    this.Entries.push({url:url, label:label, bookmarkType: bookmarkType});
+  },
+  
+  remove: function remove() {
+    if (MenuOnTop.Preferences.isDebug) debugger;
+    let listbox = document.getElementById('bookmarksList');
+    if (listbox.selectedIndex>=0) {
+      this.Entries.splice(listbox.selectedIndex, 1); // remove from array
+      listbox.removeItemAt( listbox.selectedIndex );
+    }
+  },
+  
+  getBrowser: function getBrowser() {
+		const Ci = Components.interfaces;
+    let util = MenuOnTop.Util;
+		let interfaceType = Ci.nsIDOMWindow;
+    let mediator = Components.classes["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
+    let browsers = null;
+    let DomWindow = null;
+    let theBrowser = null;
+    
+    let getWindowEnumerator = 
+      (util.isLinux) ?
+      mediator.getXULWindowEnumerator :
+      mediator.getZOrderXULWindowEnumerator;
+    browsers = getWindowEnumerator ('navigator:browser', true);
+    if (browsers) {
+      theBrowser = browsers.getNext();
+      if (theBrowser) {
+        if (theBrowser.getInterface)
+          DomWindow = theBrowser.getInterface(interfaceType);
+        else {
+          try {
+            // Linux
+            DomWindow = theBrowser.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(interfaceType);
+          }
+          catch(e) {;}
+        }
+      }
+    }
+    if (!DomWindow) {
+      browsers = getWindowEnumerator ('navigator:browser', true);
+      if (!browsers || !(util.Application!='Firefox' && browsers.hasMoreElements()))
+        browsers = getWindowEnumerator ('mail:3pane', true);
+      if (!browsers)
+        return  null;
+      if (browsers.hasMoreElements()) {
+        theBrowser = browsers.getNext();
+        if (theBrowser.getInterface)
+          DomWindow = theBrowser.getInterface(interfaceType);
+        else // Linux
+          DomWindow = theBrowser.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(interfaceType)
+      }
+      else {
+        try { DomWindow=getBrowser(); } // Linux last resort
+        catch(ex) {
+          util.logException("getBrowser() failed:", ex);
+        }
+      }
+    
+    }
+    return DomWindow;
+  },
+  
+  getActiveUri: function getActiveUri() {
+    let uriObject= {url:'',label:'', bookmarkType: null};
+    let util = MenuOnTop.Util;
+    let browser = this.getBrowser();
+    let tabmail = null;
+    let currentURI = '';
+    let currentLabel = '';
+    let currentType = '';
+		if (browser || document.getElementById("tabmail")) {  // in Linux we cannot get the browser while options dialog is displayed :(
+			try {
+				let isOriginBrowser = (util.Application=='Firefox');
+				// for SeaMonkey we need to determine whether we opened from the messenger or from the navigator window
+				if (util.Application!='Firefox') {
+					tabmail = browser.document ? browser.document.getElementById("tabmail") : document.getElementById("tabmail");
+					// double check whether we come from browser
+					if (util.Application=='SeaMonkey') {
+					  if (!tabmail) {
+							isOriginBrowser = true;
+						}
+						else {  
+						  // both windows are open, now what?
+						  // best: which window is in foreground. or which window called (owner?)
+						}
+					}
+				}
+				/*     GET CONTEXT FROM CURRENT MAIL TAB  */
+				if (!isOriginBrowser) {
+					
+					if (tabmail) {
+						let tab = tabmail.selectedTab ? tabmail.selectedTab : tabmail.currentTab;  // Pb currentTab
+						let theMode = tab.mode ? tab.mode.name : tab.getAttribute("type");
+						if (!browser)
+							browser = tab.browser;
+						if (theMode == 'folder') {
+						  // if we are in folder mode we might have a message selected
+							if (tab.folderDisplay && tab.folderDisplay.focusedPane && tab.folderDisplay.focusedPane.id =='threadTree') {
+								theMode = 'message';
+							}
+						}
+            
+            currentType = theMode;
+
+						util.logDebugOptional("default", "Selected Tab mode: " + theMode);
+						switch (theMode) {
+							case 'folder':
+								isMailbox = true;
+
+								try {
+									let currentFolder =
+										tab.folderDisplay ?
+										tab.folderDisplay.displayedFolder :
+										browser.GetFirstSelectedMsgFolder().QueryInterface(Components.interfaces.nsIMsgFolder);
+									// let currentFolder2 = tab.folderDisplay.view.displayedFolder.QueryInterface(Components.interfaces.nsIMsgFolder);
+									// let msgFolder = theFolder.QueryInterface(Components.interfaces.nsIMsgFolder);
+									currentURI = currentFolder.server.hostName; // password manager shows the host name
+									if (currentURI == 'localhost') {
+										currentURI = currentFolder.server.realHostName;
+									}
+                  currentLabel = currentFolder.prettyName;
+								}
+								catch(ex) {
+									util.logException("Could not determine current folder: ",ex);
+									return ""
+								}
+								break;
+
+							case 'calendar':
+								currentURI="Calendar";
+                currentLabel="Calendar";
+								break;
+							case 'contentTab':      // fall through
+							case 'thunderbrowse':
+								currentURI = tab.browser.currentURI.host;
+                currentLabel = tab.browser.contentTitle;
+                currentType = 'browser';
+								break;
+							case 'glodaFacet':         // fall through
+							case 'glodaSearch-result': // fall through
+							case 'glodaList':          // fall through
+							case 'message':            // fall through
+								// find out about currently viewed message
+								try {
+									let msg = null;
+									if (tab.folderDisplay) {
+										msg = tab.folderDisplay.selectedMessage;
+									}
+									else {
+										if (tab.messageDisplay && tab.messageDisplay.selectedCount==1) {
+											msg = tab.messageDisplay.displayedMessage;
+										}
+										else {
+											let msgUri = this.alternativeGetSelectedMessageURI (browser);
+											if (msgUri) {
+												msg = browser.messenger.messageServiceFromURI(msgUri).messageURIToMsgHdr(msgUri);
+											}
+										}
+									}
+									if (!msg) return '';
+                  currentURI = msg.folder.generateMessageURI(msg.messageKey) 
+                  currentLabel = msg.mime2DecodedSubject.substring(0, 70);
+                  currentType = 'message';
+								}
+								catch(ex) { 
+								  util.logException("Could not retrieve message from context menu", ex);
+									currentURI = "{no message selected}"; 
+								};
+								break;
+              case 'chat':
+                currentLabel = tab.title;
+                currentURI = '#msg: not yet implemented - chat bookmarks.';
+                break;
+							default:  // case 'tasks':
+                alert('Not supported: bookmarking ' + theMode + ' tab!');
+								break;
+						}
+					}
+				}
+				/*     GET CONTEXT FROM CURRENT BROWSER  */
+				else {
+          // https://developer.mozilla.org/en-US/Add-ons/SDK/Low-Level_APIs/tabs_utils
+				  // Fx
+          currentType = 'browser';
+					let lB = browser.gBrowser.selectedTab.linkedBrowser;
+					// SM:
+					let uri = lB.registeredOpenURI ? lB.registeredOpenURI : lB.currentURI; // nsIURI
+          currentLabel = lB.contentTitle;
+          currentURI = uri.spec;  // whole URL including query parameters; there is also asciiSpec and specIgnoringRef
+					
+          /*
+					// prepend http:// or https:// etc.
+					let uriProtocol = uri.scheme + '://';
+					
+					if (uri.host == "ietab2") {
+						// find first url parameter:
+						let f = uri.path.indexOf("?url=");
+						let ieTabUri = "";
+						if (f > 0) {
+							let ieTabUri = uri.path.substring(f + 5);
+							f = ieTabUri.indexOf("//");
+							if (withServer && f > 0) {
+								uriProtocol = ieTabUri.substring(0, f+2);
+							}
+							else {
+								uriProtocol = "";
+							}
+							let r = ieTabUri.substring(f+2);
+							currentURI = uriProtocol +  r.substring(0 , r.indexOf("/"));
+						  
+						}
+					}
+
+					currentURI = uriProtocol + uri.host;
+          */
+					
+				}
+			}
+			catch(ex) {
+        util.logException("Error retrieving current URL:", ex);
+			}
+		}
+
+    // Assign the object to pass back
+    uriObject.url = currentURI;
+    uriObject.label = currentLabel;
+    uriObject.bookmarkType = currentType;
+    
+		return uriObject;
+  },
+  
+  getFromContext: function getFromContext() {
+    let uriObject = this.getActiveUri();
+    if (Object.keys(uriObject).length === 0) {
+      alert('Could not determine context URL!');
+      return;
+    }
+    document.getElementById('linkURL').value = uriObject.url;
+    document.getElementById('linkLabel').value = uriObject.label;
+    document.getElementById('linkType').value = uriObject.bookmarkType;
+  },
+  
+  getLocalFile: function getLocalFile() {
+    // get the "menuOnTop.json" file in the profile/extensions directory
+    let path = new Array("extensions", "menuOnTop.json");
+    // http://dxr.mozilla.org/comm-central/source/mozilla/toolkit/modules/FileUtils.jsm?from=FileUtils.jsm&case=true#41
+		return FileUtils.getFile("ProfD", path); // implements nsIFile
+  } ,
+  
+  readStringFile: function readStringFile() {
+    // To read content from file
+    const {TextDecoder,OS} = Components.utils.import("resource://gre/modules/osfile.jsm", {});
+    // To read & write content to file
+    // const {TextDecoder, TextEncoder, OS} = Cu.import("resource://gre/modules/osfile.jsm", {});  
+    
+    let profileDir = OS.Constants.Path.profileDir;
+    let path = OS.Path.join(profileDir, "extensions", "menuOnTop.json");
+  
+    let decoder = new TextDecoder();        // This decoder can be reused for several reads
+    let promise = OS.File.read(path, { encoding: "utf-8" }); // Read the complete file as an array - returns Uint8Array 
+    return promise;
+  } ,
+  
+  loadCustomMenu: function loadCustomMenu() {
+    if (MenuOnTop.Preferences.isDebug) debugger;
+    let util = MenuOnTop.Util;
+    try {
+      // let CustomMenuString='';
+      let topMenu = this; // closure this
+      let promise2 = this.readStringFile().then (
+        function onSuccess(CustomMenuData) {
+          // populate the bookmarks
+          topMenu.clearList();
+          let entries = JSON.parse(CustomMenuData);  
+          for (let i=0; i<entries.length; i++) {
+            let entry = entries[i];
+            topMenu.addItem(entry.url, entry.label, entry.bookmarkType);
+            topMenu.Entries.push(
+              {url:entry.url, 
+              label:entry.label, 
+              bookmarkType:entry.bookmarkType}
+              );
+          }
+        },
+        function onFailure(ex) {
+          if (ex.becauseNoSuchFile) {
+            // File does not exist);
+          }
+          else {
+            // Some other error
+            alert('Reading the bookmarks file failed ' + ex);
+          }     
+          // no changes to Entries array
+        }
+      );
+      
+      promise2.then(
+        function populateMenu() {
+          let win = MenuOnTop.Util.MainWindow;
+          let doc = win.document;
+          MenuOnTop.populateMenu(doc);
+        },
+        function onFail(ex) {
+          alert('Did not load main menu' + ex);
+        }
+      );
+    }
+    catch(ex) {
+      util.logException('MenuOnTop.TopMenu.loadCustomMenu()', ex);
+    }
+  } ,
+
+  saveCustomMenu: function saveCustomMenu()  {
+    if (MenuOnTop.Preferences.isDebug) debugger;
+    let util = MenuOnTop.Util;
+    try {
+      const {OS} = Components.utils.import("resource://gre/modules/osfile.jsm", {});
+      if (MenuOnTop.Preferences.isDebug) debugger;
+      let topMenu = this; // closure this
+      let profileDir = OS.Constants.Path.profileDir;
+      let path = OS.Path.join(profileDir, "extensions", "menuOnTop.json");
+      let backPath = OS.Path.join(profileDir, "extensions", "menuOnTop.json.bak");
+      let promiseDelete = OS.File.remove(backPath);  // only if it exists
+      let promiseBackup = promiseDelete.then(
+        function () { 
+          util.logDebug ('OS.File.move is next...'); 
+          OS.File.move(path, backPath); 
+        },
+        function failedDelete(fileError) { 
+          util.logDebug ('OS.File.remove failed for reason:' + fileError); 
+          OS.File.move(path, backPath); 
+        }
+        );
+
+      promiseBackup.then( 
+        function backSuccess() {
+          let entity = topMenu.Entries.length ? topMenu.Entries : '';
+          let outString = JSON.stringify(entity, null, '  '); // prettify
+          try {
+            // let theArray = new Uint8Array(outString);
+            let promise = OS.File.writeAtomic(path, outString, { encoding: "utf-8"});
+            promise.then(
+              function saveSuccess(byteCount) {
+                util.logDebug ('successfully saved ' + topMenu.Entries.length + ' bookmarks [' + byteCount + ' bytes] to file');
+              },
+              function saveReject(fileError) {  // OS.File.Error
+                util.logDebug ('saveCustomMenu error:' + fileError);
+              }
+            );
+          }
+          catch (ex) {
+            util.logException('MenuOnTop.TopMenu.saveCustomMenu()', ex);
+          }
+        },
+        function backupFailure(fileError) {
+          util.logDebug ('promiseBackup error:' + fileError);
+        }
+      )
+    }
+    catch(ex) {
+      util.logException('MenuOnTop.TopMenu.saveCustomMenu()', ex);
+    }
+        
+  },
+  
+  addCustomMenuItem: function addCustomMenuItem(menu) {
+    alert('To do:  add custom menu items...');
+  }
+  
+};  // TopMenu
+
+
 
