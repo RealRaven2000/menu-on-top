@@ -1,5 +1,6 @@
 "use strict";
 
+var MenuOnTop = Components.utils.import("chrome://menuontopmod/content/menuontop.jsm", {}).MenuOnTop; 
 
 MenuOnTop.Options = {
 	prefService : null,
