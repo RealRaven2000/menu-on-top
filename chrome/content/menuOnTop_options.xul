@@ -19,7 +19,6 @@
             minwidth="420">
             <!--persist="screenX, screenY"-->
 
-<script type="application/x-javascript;version=1.7" src="chrome://menuontop/content/menuOnTop.js" />
 <script type="application/x-javascript;version=1.7" src="chrome://menuontop/content/menuOnTop_options.js" />
 
   <prefpane id="mot-options-prefpane" label="Title">
