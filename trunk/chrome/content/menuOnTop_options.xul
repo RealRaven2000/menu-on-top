@@ -74,7 +74,7 @@
 			  <checkbox id="tabsInTitle"
 				          label="Paint menu in Titlebar"
 									tooltiptext="On some systems, this option might lead to invisible window controls (min/max/close buttons)"
-									oncommand="MenuOnTop.Options.toggleTabsInTitle(this);"/>
+									oncommand="MenuOnTop.Options.toggleTabsInTitle(this);" />
 				<spacer flex="1" />
 				<label control="styleDefaults" 
 					   value="Choose a flavor:" />
@@ -143,7 +143,7 @@
 											 type="button"
 											 color="rgb(0,0,0)"
 											 preference="MenuFontColor"
-											 tooltiptext="Choose a color"/>
+											 tooltiptext="Choose a color" />
 								<checkbox id="chkMenuShadow" 
 											preference="boolMenuShadow" 
 											label="Font Shadow" />
@@ -168,7 +168,7 @@
 											 type="button"
 											 color="rgb(0,0,0)"
 											 preference="MenuFontColorHover"
-											 tooltiptext="Choose a color"/>
+											 tooltiptext="Choose a color" />
 							</hbox>
 							<hbox align="center">
 								<label control="txtMenuBackgroundHover" value="Background:" />
@@ -190,7 +190,7 @@
 											 type="button"
 											 color="rgb(0,0,0)"
 											 preference="MenuFontColorActive"
-											 tooltiptext="Choose a color"/>
+											 tooltiptext="Choose a color" />
 							</hbox>
 							<hbox align="center">
 								<label control="txtMenuBackgroundActive" value="Background:" />
@@ -324,7 +324,7 @@
 				  label="Advanced" 
 				  style="position:relative;">
 			<groupbox  orient="vertical" >
-				<caption label="Custom Menu"/>
+				<caption label="Custom Menu" />
 				<description>This is experimental technology! 
 				It is mainly meant for adding some top level bookmarks in Firefox and Branding</description>
 				<hbox>
@@ -342,32 +342,27 @@
 				<hbox>
 				  <button
 							label="Remove"
-							oncommand = "MenuOnTop.TopMenu.remove();"
-							/>
+							oncommand = "MenuOnTop.TopMenu.remove();" />
 					<button 
 							label="Load"
-							oncommand = "MenuOnTop.TopMenu.loadCustomMenu();"
-						/>
+							oncommand = "MenuOnTop.TopMenu.loadCustomMenu();" />
 					<button 
 							label="Save"
-							oncommand = "MenuOnTop.TopMenu.saveCustomMenu();"
-						/>
+							oncommand = "MenuOnTop.TopMenu.saveCustomMenu();" />
 					<button 
 							label="Test Bookmarks..."
-							oncommand = "MenuOnTop.TopMenu.getFxMarks();"
-						/>
+							oncommand = "MenuOnTop.TopMenu.getFxMarks();" />
 					<spacer flex="1" />
 				</hbox>
 				<groupbox orient="horizontal" >
-				  <caption label="Bookmark"/>
+				  <caption label="Bookmark" />
 					<button
 							label="Add"
-							oncommand = "MenuOnTop.TopMenu.add();"
-							/>
+							oncommand = "MenuOnTop.TopMenu.add();" />
 					<grid>
 						<columns>
-						<column />
-						<column />
+							<column />
+							<column />
 						</columns>
 						<rows>
 							<row align="left" id="labelRow">
@@ -376,7 +371,7 @@
 							</row>
 							<row align="left" id="linkRow">
 								<label control="linkURL" value="URL:" />
-								<textbox id="linkURL" flex="1"/>
+								<textbox id="linkURL" flex="1" />
 							</row>
 							<row align="left" id="typeRow">
 								<label control="linkType" value="bookmark type:" />
@@ -386,8 +381,7 @@
 					</grid>
 					<button
 							label="From current context"
-							oncommand = "MenuOnTop.TopMenu.getFromContext();"
-							/>
+							oncommand = "MenuOnTop.TopMenu.getFromContext();" />
 					
 				</groupbox>
 				
