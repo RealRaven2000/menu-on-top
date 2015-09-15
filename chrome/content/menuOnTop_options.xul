@@ -20,18 +20,22 @@
             <!--persist="screenX, screenY"-->
 
 <script type="application/x-javascript;version=1.7" src="chrome://menuontop/content/menuOnTop_options.js" />
-
+<script type="text/javascript">
+  MenuOnTop.TopMenu._document = window.document;
+</script>
   <prefpane id="mot-options-prefpane" label="Title">
     <preferences>
       <preference id="NegativeMargin"  name="extensions.menuontop.negativeMargin" type="int"  instantApply="true" />
       <preference id="MenuMarginTop"   name="extensions.menuontop.menuMargin" type="int"  instantApply="true" />
       <preference id="MenuMarginLeft"  name="extensions.menuontop.menuMargin.left" type="int"  instantApply="true" />
+      <preference id="toolbarMarginRight"  name="extensions.menuontop.toolbarMargin.right" type="int"  instantApply="true" />
       <preference id="NormalIconSize"  name="extensions.menuontop.iconSize.normal" type="int"  instantApply="true" />
       <preference id="SmallIconSize"   name="extensions.menuontop.iconSize.small" type="int"  instantApply="true" />
       <preference id="forceSizeWithImportant"   name="extensions.menuontop.iconSize.force" type="bool"  instantApply="true" />
       <preference id="ForceSmallIcons" name="extensions.menuontop.iconSize.forceSmall" type="bool"  instantApply="true" />
       <preference id="MaxHeight"       name="extensions.menuontop.maxHeight" type="int"  instantApply="true" />
       <preference id="boolMenuBarTransparent"  name="extensions.menuontop.menubar.transparent" type="bool" instantApply="true" />
+			<preference id="boolThemeOnlyColor" name="extensions.menuontop.flavor.coloronly" type="bool" instantApply="true" />
       <preference id="MenuBackground"  name="extensions.menuontop.menuBackground" type="string" instantApply="true" />
       <preference id="MenuFontColor"   name="extensions.menuontop.menuFontColor" type="string" instantApply="true" />
       <preference id="MenuBackgroundHover"   name="extensions.menuontop.menuBackground.hover" type="string" instantApply="true" />
@@ -48,13 +52,15 @@
       <preference id="ShowStatusIcon"  name="extensions.menuontop.statusIcon" type="bool" instantApply="true" />
       <preference id="CustomMenu"      name="extensions.menuontop.customMenu" type="bool"  instantApply="true" />
       <preference id="CustomMenuTitle" name="extensions.menuontop.customMenu.title" type="string"  instantApply="true" />
+			<preference id="useCustomMenuIcon" name="extensions.menuontop.customMenu.icon.use" type="bool"  instantApply="true" />
+			<preference id="CustomMenuIconSize" name="extensions.menuontop.customMenu.icon.size" type="int"  instantApply="true" />
     </preferences>
     <hbox id="mot-options-header">
       <label class="dialogheader-title" 
 	         value="Menu On Top" 
 			 flex="1" />
 	  <label id = "lblVersion"
-	         value="0.9.9"
+	         value="1.0"
 					 tooltiptext="Right-click for version history"
 					 oncontextmenu="MenuOnTop.Util.openURL(null,'http://quickfolders.mozdev.org/menuOnTop.html#history');" />
     </hbox>
@@ -64,59 +70,115 @@
 		<tab label="Style" id="mot-style" />
 		<tab label="Advanced" id="mot-advanced" />
 	</tabs>
-	<tabpanels>
+	<tabpanels onselect="MenuOnTop.Options.onTabSelect(this,event);">
 		<tabpanel id="mot-Options-style"
 				  orient="vertical" 
 				  label="Style" 
 				  style="position:relative;">
 				  
 			<hbox align="center">
-			  <checkbox id="tabsInTitle"
-				          label="Paint menu in Titlebar"
-									tooltiptext="On some systems, this option might lead to invisible window controls (min/max/close buttons)"
-									oncommand="MenuOnTop.Options.toggleTabsInTitle(this);" />
+				<groupbox>
+			    <caption label="Primary Menu Item" />
+					<hbox>
+					<checkbox id="tabsInTitle"
+										label="Paint menu in Titlebar"
+										tooltiptext="On some systems, this option might lead to invisible window controls (min/max/close buttons)"
+										oncommand="MenuOnTop.Options.toggleTabsInTitle(this);" />
+					<toolbarseparator />
+					<label control="moveBar"
+								 value="Drag area:" />
+					<textbox id="moveBar"
+									 type="number"
+									 increment="50"								 
+									 preference="toolbarMarginRight"
+									 tooltiptext="How much space (in pixels) is reserved for dragging the application by clicking in the title. This will also affect the minimum window width!"
+									 />
+					</hbox>
+				</groupbox>
 				<spacer flex="1" />
-				<label control="styleDefaults" 
-					   value="Choose a flavor:" />
-				<menulist id="styleDefaults"
-						  oncommand="MenuOnTop.Options.selectScheme(this.value);">
-				  <menupopup>
-					<menuitem label="Select one to set"
-							  value="-1" />
-					<menuitem label="Australis - default"
-							  value="0" />
-					<menuitem label="TT deepdark - night"
-							  value="1" />
-					<menuitem label="Nautipolis - naval"
-							  value="2" />
-					<menuitem label="Nuvola - silver"
-							  value="3" />
-					<menuitem label="Lantana - orange glass"
-							  value="4" />
-					<menuitem label="Charamel - fudge"
-							  value="5" />
-					<menuitem label="Noja Extreme - glass"
-							  value="6" /> 
-					<menuitem label="Walnut 2"
-							  value="7" />
-					<menuitem label="Littlebird - small icons"
-							  value="8" />
-					<menuitem label="Robin - red"
-							  value="9" />
-					<menuitem label="Phoenity - shredder"
-							  value="10" />
-					<menuitem label="SilverMel - silver"
-							  value="11" />
-					<menuitem label="Mountain - blue"
-							  value="12" />
-					<menuitem label="Parakeet - green"
-							  value="13" />
-					<menuitem label="Tangerine - orange"
-							  value="14" />
-					<menuitem label="Australis Redesign"
-							  value="15" />
-				  </menupopup>
-				</menulist>
+				<groupbox>
+			    <caption label="Themes" />
+				  <hbox>
+					<label control="styleFlavors" 
+							 value="Select a flavor:" />
+					<menulist id="styleFlavors"
+								oncommand="MenuOnTop.Options.selectScheme(this.value);">
+						<menupopup>
+						<menuitem label="Select one to set"
+									value="-1" />
+
+						<menuitem label="Morgana - purple"
+						      class="menuitem-iconic morgana"
+									value="11" />
+						<menuitem label="Mountain - blue"
+						      class="menuitem-iconic mountain"
+									value="12" />
+						<menuitem label="Parakeet - jade"
+						      class="menuitem-iconic parakeet"
+									value="13" />
+						<menuitem label="Lime - green"
+						      class="menuitem-iconic lime"
+									value="14" />
+						<menuitem label="Sunflower - yellow"
+						      class="menuitem-iconic sunflower"
+									value="15" />
+						<menuitem label="Tangerine - orange"
+						      class="menuitem-iconic tangerine"
+									value="16" />
+						<menuitem label="Robin - red"
+						      class="menuitem-iconic robin"
+									value="17" />
+						<menuitem label="Oak - brown"
+						      class="menuitem-iconic oak"
+									value="18" />
+						<menuitem label="Leather - mahogany"
+						      class="menuitem-iconic leather"
+									value="19" />
+									
+						<menuseparator />
+						<menuitem label="Australis - default"
+						      class="menuitem-iconic australis"
+									value="0" />
+						<menuitem label="Australis Redesign"
+						      class="menuitem-iconic australis-redesign"
+									value="9" />
+						<menuitem label="TT deepdark - deepdark"
+						      class="menuitem-iconic deepdark"
+									value="1" />
+						<menuitem label="Nautipolis - naval"
+						      class="menuitem-iconic naval"
+									value="2" />
+						<menuitem label="Nuvola - silver"
+						      class="menuitem-iconic silver"
+									value="3" />
+						<menuitem label="Lantana - orange glass"
+						      class="menuitem-iconic lantana"
+									value="4" />
+						<menuitem label="Charamel - fudge"
+						      class="menuitem-iconic fudge"
+									value="5" />
+						<menuitem label="Noja Extreme - white glass"
+						      class="menuitem-iconic whiteglass"
+									value="6" /> 
+						<menuitem label="Walnut 2"
+						      class="menuitem-iconic walnut"
+									value="7" />
+						<menuitem label="Littlebird - small icons"
+						      class="menuitem-iconic littlebird"
+									value="8" />
+						<menuitem label="Phoenity - shredder"
+						      class="menuitem-iconic phoenity"
+									value="10" />												
+									
+						</menupopup>
+					</menulist>
+				</hbox>
+				<checkbox preference="boolThemeOnlyColor"
+				          label="Only change Color Scheme"
+                  tooltip="Keep all spacing / layout settings"
+									/>
+				</groupbox>
+				
 			</hbox>
 			
 			<groupbox>
@@ -329,36 +391,79 @@
 				It is mainly meant for adding some top level bookmarks in Firefox and Branding</description>
 				<hbox>
 					<checkbox preference="CustomMenu"
-								label="Custom menu item" 
+								label="Custom menu" 
 								oncommand="MenuOnTop.Options.onCustomMenu(this);" />
 					<textbox id="txtCustomMenu"
 							 preference="CustomMenuTitle"
-							 tooltiptext="Enter name of custom menu item" />
+							 tooltiptext="Enter name of custom menu item"
+               onblur="MenuOnTop.Options.updateCustomMenuLabel(this);"
+							 />
+					<checkbox preference="useCustomMenuIcon" 
+					          label = "Avatar"
+					          oncommand="MenuOnTop.Options.onCustomIconToggle(this);" />
+					<button label = "Select Icon..."
+					        oncommand="MenuOnTop.Options.onCustomMenuIcon();" />
+					<textbox id="customMenuIconSize"
+									 type="number"
+									 increment="2"
+									 preference="CustomMenuIconSize"
+									 tooltiptext="(Maximum) Size of the Icon. If the menu height is smaller it will be resized."
+									 />
 				</hbox>
 				
-				<listbox id="bookmarksList" flex="1">
+				<listbox id="bookmarksList" 
+				         flex="1"
+								 onselect="MenuOnTop.Options.onSelectionChange(event);">
 				</listbox>
 				
 				<hbox>
-				  <button
-							label="Remove"
-							oncommand = "MenuOnTop.TopMenu.remove();" />
-					<button 
-							label="Load"
-							oncommand = "MenuOnTop.TopMenu.loadCustomMenu();" />
-					<button 
-							label="Save"
-							oncommand = "MenuOnTop.TopMenu.saveCustomMenu();" />
-					<button 
-							label="Test Bookmarks..."
-							oncommand = "MenuOnTop.TopMenu.getFxMarks();" />
-					<spacer flex="1" />
+				  <toolbar id = "motToolbar"
+									 mode="full"
+									 customizable="false" 
+									 >
+						<toolbarbutton
+						    id="btnAdd"
+						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
+								label="Add"
+								oncommand = "MenuOnTop.TopMenu.add();" />
+						<toolbarbutton
+						    id="btnRemove"
+						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
+								label="Remove"
+								oncommand = "MenuOnTop.TopMenu.remove();" />
+						<toolbarseparator />
+						<toolbarbutton
+						    id="btnUp"
+						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
+								label="Up"
+								oncommand = "MenuOnTop.TopMenu.up();" />
+						<toolbarbutton
+						    id="btnDown"
+						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
+								label="Down"
+								oncommand = "MenuOnTop.TopMenu.down();" />
+						<toolbarseparator />
+						<toolbarbutton 
+						    id="btnLoad"
+						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
+								label="Load"
+								oncommand = "MenuOnTop.TopMenu.loadCustomMenu(true);" />
+						<toolbarbutton 
+						    id="btnSave"
+						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
+								label="Save"
+								oncommand = "MenuOnTop.TopMenu.saveCustomMenu();" />
+						<toolbarbutton 
+						    id="btnTest"
+						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
+								collapsed="true"
+								label="Test Bookmarks..."
+								oncommand = "MenuOnTop.TopMenu.getFxMarks();" />
+						<spacer flex="1" />
+					</toolbar>
 				</hbox>
 				<groupbox orient="horizontal" >
 				  <caption label="Bookmark" />
-					<button
-							label="Add"
-							oncommand = "MenuOnTop.TopMenu.add();" />
 					<grid>
 						<columns>
 							<column />
@@ -367,11 +472,15 @@
 						<rows>
 							<row align="left" id="labelRow">
 								<label control="linkLabel" value="label:" />
-								<textbox id="linkLabel" flex="1" />
+								<textbox id="linkLabel" 
+								         flex="1" 
+												 onblur="MenuOnTop.Options.onEdit(this);" />
 							</row>
 							<row align="left" id="linkRow">
 								<label control="linkURL" value="URL:" />
-								<textbox id="linkURL" flex="1" />
+								<textbox id="linkURL" 
+								         flex="1" 
+												 onblur="MenuOnTop.Options.onEdit(this);" />
 							</row>
 							<row align="left" id="typeRow">
 								<label control="linkType" value="bookmark type:" />
@@ -380,9 +489,10 @@
 						</rows>
 					</grid>
 					<button
-							label="From current context"
-							oncommand = "MenuOnTop.TopMenu.getFromContext();" />
-					
+							label="Current Page"
+							oncommand = "MenuOnTop.TopMenu.getFromContext();"
+							tooltiptext = "retrieve the bookmark for webpage on current tab."
+							/>
 				</groupbox>
 				
 			</groupbox>

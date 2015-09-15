@@ -3,13 +3,49 @@
   font-size:large;
   font-weight:bold;
   font-family: calibri, serif;
-  text-shadow: 1px 1px 2px rgba(230,230,230,0.75);
-  color: black;  
+  text-shadow: 1px 1px 2px rgba(70,70,70,0.75);
+  color: rgba(255,255,255,0.9);  
   padding: 5px !important;
+}
+.dialogheader-title:hover {
+  color: rgba(255,255,255,1.0);  
+}
+
+#lblVersion {
+  color: rgba(255,255,255,1.0);  
 }
 
 #mot-options-header {
-  background-image: linear-gradient(to bottom, rgba(246,230,209,1) 0%,rgba(239,206,162,1) 7%,rgba(225,169,95,1) 38%,rgba(215,146,56,1) 50%,rgba(219,151,60,1) 58%,rgba(210,138,53,1) 100%);
+  background: transparent linear-gradient(to bottom, #D828B2 0%, #C12397 46%, #900065 51%, #D61696 100%) repeat scroll 0% 0%
+}
+
+#btnAdd {
+	list-style-image:  url("chrome://menuontop/content/icons/fugue-add.png");
+}
+
+#btnRemove {
+	list-style-image:  url("chrome://menuontop/content/icons/fugue-cross.png");
+}
+
+#btnSave {
+	list-style-image:  url("chrome://menuontop/content/icons/fugue-save.png");
+}
+#btnLoad {
+	list-style-image:  url("chrome://menuontop/content/icons/fugue-load.png");
+}
+
+#btnUp {
+	list-style-image:  url("chrome://menuontop/content/icons/fugue-up.png");
+	-moz-image-region: rect(0px 16px 16px 0px);
+}
+#btnDown {
+	list-style-image:  url("chrome://menuontop/content/icons/fugue-down.png");
+	-moz-image-region: rect(0px 16px 16px 0px);
+}
+#btnUp[disabled="true"],
+#btnDown[disabled="true"] 
+{
+  -moz-image-region: rect(16px 16px 32px 0px) !important;
 }
 
 #lblVersion {
@@ -27,6 +63,9 @@
 textbox[type="number"] {
   width: 3em;
 }
+#moveBar {
+	width: 4em;
+}
 #linkURL, #linkLabel {
   min-width: 30em;
 	width: 100%;
@@ -35,3 +74,101 @@ textbox[type="number"] {
 	/* display: inline-flex; */
 	flex-grow: 3;
 }
+
+/* flavors */
+
+#styleFlavors menuitem > .menu-iconic-left {
+	display: block;
+}
+#styleFlavors menuitem > .menu-iconic-left image {
+	margin-bottom: -4px;
+	margin-top: 4px;
+	margin-left: 5px;
+}
+	
+#txtCustomMenu {
+	width: 15em;
+}
+
+#styleFlavors .australis {
+	list-style-image: url("chrome://menuontop/content/flavors/australis.png");
+}
+
+#styleFlavors .australis-redesign {
+	list-style-image: url("chrome://menuontop/content/flavors/australis2.png");	
+}
+
+#styleFlavors .deepdark {
+	list-style-image: url("chrome://menuontop/content/flavors/tt-deepdark.png");
+}
+
+#styleFlavors .naval {
+	list-style-image: url("chrome://menuontop/content/flavors/naval.png");
+}
+
+#styleFlavors .silver {
+	list-style-image: url("chrome://menuontop/content/flavors/silver.png");
+}
+
+#styleFlavors .lantana {
+	list-style-image: url("chrome://menuontop/content/flavors/lantana.png");
+}
+
+#styleFlavors .fudge {
+	list-style-image: url("chrome://menuontop/content/flavors/fudge.png");
+}
+
+#styleFlavors .whiteglass {
+	list-style-image: url("chrome://menuontop/content/flavors/white-glass.png");
+}
+
+#styleFlavors .walnut {
+	list-style-image: url("chrome://menuontop/content/flavors/walnut.png");
+}
+
+#styleFlavors .littlebird {
+	list-style-image: url("chrome://menuontop/content/flavors/littlebird.png");
+}
+
+#styleFlavors .phoenity {
+	list-style-image: url("chrome://menuontop/content/flavors/phoenity.png");
+}
+
+#styleFlavors .morgana {
+	list-style-image: url("chrome://menuontop/content/flavors/morgana.png");
+}
+
+#styleFlavors .mountain {
+	list-style-image: url("chrome://menuontop/content/flavors/mountain.png");
+}
+
+#styleFlavors .parakeet {
+	list-style-image: url("chrome://menuontop/content/flavors/parakeet.png");
+}
+#styleFlavors .tangerine {
+	list-style-image: url("chrome://menuontop/content/flavors/tangerine.png");
+}
+
+#styleFlavors .lime {
+	list-style-image: url("chrome://menuontop/content/flavors/lime.png");
+}
+
+#styleFlavors .sunflower {
+	list-style-image: url("chrome://menuontop/content/flavors/sunflower.png");
+}
+
+#styleFlavors .robin {
+	list-style-image: url("chrome://menuontop/content/flavors/robin.png");
+}
+
+#styleFlavors .oak {
+	list-style-image: url("chrome://menuontop/content/flavors/oak.png");
+}
+
+#styleFlavors .leather {
+	list-style-image: url("chrome://menuontop/content/flavors/mahogany.png");
+}
+
+
+
+

@@ -5,6 +5,7 @@ var MenuOnTop = Components.utils.import("chrome://menuontopmod/content/menuontop
 MenuOnTop.Options = {
 	prefService : null,
 	bypassObserver: false,
+  isLoaded: false,
 	observe : function observe(aSubject, aTopic, aData) {
 		if (this.bypassObserver) 
 			return; // avoid too many css changes
@@ -17,9 +18,12 @@ MenuOnTop.Options = {
 	},
 
   onLoad: function onLoad() {
-		MenuOnTop.ensureMenuBarVisible(MenuOnTop.Util.MainWindow); // more for testing, but it might have its place!
+    const util = MenuOnTop.Util,
+          tabsInTitlebar = util.getTabInTitle();
+    if (MenuOnTop.Preferences.isDebug) debugger;
+		MenuOnTop.ensureMenuBarVisible(util.MainWindow); // more for testing, but it might have its place!
 	  // alert('test');
-		MenuOnTop.Util.logDebug ("MenuOnTop.Options.onLoad()");
+		util.logDebug ("MenuOnTop.Options.onLoad()");
 		// add an event listener that reacts to changing all preferences by reloading the CSS
 		let Ci = Components.interfaces;
 		this.prefService =
@@ -28,9 +32,25 @@ MenuOnTop.Options = {
 		// => 'this' implements observe() interface
 		this.prefService.addObserver('extensions.menuontop.', this, false);
 		this.prefService.QueryInterface(Ci.nsIPrefBranch);
-    document.getElementById('tabsInTitle').checked = MenuOnTop.Util.getTabInTitle();
+    document.getElementById('tabsInTitle').checked = tabsInTitlebar;
+    document.getElementById('moveBar').disabled = !tabsInTitlebar;
 	},
 	
+  onSelectionChange: function onSelectionChange(evt) {
+    const util = MenuOnTop.Util,
+          doc = MenuOnTop.TopMenu.document;
+    let i = 0, 
+      listBox = doc.getElementById('bookmarksList'),
+      idx = listBox.selectedIndex,
+      target = null;
+    if (idx>=0) {
+      let entry = MenuOnTop.TopMenu.Entries[idx];
+      doc.getElementById('linkLabel').value = entry.label;
+      doc.getElementById('linkURL').value = entry.url;
+      doc.getElementById('linkType').value = entry.bookmarkType;
+    }
+  }, 
+  
 	onUnload: function onUnload() {
 		MenuOnTop.Util.logDebug ("MenuOnTop.Options.onClose()");
 	  this.prefService.QueryInterface(Components.interfaces.nsIPrefBranch2);
@@ -42,15 +62,84 @@ MenuOnTop.Options = {
 		if (chk.checked)
 			MenuOnTop.showAddonButton(win);
 		else
-			MenuOnTop.hideAddonButton(win);
-			
+			MenuOnTop.hideAddonButton(win);			
 	},
   
   onCustomMenu: function onCustomMenu(chk) {
-		let win = MenuOnTop.Util.MainWindow;
+		let win = MenuOnTop.Util.MainWindow,
+        doc = MenuOnTop.TopMenu.document,
+        bookmarksList = doc.getElementById('bookmarksList'),
+        txtCustomMenu = doc.getElementById('txtCustomMenu'),
+        motToolbar = doc.getElementById('motToolbar'),
+        isActive = chk.checked;
     MenuOnTop.Preferences.setBoolPref('customMenu', chk.checked);
-    MenuOnTop.showCustomMenu(win);
+    
+    txtCustomMenu.disabled = !isActive;
+    bookmarksList.disabled = !isActive;
+    motToolbar.disabled = !isActive;
+    // make sure the label is not empty!
+    if (isActive && txtCustomMenu.value == '') {
+      txtCustomMenu.value = 'MenuOnTop';
+      MenuOnTop.Options.updateCustomMenuLabel(txtCustomMenu);
+    }
+    if (isActive)
+      MenuOnTop.showCustomMenu(win, isActive); // fromOPtions param to force repopulating listbox
   } ,
+  
+  updateCustomMenuLabel: function updateCustomMenuLabel(txtbox) {
+    let win = MenuOnTop.Util.MainWindow,
+        doc = win.document,
+        menu = doc.getElementById(MenuOnTop.CustomMenuId);
+    if (menu)
+      menu.setAttribute("label", txtbox.value);
+  } ,
+  
+  onCustomIconToggle: function onCustomIconToggle(chk) {
+    
+  } ,
+  
+  onCustomMenuIcon: function onCustomMenuIcon() {
+		const Ci = Components.interfaces,
+          Cc = Components.classes,
+          nsIFilePicker = Ci.nsIFilePicker,
+          util = MenuOnTop.Util;
+    let fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
+    
+		// callback, careful, no "this"
+    let fpCallback = function fpCallback_done(aResult) {
+      if (aResult == nsIFilePicker.returnOK) {
+        try {
+          const prefs = MenuOnTop.Preferences;
+          if (fp.file) {
+					  let file = fp.file.parent.QueryInterface(Ci.nsILocalFile);
+						if (!prefs.isCustomMenuIcon)
+              prefs.isCustomMenuIcon=true;
+            if (prefs.customMenuIconSize<16)
+              prefs.customMenuIconSize=16;
+						try {
+							let fileURL = fp.fileURL,
+                  iconURL = fileURL.asciiSpec;
+              prefs.setCharPref('customMenu.icon.url', iconURL);
+              MenuOnTop.setCustomIcon(iconURL);
+						}
+						catch(ex) { ;	}
+          }
+        } catch (ex) { ; }
+      }
+    };
+
+    fp.init(window, "Select an icon file", nsIFilePicker.modeOpen);
+    fp.appendFilters(nsIFilePicker.filterImages);
+		// needs to be initialized with something that makes sense (UserProfile/QuickFolders)
+		
+//Error: NS_ERROR_XPC_BAD_CONVERT_JS: Could not convert JavaScript argument arg 0 [nsIFilePicker.displayDirectory]
+		let localFile = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
+		//  lastPath = QuickFolders.Preferences.getStringPref('tabIcons.defaultPath');
+		//if (lastPath)
+		//	localFile.initWithPath(lastPath);
+    fp.displayDirectory = localFile; // gLastOpenDirectory.path
+    fp.open(fpCallback);		
+  } ,  
 	
 	accept: function accept() {
 		this.apply();
@@ -65,7 +154,23 @@ MenuOnTop.Options = {
   toggleTabsInTitle: function toggleTabsInTitle(checkbox) {
     let util = MenuOnTop.Util;
     util.setTabInTitle(!util.getTabInTitle());
-    checkbox.checked = util.getTabInTitle();
+    let isToggle = util.getTabInTitle();
+    checkbox.checked = isToggle;
+    document.getElementById('moveBar').disabled = !isToggle;
+  },
+  
+  onTabSelect: function onTabSelect(cl, event) {
+    let el = event.target;
+    if (!MenuOnTop.Options.isLoaded) {
+      if (el.selectedPanel && el.selectedPanel.id == 'mot-Options-advanced') {
+        MenuOnTop.TopMenu.loadCustomMenu(true);
+        MenuOnTop.Options.isLoaded = true;
+      }
+    }
+  },
+  
+  onEdit: function onEdit(txt) {
+    MenuOnTop.TopMenu.onEdit(txt);
   },
 	
 	selectScheme: function selectScheme(sel) {
@@ -84,14 +189,20 @@ MenuOnTop.Options = {
 			evt.initUIEvent('input', true, true, doc.defaultView, 1);
 			element.dispatchEvent(evt);
 		}
+    const prefs = MenuOnTop.Preferences;
 		this.bypassObserver = true
-		let selection = parseInt(sel, 10);
+		let selection = parseInt(sel, 10),
+        isChangeLayout = !prefs.isColorOnly;
 	  if (selection<0)
 			return;
 		switch(selection) {
 			case 0:  // default - Australis
-				setElementValue('txtNegativeMargin', MenuOnTop.defaultPREFS.negativeMargin);
-				setElementValue('txtMenuMarginTop', MenuOnTop.defaultPREFS.menuMarginTop);
+        if (isChangeLayout) {
+          setElementValue('txtNegativeMargin', MenuOnTop.defaultPREFS.negativeMargin);
+          setElementValue('txtMenuMarginTop', MenuOnTop.defaultPREFS.menuMarginTop);
+          setElementValue('txtMaxHeight', MenuOnTop.defaultPREFS.maxHeight);
+          setElementValue('txtMenuIconSmall', MenuOnTop.defaultPREFS.iconSizeSmall);
+        }
 				setElementValue('chkMenuShadow', MenuOnTop.defaultPREFS.textShadow);
 				setElementValue('txtMenuBackgroundDefault',  MenuOnTop.defaultPREFS.menuBackground);
 				setElementValue('txtMenuFontColorDefault',  MenuOnTop.defaultPREFS.menuFontColor);
@@ -101,11 +212,16 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuFontColorActive',  MenuOnTop.defaultPREFS.menuFontColorActive);
 				setElementValue('txtMenuBorderColor', 'transparent');
 				setElementValue('txtMenuBorderWidth', MenuOnTop.defaultPREFS.menuBorderWidth);
-				setElementValue('txtMaxHeight', MenuOnTop.defaultPREFS.maxHeight);
-				setElementValue('txtMenuIconSmall', MenuOnTop.defaultPREFS.iconSizeSmall);
 				setElementValue('chkMenubarTransparent', MenuOnTop.defaultPREFS.menubarTransparent);
 				break;
 			case 1:  // dark - TT deepdark
+        if (isChangeLayout) {
+          setElementValue('txtMaxHeight', 22);
+          setElementValue('txtMenuIconSmall', 16);
+          setElementValue('txtMenuIconNormal', 0);
+          setElementValue('txtMenuIconSmall', 16);
+          setElementValue('txtMenuIconNormal', 16);
+        }
 				setElementValue('chkMenuShadow', true);
 				// from Bloomind's TT deepdark, slighly tweaked start point to make it brighter & more apparent (we are missing borders)
 				setElementValue('txtNegativeMargin', 6);
@@ -118,15 +234,15 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuFontColorActive', 'rgba(255, 255, 255, 0.9)');
 				setElementValue('txtMenuBorderColor', 'transparent');
 				setElementValue('txtMenuBorderWidth', '0');
-				setElementValue('txtMaxHeight', 22);
-				setElementValue('txtMenuIconSmall', 16);
-				setElementValue('txtMenuIconNormal', 0);
-				setElementValue('txtMenuIconSmall', 16);
-				setElementValue('txtMenuIconNormal', 16);
 				break;
 			case 2:  // bright - Nautipolis
-				setElementValue('txtNegativeMargin', 2);
-				setElementValue('txtMenuRadius', '0.5');
+        if (isChangeLayout) {
+          setElementValue('txtNegativeMargin', 2);
+          setElementValue('txtMenuRadius', '0.5');
+          setElementValue('txtMaxHeight', 20);
+          setElementValue('txtMenuIconSmall', 16);
+          setElementValue('txtMenuIconNormal', 16);
+        }
 				setElementValue('chkMenuShadow', false);
         setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(215, 215, 215, 0.9))');
 				setElementValue('txtMenuFontColorDefault', 'rgb(15,15,15)');
@@ -136,61 +252,75 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuFontColorActive', 'rgb(15,15,15)');
 				setElementValue('txtMenuBorderColor', 'transparent');
 				setElementValue('txtMenuBorderWidth', '0');
-				setElementValue('txtMaxHeight', 20);
-				setElementValue('txtMenuIconSmall', 16);
-				setElementValue('txtMenuIconNormal', 16);
 				break;
 			case 3:  // Nuvola - silver
-				setElementValue('txtNegativeMargin', 2);
-				setElementValue('txtMenuMarginTop', 5);
+        if (isChangeLayout) {
+          setElementValue('txtNegativeMargin', 2);
+          setElementValue('txtMenuMarginTop', 5);
+          setElementValue('txtMaxHeight', 22);
+          setElementValue('txtMenuIconSmall', 16);
+          setElementValue('txtMenuIconNormal', 24);
+        }
 				setElementValue('chkMenuShadow', false);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(#f4f4f9,#c0c1ca)');
 				setElementValue('txtMenuFontColorDefault', 'rgb(0, 0, 0)');
+				setElementValue('txtMenuFontColorHover', 'rgba(255,255,255,0.9)');
 				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
-				setElementValue('txtMaxHeight', 22);
-				setElementValue('txtMenuIconSmall', 16);
-				setElementValue('txtMenuIconNormal', 24);
+        setElementValue('txtMenuBorderWidth', '0');
 				break;
 			case 4:  // orange - Lantana
+        if (isChangeLayout) {
+          setElementValue('txtMaxHeight', 22);
+          setElementValue('txtMenuIconSmall', 16);
+          setElementValue('txtMenuIconNormal', 0);
+        }
 				setElementValue('chkMenuShadow', true);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(252,219,143,0.9) 0%,rgba(249,156,62,0.9) 49%,rgba(229,143,45,0.9) 52%,rgba(234,122,37,1) 100%)');
-				setElementValue('txtMenuFontColorDefault', 'rgba(84,84,100,0.9)');
+				setElementValue('txtMenuFontColorDefault', 'rgba(102,10,4,0.9)');
+				setElementValue('txtMenuFontColorHover', 'rgba(102,51,0,0.9)');
 				setElementValue('txtMenuBorderColor', 'transparent');
 				setElementValue('txtMenuBorderWidth', '0');
-				setElementValue('txtMaxHeight', 22);
-				setElementValue('txtMenuIconSmall', 16);
-				setElementValue('txtMenuIconNormal', 0);
 				break;
 			case 5:  // fudge - Charamel
-				setElementValue('txtNegativeMargin', 2);
-				setElementValue('txtMenuMarginTop', 8);
+        if (isChangeLayout) {
+          setElementValue('txtNegativeMargin', 2);
+          setElementValue('txtMenuMarginTop', 8);
+          setElementValue('txtMaxHeight', 24);
+          setElementValue('txtMenuIconSmall', 16);
+          setElementValue('txtMenuIconNormal', 24);
+        }
 				setElementValue('chkMenuShadow', true);
 				setElementValue('chkMenubarTransparent', true);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(234,225,209,0.9) 0%,rgba(232,217,195,0.93) 34%,rgba(229,198,156,1) 100%)');
 				setElementValue('txtMenuFontColorDefault', 'rgb(127, 83, 44)');
+				setElementValue('txtMenuFontColorHover', '#663300');
 				setElementValue('txtMenuBorderColor', 'transparent');
 				setElementValue('txtMenuBorderWidth', '0');
-				setElementValue('txtMaxHeight', 24);
-				setElementValue('txtMenuIconSmall', 16);
-				setElementValue('txtMenuIconNormal', 24);
 				break;
 			case 6:  // Noja Extreme - needs white shadow!
-				setElementValue('txtNegativeMargin', 2);
-				setElementValue('txtMenuMarginTop', 12);
+        if (isChangeLayout) {
+          setElementValue('txtNegativeMargin', 2);
+          setElementValue('txtMenuMarginTop', 12);
+          setElementValue('txtMaxHeight', 26);
+          setElementValue('txtMenuIconSmall', 16);
+          setElementValue('txtMenuIconNormal', 24);
+        }
 				setElementValue('chkMenuShadow', false);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(184,185,197,1) 27%,rgba(184,185,197,1) 48%,rgba(210,212,219,1) 65%,rgba(245,245,255,1) 100%)');
 				setElementValue('txtMenuFontColorDefault', 'rgb(0,0,0)');
+				setElementValue('txtMenuFontColorHover', '#000066');
 				setElementValue('txtMenuBorderColor', 'transparent');
 				setElementValue('txtMenuBorderWidth', '0');
-				setElementValue('txtMaxHeight', 26);
-				setElementValue('txtMenuIconSmall', 16);
-				setElementValue('txtMenuIconNormal', 24);
 				break;
 			case 7:  // Walnut 2
-				setElementValue('txtNegativeMargin', 0);
-				setElementValue('txtMenuMarginTop', 6);
-				setElementValue('txtMenuRadius', '0.5');
+        if (isChangeLayout) {
+          setElementValue('txtNegativeMargin', 0);
+          setElementValue('txtMenuMarginTop', 6);
+          setElementValue('txtMenuRadius', '0.5');
+          setElementValue('txtMaxHeight', 21);
+          setElementValue('txtMenuIconSmall', 16);
+          setElementValue('txtMenuIconNormal', 16);
+        }
 				setElementValue('chkMenuShadow', false);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(228, 208, 155, 0.95), rgba(228, 208, 155, 0.5))');
 				setElementValue('txtMenuFontColorDefault', 'rgb(15,15,15)');
@@ -200,109 +330,31 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuFontColorActive', 'rgb(255,255,255)');
 				setElementValue('txtMenuBorderColor', 'transparent');
 				setElementValue('txtMenuBorderWidth', '0');
-				setElementValue('txtMaxHeight', 21);
-				setElementValue('txtMenuIconSmall', 16);
-				setElementValue('txtMenuIconNormal', 16);
 				break;
 			case 8:  // small icons - Littlebird
-				setElementValue('txtNegativeMargin', 0);
-				setElementValue('txtMenuMarginTop', 2);
+        if (isChangeLayout) {
+          setElementValue('txtNegativeMargin', 0);
+          setElementValue('txtMenuMarginTop', 2);
+          setElementValue('txtMaxHeight', 20);
+          setElementValue('txtMenuIconSmall', 16);
+          setElementValue('txtMenuIconNormal', 16);
+        }
 				setElementValue('chkMenuShadow', true);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(215, 215, 215, 0.9))');
 				setElementValue('txtMenuFontColorDefault', 'rgb(15,15,15)');
+				setElementValue('txtMenuFontColorHover', '#000066'); 
 				setElementValue('txtMenuBorderColor', 'transparent');
 				setElementValue('txtMenuBorderWidth', '0');
-				setElementValue('txtMaxHeight', 20);
-				setElementValue('txtMenuIconSmall', 16);
-				setElementValue('txtMenuIconNormal', 16);
 				break;
-			case 9:  // robin - red
-				setElementValue('txtNegativeMargin', 2);
-				setElementValue('txtMenuMarginTop', 7);
-				setElementValue('txtMenuRadius', '0.5');
-				setElementValue('chkMenuShadow', true);
-				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(237,4,8,0.8) 0%,rgba(137,13,2,0.8) 45%,rgba(117,23,0,0.8) 100%)');
-				setElementValue('txtMenuFontColorDefault', 'rgba(255, 240, 255, 1)');
-				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
-				setElementValue('txtMaxHeight', 22);
-				setElementValue('txtMenuIconSmall', 16);
-				setElementValue('txtMenuIconNormal', 0);
-				break;
-			case 10:  // phoenity (shredder)
-				setElementValue('txtNegativeMargin', 4);
-				setElementValue('txtMenuMarginTop', 4);
-				setElementValue('txtMenuRadius', '0.3');
-				setElementValue('chkMenuShadow', false);
-				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(206,206,206,1) 0%,rgba(212,212,212,1) 45%,rgba(206,206,206,1) 45%,rgba(199,199,199,1) 100%)');
-				setElementValue('txtMenuFontColorDefault', 'rgba(0, 0, 25, 1)');
-				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
-				setElementValue('txtMaxHeight', 22);
-				setElementValue('txtMenuIconSmall', 16);
-				setElementValue('txtMenuIconNormal', 24);
-				break;
-			case 11:  // SilverMel
-				setElementValue('txtNegativeMargin', 0);
-				setElementValue('txtMenuMarginTop', 10);
-				setElementValue('txtMenuRadius', '0');
-				setElementValue('chkMenuShadow', false);
-				setElementValue('chkMenubarTransparent', true);
-				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(206,206,206,1) 0%,rgba(212,212,212,1) 45%,rgba(206,206,206,1) 45%,rgba(199,199,199,1) 100%)');
-				setElementValue('txtMenuFontColorDefault', 'rgba(0, 0, 25, 1)');
-				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
-				setElementValue('txtMaxHeight', 28);
-				setElementValue('txtMenuIconSmall', 16);
-				setElementValue('txtMenuIconNormal', 24);
-				break;
-			case 12:  // Mountain - blue
-				setElementValue('txtNegativeMargin', 2);
-				setElementValue('txtMenuMarginTop', 5);
-				setElementValue('txtMenuRadius', '0.5');
-				setElementValue('chkMenuShadow', true);
-				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(4,160,238,0.8) 0%,rgba(2,79,138,0.8) 47%,rgba(0,53,118,0.8) 100%)');
-				setElementValue('txtMenuFontColorDefault', 'rgba(225, 245, 255, 0.95)');
-				setElementValue('txtMenuBackgroundHover',  'linear-gradient(to bottom, rgba(4,160,238,0.8) 0%,rgba(2,79,138,0.8) 47%,rgba(0,53,118,0.8) 100%)');
-				setElementValue('txtMenuFontColorHover', 'rgba(225, 245, 255, 0.95)');
-				setElementValue('txtMenuBackgroundActive',  'linear-gradient(to bottom, rgba(4,160,238,0.8) 0%,rgba(2,79,138,0.8) 47%,rgba(0,53,118,0.8) 100%)');
-				setElementValue('txtMenuFontColorActive', 'rgba(225, 245, 255, 0.95)');
-				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
-				setElementValue('txtMaxHeight', 22);
-				setElementValue('txtMenuIconSmall', 16);
-				setElementValue('txtMenuIconNormal', 24);
-				break;
-			case 13:  // Parakeet - green
-				setElementValue('txtNegativeMargin', 2);
-				setElementValue('txtMenuMarginTop', 5);
-				setElementValue('txtMenuRadius', '0.75');
-				setElementValue('chkMenuShadow', true);
-				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(3,185,173,0.8) 0%,rgba(2,105,108,0.8) 47%,rgba(0,78,92,0.8) 100%)');
-				setElementValue('txtMenuFontColorDefault', 'rgba(225, 255, 250, 0.95)');
-				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
-				setElementValue('txtMaxHeight', 22);
-				setElementValue('txtMenuIconSmall', 16);
-				setElementValue('txtMenuIconNormal', 24);
-				break;	
-			case 14:  // Tangerine - orange
-				setElementValue('txtNegativeMargin', 2);
-				setElementValue('txtMenuMarginTop', 5);
-				setElementValue('txtMenuRadius', '0.75');
-				setElementValue('chkMenuShadow', true);
-				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(255,183,107,1) 0%,rgba(255,167,61,1) 11%,rgba(255,124,0,1) 51%,rgba(255,127,4,1) 100%)');
-				setElementValue('txtMenuFontColorDefault', 'rgba(225, 255, 250, 0.99)');
-				setElementValue('txtMenuBorderColor', 'rgba(255,255,255,0.7)');
-				setElementValue('txtMenuBorderWidth', '1');
-				setElementValue('txtMaxHeight', 22);
-				setElementValue('txtMenuIconSmall', 16);
-				setElementValue('txtMenuIconNormal', 24);
-				break;	
-      case 15: // Australis Redesign
-				setElementValue('txtNegativeMargin', 2);
-				setElementValue('txtMenuMarginTop', 5);
-				setElementValue('txtMenuRadius', '0.4');
+      case 9: // Australis Redesign
+        if (isChangeLayout) {
+          setElementValue('txtNegativeMargin', 2);
+          setElementValue('txtMenuMarginTop', 5);
+          setElementValue('txtMenuRadius', '0.4');
+          setElementValue('txtMaxHeight', 24);
+          setElementValue('txtMenuIconSmall', 16);
+          setElementValue('txtMenuIconNormal', 24);
+        }
 				setElementValue('chkMenuShadow', false);
 				setElementValue('txtMenuBackgroundDefault',  '#EAF2FB');
 				setElementValue('txtMenuFontColorDefault', 'rgb(51, 102, 153)');
@@ -312,10 +364,115 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuFontColorActive', '#113366');
 				setElementValue('txtMenuBorderColor', '#7A8D9B');
 				setElementValue('txtMenuBorderWidth', '1');
-				setElementValue('txtMaxHeight', 24);
-				setElementValue('txtMenuIconSmall', 16);
-				setElementValue('txtMenuIconNormal', 24);
 				break;	
+			case 10:  // phoenity (shredder)
+        if (isChangeLayout) {
+          setElementValue('txtNegativeMargin', 4);
+          setElementValue('txtMenuMarginTop', 4);
+          setElementValue('txtMenuRadius', '0.3');
+          setElementValue('txtMaxHeight', 22);
+          setElementValue('txtMenuIconSmall', 16);
+          setElementValue('txtMenuIconNormal', 24);
+        }
+				setElementValue('chkMenuShadow', false);
+				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(206,206,206,1) 0%,rgba(212,212,212,1) 45%,rgba(206,206,206,1) 45%,rgba(199,199,199,1) 100%)');
+				setElementValue('txtMenuFontColorDefault', 'rgba(0, 0, 25, 1)');
+				setElementValue('txtMenuFontColorHover', '#0784FF');
+				setElementValue('txtMenuBorderColor', 'transparent');
+				setElementValue('txtMenuBorderWidth', '0');
+				break;
+      case 11:  // Morgana - purple
+				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, #c040a4 0%,#961072 50%,#d5279b 100%)');
+				setElementValue('txtMenuFontColorDefault', '#F0F0FF');
+				setElementValue('txtMenuFontColorHover', '#FF99FF');
+        break;
+			case 12:  // Mountain - blue
+        if (isChangeLayout) {
+          setElementValue('txtNegativeMargin', 2);
+          setElementValue('txtMenuMarginTop', 5);
+          setElementValue('txtMenuRadius', '0.5');
+          setElementValue('txtMaxHeight', 22);
+          setElementValue('txtMenuIconSmall', 16);
+          setElementValue('txtMenuIconNormal', 24);
+        }
+				setElementValue('chkMenuShadow', true);
+				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(4,160,238,0.8) 0%,rgba(2,79,138,0.8) 47%,rgba(0,53,118,0.8) 100%)');
+				setElementValue('txtMenuFontColorDefault', '#F0F0FF');
+				setElementValue('txtMenuBackgroundHover',  'linear-gradient(to bottom, rgba(4,160,238,0.8) 0%,rgba(2,79,138,0.8) 47%,rgba(0,53,118,0.8) 100%)');
+				setElementValue('txtMenuFontColorHover', 'rgba(250, 255, 255, 0.95)');
+				setElementValue('txtMenuBackgroundActive',  'linear-gradient(to bottom, rgba(4,160,238,0.8) 0%,rgba(2,79,138,0.8) 47%,rgba(0,53,118,0.8) 100%)');
+				setElementValue('txtMenuFontColorActive', 'rgba(225, 245, 255, 0.95)');
+				setElementValue('txtMenuBorderColor', 'transparent');
+				setElementValue('txtMenuBorderWidth', '0');
+				break;
+			case 13:  // Parakeet - green
+        if (isChangeLayout) {
+          setElementValue('txtNegativeMargin', 2);
+          setElementValue('txtMenuMarginTop', 5);
+          setElementValue('txtMenuRadius', '0.75');
+          setElementValue('txtMaxHeight', 22);
+          setElementValue('txtMenuIconSmall', 16);
+          setElementValue('txtMenuIconNormal', 24);
+        }
+				setElementValue('chkMenuShadow', true);
+				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(3,185,173,0.8) 0%,rgba(2,105,108,0.8) 47%,rgba(0,78,92,0.8) 100%)');
+				setElementValue('txtMenuFontColorDefault', 'rgba(225, 255, 250, 0.95)');
+				setElementValue('txtMenuFontColorHover', '#FFFF33');
+				setElementValue('txtMenuBorderColor', 'transparent');
+				setElementValue('txtMenuBorderWidth', '0');
+				break;	
+      case 14:  // Lime - green
+				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(223,242,84,0.86) 0%,rgba(155,239,76,0.81) 53%,rgba(135,174,68,0.81) 100%)');
+				setElementValue('txtMenuFontColorDefault', '#003300');
+				setElementValue('txtMenuFontColorHover', '#006600');
+        break;
+      case 15:  // Sunflower - yellow
+				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(249,248,146,0.86) 0%,rgba(247,247,44,0.81) 50%,rgba(234,184,18,0.81) 100%)');
+				setElementValue('txtMenuFontColorDefault', '#330000');
+				setElementValue('txtMenuFontColorHover', '#663300');
+        break;
+			case 16:  // Tangerine - orange
+        if (isChangeLayout) {
+          setElementValue('txtNegativeMargin', 2);
+          setElementValue('txtMenuMarginTop', 5);
+          setElementValue('txtMenuRadius', '0.75');
+          setElementValue('txtMaxHeight', 22);
+          setElementValue('txtMenuIconSmall', 16);
+          setElementValue('txtMenuIconNormal', 24);
+        }
+				setElementValue('chkMenuShadow', true);
+				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(255,183,107,1) 0%,rgba(255,167,61,1) 11%,rgba(255,124,0,1) 51%,rgba(255,127,4,1) 100%)');
+				setElementValue('txtMenuFontColorDefault', 'rgba(225, 255, 250, 0.99)');
+				setElementValue('txtMenuFontColorHover', '#660000');
+				setElementValue('txtMenuBorderColor', 'rgba(255,255,255,0.7)');
+				setElementValue('txtMenuBorderWidth', '1');
+				break;	
+			case 17:  // robin - red
+        if (isChangeLayout) {
+          setElementValue('txtNegativeMargin', 2);
+          setElementValue('txtMenuMarginTop', 7);
+          setElementValue('txtMenuRadius', '0.5');
+          setElementValue('txtMaxHeight', 22);
+          setElementValue('txtMenuIconSmall', 16);
+          setElementValue('txtMenuIconNormal', 0);
+        }
+				setElementValue('chkMenuShadow', true);
+				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(237,4,8,0.8) 0%,rgba(137,13,2,0.8) 45%,rgba(117,23,0,0.8) 100%)');
+				setElementValue('txtMenuFontColorDefault', 'rgba(255, 240, 255, 1)');
+				setElementValue('txtMenuFontColorHover', '#FFFFCC');
+				setElementValue('txtMenuBorderColor', 'transparent');
+				setElementValue('txtMenuBorderWidth', '0');
+				break;
+      case 18: // oak - light brown
+				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, #b27237 0%,#7d492e 34%,#774121 56%,#c48b56 100%)');
+				setElementValue('txtMenuFontColorDefault', '#FFCC66');
+				setElementValue('txtMenuFontColorHover', '#FFFF99');
+        break;
+      case 19: // mahogany  - redish brown
+				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, #a95f4a 0%,#4f0b0b 29%,#6e272b 64%,#9e5b45 100%)');
+				setElementValue('txtMenuFontColorDefault', '#F2D0BB');
+				setElementValue('txtMenuFontColorHover', '#D68779');
+        break;
 		}
 		this.apply();
 		window.setTimeout( function() { 
@@ -323,5 +480,7 @@ MenuOnTop.Options = {
 			MenuOnTop.Options.bypassObserver = false; 
 		}, 500); // avoid too many loadCSS calls.
 		// this.bypassObserver = false;
-	}
+	} 
+  
+
 }
