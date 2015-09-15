@@ -27,10 +27,6 @@ src, null, o.Services.io.newURI(__SCRIPT_URI_SPEC__, null, null));
 o.Services.scriptloader.loadSubScript(uri.spec, global);
 })(this);
 
-var MOT = {};
-
-
-
 /*
 var mozIJSSubScriptLoader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
                             .getService(Components.interfaces.mozIJSSubScriptLoader);
@@ -96,6 +92,7 @@ uninstall = function(data, reason){
 };
 
 var MenuOnTop  = {};
+var styleSheets = ["chrome://menuontop/skin/menuOnTop_main.css"];
 
 startup = function(data, reason){
   MenuOnTop = Cu.import("chrome://menuontopmod/content/menuontop.jsm", {}).MenuOnTop; 
@@ -123,6 +120,15 @@ startup = function(data, reason){
 			MenuOnTop.ensureMenuBarVisible(window);
 		}
   }
+  
+  // load global stylesheet
+  let styleSheetService= Components.classes["@mozilla.org/content/style-sheet-service;1"]
+                                   .getService(Components.interfaces.nsIStyleSheetService);
+  for (let i=0,len=styleSheets.length;i<len;i++) {
+    let styleSheetURI = Services.io.newURI(styleSheets[i], null, null);
+    styleSheetService.loadAndRegisterSheet(styleSheetURI, styleSheetService.AUTHOR_SHEET);
+  }
+  
   // Start in new windows:
   wm.addListener(winListener);
 	
@@ -141,12 +147,23 @@ shutdown = function(data, reason){
       stop(window);
     } catch (e){}
   }
+  
+  // Unload stylesheets
+  let styleSheetService = Components.classes["@mozilla.org/content/style-sheet-service;1"]
+                                    .getService(Components.interfaces.nsIStyleSheetService);
+  for (let i=0,len=styleSheets.length;i<len;i++) {
+    let styleSheetURI = Services.io.newURI(styleSheets[i], null, null);
+    if (styleSheetService.sheetRegistered(styleSheetURI, styleSheetService.AUTHOR_SHEET)) {
+        styleSheetService.unregisterSheet(styleSheetURI, styleSheetService.AUTHOR_SHEET);
+    }  
+}  
 };
 
 
 var start = function(window){
   // We're starting up in a window
-  let util = MenuOnTop.Util;
+  const util = MenuOnTop.Util,
+        prefs = MenuOnTop.Preferences;
   util.logDebug ("MenuOnTop.start()");
   let document = window.document;
   // let toolbar = document.getElementById("mail-bar3"); // toolbar with buttons
@@ -195,13 +212,18 @@ var start = function(window){
     menubar.menuOnTop.restacked = true;
   }
 
-  // Inject CSS for themes with the menubar under the tabbar, which looks terrible after moving the toolbar up
+  // Inject CSS for themes with the menubar under the tabbar:
 	MenuOnTop.loadCSS(window);
 	
 	// if the option is active, we show the icon in the addon bar.
-	if (MenuOnTop.Preferences.isStatusIcon)
+  if (prefs.isStatusIcon)
 		MenuOnTop.showAddonButton(window);
-	
+	if (prefs.isCustomMenu) {
+    MenuOnTop.showCustomMenu(window);
+    if (prefs.isCustomMenuIcon) {
+      MenuOnTop.setCustomIcon(prefs.customMenuIconURL);
+    }
+  }
 };
 
 var stop = function(window){
