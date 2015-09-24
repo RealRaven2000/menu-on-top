@@ -78,27 +78,27 @@
 				  
 			<hbox align="center">
 				<groupbox>
-			    <caption label="Primary Menu Item" />
-					<hbox>
-					<checkbox id="tabsInTitle"
-										label="Paint menu in Titlebar"
-										tooltiptext="On some systems, this option might lead to invisible window controls (min/max/close buttons)"
-										oncommand="MenuOnTop.Options.toggleTabsInTitle(this);" />
-					<toolbarseparator />
-					<label control="moveBar"
-								 value="Drag area:" />
-					<textbox id="moveBar"
-									 type="number"
-									 increment="50"								 
-									 preference="toolbarMarginRight"
-									 tooltiptext="How much space (in pixels) is reserved for dragging the application by clicking in the title. This will also affect the minimum window width!"
-									 />
+			    <caption label="Primary Menu Options" />
+					<hbox align="center">
+						<checkbox id="tabsInTitle"
+											label="Paint menu in Titlebar"
+											tooltiptext="On some systems, this option might lead to invisible window controls (min/max/close buttons)"
+											oncommand="MenuOnTop.Options.toggleTabsInTitle(this);" />
+						<toolbarseparator />
+						<label control="moveBar"
+									 value="Drag area:" />
+						<textbox id="moveBar"
+										 type="number"
+										 increment="50"								 
+										 preference="toolbarMarginRight"
+										 tooltiptext="How much space (in pixels) is reserved for dragging the application by clicking in the title. This will also affect the minimum window width!"
+										 />
 					</hbox>
 				</groupbox>
 				<spacer flex="1" />
 				<groupbox>
 			    <caption label="Themes" />
-				  <hbox>
+				  <hbox align="center">
 					<label control="styleFlavors" 
 							 value="Select a flavor:" />
 					<menulist id="styleFlavors"
@@ -386,10 +386,11 @@
 				  label="Advanced" 
 				  style="position:relative;">
 			<groupbox  orient="vertical" >
-				<caption label="Custom Menu" />
+				<caption label="Custom Menu"
+                 tooltiptext = "In order to show the bookmarks Menu a label must be entered. This will be inserted before the File Menu." />
 				<description>This is experimental technology! 
-				It is mainly meant for adding some top level bookmarks in Firefox and Branding</description>
-				<hbox>
+				It is meant for adding top level bookmarks in Firefox / Thunderbird + Profile Branding</description>
+				<hbox align="center">
 					<checkbox preference="CustomMenu"
 								label="Custom menu" 
 								oncommand="MenuOnTop.Options.onCustomMenu(this);" />
@@ -401,8 +402,11 @@
 					<checkbox preference="useCustomMenuIcon" 
 					          label = "Avatar"
 					          oncommand="MenuOnTop.Options.onCustomIconToggle(this);" />
-					<button label = "Select Icon..."
+					<button id = "btnSelectAvatar"
+					        label = "Select Icon..."
 					        oncommand="MenuOnTop.Options.onCustomMenuIcon();" />
+					<label control="customMenuIconSize"
+					       value="size:" />
 					<textbox id="customMenuIconSize"
 									 type="number"
 									 increment="2"

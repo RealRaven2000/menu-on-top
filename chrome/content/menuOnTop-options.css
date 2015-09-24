@@ -169,6 +169,8 @@ textbox[type="number"] {
 	list-style-image: url("chrome://menuontop/content/flavors/mahogany.png");
 }
 
-
+#customMenuIconSize {
+	max-width: 10em;
+}
 
 

@@ -34,6 +34,7 @@ MenuOnTop.Options = {
 		this.prefService.QueryInterface(Ci.nsIPrefBranch);
     document.getElementById('tabsInTitle').checked = tabsInTitlebar;
     document.getElementById('moveBar').disabled = !tabsInTitlebar;
+    MenuOnTop.Options.enableCustomMenuControls();
 	},
 	
   onSelectionChange: function onSelectionChange(evt) {
@@ -65,25 +66,40 @@ MenuOnTop.Options = {
 			MenuOnTop.hideAddonButton(win);			
 	},
   
-  onCustomMenu: function onCustomMenu(chk) {
-		let win = MenuOnTop.Util.MainWindow,
+  enableCustomMenuControls: function enableCustomMenuControls() {
+    let isActive = MenuOnTop.Preferences.isCustomMenu,
         doc = MenuOnTop.TopMenu.document,
         bookmarksList = doc.getElementById('bookmarksList'),
         txtCustomMenu = doc.getElementById('txtCustomMenu'),
         motToolbar = doc.getElementById('motToolbar'),
-        isActive = chk.checked;
-    MenuOnTop.Preferences.setBoolPref('customMenu', chk.checked);
+        btnSelectAvatar = doc.getElementById('btnSelectAvatar'),
+        iconSize = doc.getElementById('customMenuIconSize');
     
     txtCustomMenu.disabled = !isActive;
     bookmarksList.disabled = !isActive;
     motToolbar.disabled = !isActive;
+    iconSize.disabled = !isActive;
+    btnSelectAvatar.disabled = !isActive;
+  },
+  
+  onCustomMenu: function onCustomMenu(chk) {
+		let win = MenuOnTop.Util.MainWindow,
+        doc = MenuOnTop.TopMenu.document,
+        prefs = MenuOnTop.Preferences,
+        options = MenuOnTop.Options,
+        txtCustomMenu = doc.getElementById('txtCustomMenu'),
+        isActive = chk.checked;
+    prefs.isCustomMenu = chk.checked;
+    options.enableCustomMenuControls();
     // make sure the label is not empty!
     if (isActive && txtCustomMenu.value == '') {
       txtCustomMenu.value = 'MenuOnTop';
-      MenuOnTop.Options.updateCustomMenuLabel(txtCustomMenu);
+      options.updateCustomMenuLabel(txtCustomMenu);
     }
-    if (isActive)
-      MenuOnTop.showCustomMenu(win, isActive); // fromOPtions param to force repopulating listbox
+    MenuOnTop.showCustomMenu(win, isActive); // fromOptions param to force repopulating listbox
+    if (isActive && prefs.isCustomMenuIcon) { // repaint avatar
+      MenuOnTop.setCustomIcon(prefs.customMenuIconURL);
+    }
   } ,
   
   updateCustomMenuLabel: function updateCustomMenuLabel(txtbox) {
@@ -102,14 +118,14 @@ MenuOnTop.Options = {
 		const Ci = Components.interfaces,
           Cc = Components.classes,
           nsIFilePicker = Ci.nsIFilePicker,
-          util = MenuOnTop.Util;
+          util = MenuOnTop.Util,
+          prefs = MenuOnTop.Preferences;
     let fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
     
 		// callback, careful, no "this"
     let fpCallback = function fpCallback_done(aResult) {
       if (aResult == nsIFilePicker.returnOK) {
         try {
-          const prefs = MenuOnTop.Preferences;
           if (fp.file) {
 					  let file = fp.file.parent.QueryInterface(Ci.nsILocalFile);
 						if (!prefs.isCustomMenuIcon)
@@ -121,6 +137,7 @@ MenuOnTop.Options = {
                   iconURL = fileURL.asciiSpec;
               prefs.setCharPref('customMenu.icon.url', iconURL);
               MenuOnTop.setCustomIcon(iconURL);
+							prefs.setCharPref('customMenu.icon.defaultPath', file.path);
 						}
 						catch(ex) { ;	}
           }
@@ -133,10 +150,10 @@ MenuOnTop.Options = {
 		// needs to be initialized with something that makes sense (UserProfile/QuickFolders)
 		
 //Error: NS_ERROR_XPC_BAD_CONVERT_JS: Could not convert JavaScript argument arg 0 [nsIFilePicker.displayDirectory]
-		let localFile = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
-		//  lastPath = QuickFolders.Preferences.getStringPref('tabIcons.defaultPath');
-		//if (lastPath)
-		//	localFile.initWithPath(lastPath);
+		let localFile = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile),
+		    lastPath = prefs.getCharPref('customMenu.icon.defaultPath');
+		if (lastPath)
+			localFile.initWithPath(lastPath);
     fp.displayDirectory = localFile; // gLastOpenDirectory.path
     fp.open(fpCallback);		
   } ,  

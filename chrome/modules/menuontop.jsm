@@ -78,10 +78,19 @@ END LICENSE BLOCK
   0.9.7 - 04/11/2014
     # Added Firefox Support
     # Added setting for left margin
-
-	
+    # was auto-updated to 0.9.8.1 signed by AMO
+    
+  1.0 - 
+    # You can now specify a space for dragging the window if you are using the option "show menu in titlebar"
+    # Added lop-left bookmark feature   
+    # Added separate color choices for hover / active menu items
+    # New theme "Australis Redesigned"
+    # Improved layout of settings dialog
+    
 */
-
+Components.utils.import("resource://gre/modules/Services.jsm");
+Components.utils.import("resource:///modules/MailUtils.js");
+ 
 var EXPORTED_SYMBOLS = [ 'MenuOnTop' ];
 
 let MenuOnTop = {
@@ -92,46 +101,50 @@ let MenuOnTop = {
 	loadCSS: function loadCSS(window) {
 		// Inject CSS for themes with the menubar under the tabbar, which looks terrible after moving the toolbar up
 		try {
-			let document = window.document;
-      let util = MenuOnTop.Util;
-      let txt = "################################" +'\n'
+			let document = window.document,
+          util = MenuOnTop.Util,
+          txt = "################################" +'\n'
               + "###    MenuOnTop.loadCSS()   ###" +'\n'
               + "################################";
 			util.logDebug (txt);
 			var css = document.getElementById(util.MainWindowId).
-												 appendChild(document.createElementNS("http://www.w3.org/1999/xhtml", "style"));
+								appendChild(document.createElementNS("http://www.w3.org/1999/xhtml", "style"));
 			css.setAttribute("type", "text/css");
 			css.id = MenuOnTop.CSSid;
 			
-			let Prefs = MenuOnTop.Preferences;
-			let m = '-' + (Math.abs(Prefs.negativeMargin)).toString();
+			let Prefs = MenuOnTop.Preferences,
+			    m = '-' + (Math.abs(Prefs.negativeMargin)).toString(),
 			
-			let shadowString = Prefs.isTextShadow ? 'text-shadow: 1px 1px 1px rgba(128, 128, 128, 0.6) !important;' : '';
-			let maxHeightString = Prefs.maxHeight ? 'max-height: ' + Prefs.maxHeight + 'px;' : '';
-			let menuItemString = (shadowString + maxHeightString) ? '#' + util.MenubarId + ' > menu  {' + shadowString + maxHeightString + '}' : '';
-			let menuMarginTop = 'margin-top: ' + Prefs.menuMarginTop + 'px !important;';
-			let menuMarginLeft = 'margin-left: ' + Prefs.menuMarginLeft + 'px !important;';
-			let menuRadiusValue = Prefs.menuRadius;
-			let left  = Prefs.menuRadiusLeft ? menuRadiusValue + 'em' : '0';
-			let right  = Prefs.menuRadiusRight ? menuRadiusValue + 'em' : '0';
-			let radiusString = 'border-radius: ' + left + ' ' + right + ' ' + right + ' ' + left +' !important;';
-      let tw = Prefs.menuBorderWidth.toString(); // allow for full 4 falue syntax, e.g. 1px 1px 1px 0  to avoid left border
+			    shadowString = Prefs.isTextShadow ? 'text-shadow: 1px 1px 1px rgba(128, 128, 128, 0.6) !important;' : '',
+			    maxHeightString = Prefs.maxHeight ? 'max-height: ' + Prefs.maxHeight + 'px;' : '',
+			    menuItemString = (shadowString + maxHeightString) ? '#' + util.MenubarId + ' > menu  {' + shadowString + maxHeightString + '}' : '',
+			    menuMarginTop = 'margin-top: ' + Prefs.menuMarginTop + 'px !important;',
+			    menuMarginLeft = 'margin-left: ' + Prefs.menuMarginLeft + 'px !important;',
+			    menuRadiusValue = Prefs.menuRadius,
+			    left  = Prefs.menuRadiusLeft ? menuRadiusValue + 'em' : '0',
+			    right  = Prefs.menuRadiusRight ? menuRadiusValue + 'em' : '0',
+			    radiusString = 'border-radius: ' + left + ' ' + right + ' ' + right + ' ' + left +' !important;',
+          tw = Prefs.menuBorderWidth.toString(), // allow for full 4 falue syntax, e.g. 1px 1px 1px 0  to avoid left border
+          marginSelector = (util.Application == 'Thunderbird') ? 
+                           ' #messengerWindow[tabsintitlebar][sizemode="normal"] #mail-toolbar-menubar2' : 
+                           ' #main-window[tabsintitlebar][sizemode="normal"] #navigator-toolbox > #toolbar-menubar',
+          tmargin = util.getTabInTitle() ? (marginSelector + ' { margin-right: ' + Prefs.toolbarMarginRight.toString() + 'px !important;}') : '';
       tw = tw.indexOf('px')<0 ? tw +'px' : tw;
-			let borderWidth = 'border-width: ' + tw + ' !important;';
-			let borderStyle = borderWidth
+			let borderWidth = 'border-width: ' + tw + ' !important;',
+			    borderStyle = borderWidth
 			                + 'border-style: solid !important; ' 
-											+ 'border-color: ' + Prefs.menuBorderColor + ' !important;';
-			let smallIconSize = Prefs.iconSizeSmall ? Prefs.iconSizeSmall + 'px' : 'auto';
-			let normalIconSize = Prefs.iconSizeNormal ? Prefs.iconSizeNormal + 'px' : 'auto';
+											+ 'border-color: ' + Prefs.menuBorderColor + ' !important;',
+			    smallIconSize = Prefs.iconSizeSmall ? Prefs.iconSizeSmall + 'px' : 'auto',
+			    normalIconSize = Prefs.iconSizeNormal ? Prefs.iconSizeNormal + 'px' : 'auto';
 			if (Prefs.isForceIconSize) {
 			  smallIconSize += ' !important';
 				normalIconSize += ' !important';
 			}
-			let icsSmall = (smallIconSize.indexOf('auto')==0) ? '' : ('toolbar[iconsize="small"].chromeclass-menubar toolbarbutton.toolbarbutton-1 > image.toolbarbutton-icon { width: ' + smallIconSize + ';  height: ' + smallIconSize + '; } ');
-			let icsNormal = (normalIconSize.indexOf('auto')==0) ? '' : ('toolbar:not([iconsize="small"]).chromeclass-menubar toolbarbutton.toolbarbutton-1 > image.toolbarbutton-icon { width: ' + normalIconSize + ';  height: ' + normalIconSize + '; } ');
-			let dropDownSmall =  (smallIconSize.indexOf('auto')==0) ? '' : ('toolbar[iconsize="small"].chromeclass-menubar toolbarbutton.toolbarbutton-menubutton-button > image.toolbarbutton-icon { width: ' + smallIconSize + ';  height: ' + smallIconSize + '; } ');
-			let dropDownNormal = (normalIconSize.indexOf('auto')==0) ? '' : ('toolbar:not([iconsize="small"]).chromeclass-menubar toolbarbutton.toolbarbutton-menubutton-button > image.toolbarbutton-icon { width: ' + normalIconSize + ';  height: ' + normalIconSize + '; } ');
-			let menubar = Prefs.menuTransparent ? 
+			let icsSmall = (smallIconSize.indexOf('auto')==0) ? '' : ('toolbar[iconsize="small"].chromeclass-menubar toolbarbutton.toolbarbutton-1 > image.toolbarbutton-icon { width: ' + smallIconSize + ';  height: ' + smallIconSize + '; } '),
+			    icsNormal = (normalIconSize.indexOf('auto')==0) ? '' : ('toolbar:not([iconsize="small"]).chromeclass-menubar toolbarbutton.toolbarbutton-1 > image.toolbarbutton-icon { width: ' + normalIconSize + ';  height: ' + normalIconSize + '; } '),
+			    dropDownSmall =  (smallIconSize.indexOf('auto')==0) ? '' : ('toolbar[iconsize="small"].chromeclass-menubar toolbarbutton.toolbarbutton-menubutton-button > image.toolbarbutton-icon { width: ' + smallIconSize + ';  height: ' + smallIconSize + '; } '),
+			    dropDownNormal = (normalIconSize.indexOf('auto')==0) ? '' : ('toolbar:not([iconsize="small"]).chromeclass-menubar toolbarbutton.toolbarbutton-menubutton-button > image.toolbarbutton-icon { width: ' + normalIconSize + ';  height: ' + normalIconSize + '; } '),
+			    menubar = Prefs.menuTransparent ? 
 			      '#'+ util.ToolbarId +':-moz-lwtheme { background-image: none !important;} ' 
 						+ '#'+ util.ToolbarId +':not(:-moz-lwtheme) { background:none !important;} '
 						: ''; // linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5) 50%); 
@@ -143,25 +156,24 @@ let MenuOnTop = {
       let backgroundString = '#menubar-items > #' + util.MenubarId + '[id] { background:' + Prefs.menuBackground + ' !important;'
             + borderStyle 
             + radiusString 
-            + '  min-height:' + Prefs.maxHeight + 'px;} ';
-
-			let col = Prefs.menuFontColor;
-			let colorString = col ?  '#' + util.MenubarId + ' > menu > label {color: ' + col + ' !important;} ' : ''; 
+            + '  min-height:' + Prefs.maxHeight + 'px;} ',
+			    col = Prefs.menuFontColor,
+			    colorString = col ?  '#' + util.MenubarId + ' > menu > label {color: ' + col + ' !important;} ' : ''; 
 			col = Prefs.menuFontColorHover;
 			colorString += col ?  '#' + util.MenubarId + ' > menu[_moz-menuactive="true"]:not([open="true"]):not([disabled="true"]) > label {color: ' + col + ' !important;} ' : ''; 
 			col = Prefs.menuFontColorActive;
 			colorString += col ?  '#' + util.MenubarId + ' > menu[open="true"] > label {color: ' + col + ' !important;} ' : ''; 
       let backgroundStringHover = 
-        '#menubar-items > #' + util.MenubarId + '[id][_moz-menuactive="true"]:not([open="true"]):not([disabled="true"]) { background-image:' + Prefs.menuBackgroundHover + ' !important;} '
-      let backgroundStringActive = 
+        '#menubar-items > #' + util.MenubarId + '[id][_moz-menuactive="true"]:not([open="true"]):not([disabled="true"]) { background-image:' + Prefs.menuBackgroundHover + ' !important;} ',
+          backgroundStringActive = 
         '#menubar-items > #' + util.MenubarId + '[id][open="true"]:not([disabled="true"]) { background-image:' + Prefs.menuBackgroundActive + ' !important;} '
 
 			// Inject some css!
 			// we override min-height for charamel!
 			
 			// chrome://messenger/skin/primaryToolbar.css
-      let cssCode = '';
-      let ordinalTb = '';
+      let cssCode = '',
+           ordinalTb = '';
       if (util.Application=='Thunderbird') {
         ordinalTb = '-moz-box-ordinal-group: 10 !important;';
         cssCode += '#tabs-toolbar {-moz-box-ordinal-group: 20 !important;} ' +
@@ -184,11 +196,17 @@ let MenuOnTop = {
                 '#menubar-items:not(:-moz-lwtheme){ background-color: transparent !important; } ' + // Nautipolis!
                 '#menubar-items > menubar { background: none; ' + menuMarginTop + '; ' + menuMarginLeft +'; } ' + // TT deepdark!
                 '#' + util.ToolboxId + ' > #'+ util.ToolbarId +':not(:-moz-lwtheme) { background-color: transparent !important; background-image:none; } ' +
-                menuItemString;
+                menuItemString + 
+                tmargin;
+      if (Prefs.isCustomMenuIcon)
+        cssCode += " #menuOnTop-menu-Custom > image { width:" + Prefs.customMenuIconSize + "px; height:" + Prefs.customMenuIconSize + "px; margin-left: 5px;";
 
+      // apply all styles
 			css.appendChild(document.createTextNode(cssCode));
       util.logDebug ("Appended CSS: " + cssCode);
       MenuOnTop.forceIconSize(window);
+      // Avatar
+      MenuOnTop.setCustomIcon(Prefs.customMenuIconURL);
 		}
 		catch (ex) {
 			MenuOnTop.Util.logDebug ("MenuOnTop.loadCSS() failed\n" + ex);
@@ -198,9 +216,9 @@ let MenuOnTop = {
 	resetCSS: function resetCSS(window) {
 		try {
 			MenuOnTop.Util.logDebug ("MenuOnTop.resetCSS()...");
-			let document = window.document; 
-      let styleId = MenuOnTop.CSSid;
-			let css = document.getElementById(styleId);
+			let document = window.document, 
+          styleId = MenuOnTop.CSSid,
+			    css = document.getElementById(styleId);
       if (css)
         css.parentNode.removeChild(css);
       else
@@ -217,29 +235,99 @@ let MenuOnTop = {
 	} ,
   
   makeMenuItem : function makeMenuItem(doc, url, label, cmdType) {
-    let menuitem = doc.createElement('menuitem');
-    menuitem.setAttribute('label', label);
-    menuitem.className='menuitem-iconic';
+    const util = MenuOnTop.Util;
+    let menuitem = doc.createElement('menuitem'),
+        className = 'menuitem-iconic',
+        tm;
     // get to the original MenuOnTop object (of the main window):
-    let mot = MenuOnTop; // prefer the main object though so we can access "messenger"
     switch (cmdType) {
+      case "calendar":
+        label = doc.getElementById('calendar-tab-button').getAttribute('title');
+        tm = doc.getElementById('tabmail');
+        menuitem.addEventListener("command", function(event) { 
+              tm.openTab('calendar', { title: label });
+            }, false);
+        className += ' MOT_calendar';
+        break;
       case "browser":
         menuitem.addEventListener("command", function(event) { 
-          MenuOnTop.Util.openURLInTab(url); //event.target.ownerDocument.defaultView.
+          util.openURLInTab(url); //event.target.ownerDocument.defaultView.
           }, false);
+        className += ' MOT_browser';
         break;
       case "message":
         menuitem.addEventListener("command", function(event) { 
-          MenuOnTop.Util.openMessageTabFromUri(url); 
+          util.openMessageFromUri(url, event); 
           }, false);
+        className += ' MOT_mailmessage';
+        break;
+      case "contentTab.about":
+        // the about url is in url
+        let tabParams = {
+              contentPage: url,
+              clickHandler: "specialTabs.aboutClickHandler(event);"
+            };
+        if (util.Application == 'Thunderbird') {
+          tm = doc.getElementById('tabmail');
+          menuitem.addEventListener("command", function(event) { 
+            tm.openTab("contentTab", tabParams);
+            }, false);
+        }
+        else {
+          let filename = url.replace(":","").replace("?","").replace("=","");
+          menuitem.addEventListener("command", function(event) { 
+            util.MainWindow.openDialog("chrome://viewabout/content/dialogs/"+filename+".xul", filename, "chrome,resizable=yes,width=800,height=500,centerscreen"); 
+            }, false);
+        }
+        className += ' MOT_about';
+        break;
+      case "addon":
+        switch(url) {
+          case 'stationery':
+            className += ' MOT_stationery';
+            menuitem.addEventListener("command", function(event) { 
+              let win = util.MainWindow;
+              if (win.Stationery)
+                win.Stationery.showOptions();
+              else
+                Services.prompt.alert(null, 'MenuOnTop', 'Could not find Stationery - is Stationery installed?');
+            }, false);
+            break;
+          case 'thunderstats':
+            className += ' MOT_thunderstats';
+            menuitem.addEventListener("command", function(event) { 
+              let win = util.MainWindow;
+              if (win.miczThunderStatsButton)
+                MenuOnTop.Util.MainWindow.miczThunderStatsButton.onCommand();
+              else
+                Services.prompt.alert(null, 'MenuOnTop', 'Could not find miczThunderStatsButton - is ThunderStats installed?');
+            }, false);
+            break;
+          default:
+            className += ' MOT_addon';
+            break;
+        }
+        break;
+      case "folder":
+        menuitem.addEventListener("command", function(event) { 
+          util.openFolderFromUri(url);
+        }, false);
+        className += ' MOT_mailfolder';
         break;
       case "function": // for adding custom functions / commands
         menuitem.addEventListener("command", url, false);
+        className += ' MOT_function';
         break;
       default:
-        menuitem.addEventListener("command", function() { alert('This bookmark type is not currently supported:' + cmdType); }, false);
+        menuitem.addEventListener("command", 
+          function() { 
+            Services.prompt.alert(null, 'MenuOnTop - makeMenuItem', 'This bookmark type is not currently supported:' + cmdType); 
+          }, 
+          false);
         break;
     }
+    menuitem.setAttribute('label', label);
+    menuitem.className = className;
     return menuitem;
   } ,
   
@@ -269,7 +357,12 @@ let MenuOnTop = {
       if (!menu) {
         menu = doc.getElementById(MenuOnTop.CustomMenuId);
       }
-      MenuOnTop.Util.logDebug(
+      const util = MenuOnTop.Util;
+      if (!menu) {
+        util.logDebug('populateMenu() - menu not active, so early exit!');
+        return;
+      }
+      util.logDebug(
           '******************************\n'
         + '** populateMenu()  ' + menu.id + '\n'
         + '******************************');
@@ -292,29 +385,40 @@ let MenuOnTop = {
       // test test test
       // for bookmarks handling, read
       // http://mxr.mozilla.org/mozilla-central/source/browser/base/content/browser-places.js#640
-        
+      const ellipsis = "\u2026".toString();
       menuPopup.appendChild(doc.createElement('menuseparator'));
       menuPopup.appendChild(this.makeMenuItem(doc, 
-        function() { MenuOnTop.TopMenu.addCustomMenuItem(menuPopup); }),
-        'Add current Webpage...',  // no URL!
-        'function'
-        ); // add my own command
+        function() { 
+          MenuOnTop.TopMenu.appendBookmark(menuPopup); 
+        },
+        (util.Application == 'Thunderbird') ?
+          ('Add current Item' + ellipsis) : ('Add current Webpage' + ellipsis),  
+        'function')
+      ); // add my own command
+      menuPopup.appendChild(this.makeMenuItem(doc, 
+        function(evt) { 
+          MenuOnTop.showOptions(evt); 
+        },
+        'MenuOnTop Options' + ellipsis,  // no URL!
+        'function')
+      ); // add my own command
         
-      MenuOnTop.Util.logDebug('populateMenu() ENDS');
+      util.logDebug('populateMenu() ENDS');
     }
     catch(ex) {
       MenuOnTop.Util.logException('populateMenu()', ex);
     }
   } ,
   
-  showCustomMenu: function showCustomMenu(win) {
+  showCustomMenu: function showCustomMenu(win, fromOptions) {
     if (MenuOnTop.Preferences.isDebug) debugger;
-    let display = MenuOnTop.Preferences.isCustomMenu;
-    MenuOnTop.Util.logDebug('showCustomMenu - display = ' + display);
-    let menuId = MenuOnTop.CustomMenuId; 
-    let doc = win.document;
-    let menubar = doc.getElementById(MenuOnTop.Util.MenubarId);
-    let label = MenuOnTop.Preferences.customMenuTitle;
+    const util = MenuOnTop.Util;
+    let display = MenuOnTop.Preferences.isCustomMenu,
+        menuId = MenuOnTop.CustomMenuId, 
+        doc = win.document,
+        menubar = doc.getElementById(util.MenubarId),
+        label = MenuOnTop.Preferences.customMenuTitle;
+    util.logDebug('showCustomMenu - display = ' + display);
     // create a menu item to th8e left of file menu
     if (menubar) {
       if (display) {
@@ -325,11 +429,22 @@ let MenuOnTop = {
           menu.setAttribute("id", menuId);
         }
         // refresh label
+        menu.className = "menu-iconic";
         menu.setAttribute("label", label);
+        // we must insert the menu into the document first!
+        menubar.insertBefore(menu, menubar.firstChild);
+        
         // menu.collapsed = false;
         // empty will be shown as collapsed
-        MenuOnTop.populateMenu(doc, menu);
-        menubar.insertBefore(menu, menubar.firstChild);
+        MenuOnTop.TopMenu.loadCustomMenu(fromOptions).then(
+          function onSuccess() {
+            util.logDebug('showCustomMenu - after loadCustomMenu - populate');
+            MenuOnTop.populateMenu(doc, menu);
+          },
+          function onFailure(ex) {
+            util.logDebug('showCustomMenu - after loadCustomMenu - failure:\n' + ex);
+          }
+        );
       }
       else { // remove it if it exists
         let menu = doc.getElementById(menuId);
@@ -340,26 +455,60 @@ let MenuOnTop = {
   } ,
   
   hideCustomMenu: function hideCustomMenu(win) {
-    let doc = win.document;
-    let menuId = "menuOnTop-menu-Custom";
-    let menubar = doc.getElementById(MenuOnTop.Util.MenubarId);
-    let menu = doc.getElementById(menuId);
+    let doc = win.document,
+        menuId = "menuOnTop-menu-Custom",
+        menubar = doc.getElementById(MenuOnTop.Util.MenubarId),
+        menu = doc.getElementById(menuId);
     if (menu)
       menubar.removeChild(menu);
   } ,
+  
+  setCustomIcon: function setCustomIcon(iconURL) {
+    const util = MenuOnTop.Util; 
+    let menuItem = util.MainWindow.document.getElementById('menuOnTop-menu-Custom');
+    if (menuItem) {
+      if (MenuOnTop.Preferences.isCustomMenuIcon) {
+        util.logDebug('Setting avatar icon, URL: ' + iconURL);
+        try {
+          if (iconURL) {
+            let cssUri = '';
+            if (iconURL) {
+              if (iconURL.indexOf('url')==0)
+                cssUri = iconURL;
+              else
+                cssUri = 'url(' + iconURL + ')';
+            }
+            util.logDebug('Css URI: ' + cssUri);
+            menuItem.style.listStyleImage = cssUri; // direct styling!
+          }
+          else
+            menuItem.style.listStyleImage = 'none';
+        }
+        catch(ex) {
+          util.logException('setCustomIcon()', ex);
+        }
+      }
+      else {
+        if (menuItem.style.listStyleImage)
+          util.logDebug('Removing avatar icon...');
+        menuItem.style.listStyleImage = 'none';
+      }
+    }
+  },
   
 	ensureMenuBarVisible: function ensureMenuBarVisible(win) {
 		// see also  c-c/source/suite/common/utilityOverlay.js
 		// goToggleToolbar  
 		MenuOnTop.Util.logDebug('ensureMenuBarVisible()');
     try {
-      let id = MenuOnTop.Util.ToolbarId;
-      let doc = win.document;
-      let toolbar = doc.getElementById(id);
+      if (MenuOnTop.Preferences.isDebug) debugger;
+      let id = MenuOnTop.Util.ToolbarId,
+          doc = win.document,
+          toolbar = doc.getElementById(id);
       MenuOnTop.Util.logDebug('toolbar (' + id +') = ' + toolbar);
-      let isChange = false;
-      let hidingAttribute = "autohide";
-      let attribValue = toolbar.getAttribute("autohide") ;
+      let isChange = false,
+          hidingAttribute = "autohide",
+          attribValue = toolbar.getAttribute("autohide") ;
       
       if ( attribValue == "true" ) {
         let hidden =  "false"; // aEvent.originalTarget.getAttribute("checked") !=
@@ -380,21 +529,27 @@ let MenuOnTop = {
 	} ,
   
   forceIconSize: function forceIconSize(win) {
-		let id = MenuOnTop.Util.ToolbarId;
-    let isForce = MenuOnTop.Preferences.isForceIconSmall;
-    MenuOnTop.Util.logDebug('forceIconSize()\nForce Small = ' + isForce);
-		let toolbar = win.document.getElementById(id);
-    if (toolbar) {
-      MenuOnTop.Util.logDebug('forceIconSize()\nFound toolbar, changing iconsize attribute...');
-      if (MenuOnTop.Preferences.isForceIconSmall) {
-        toolbar.setAttribute("menuOnTop-forceSmall", "true");
-        toolbar.setAttribute("iconsize", "small");
-      }
-      else {
-        if (toolbar.getAttribute("menuOnTop-forceSmall")) {
-          toolbar.setAttribute("iconsize", ""); // let's not set it at all.
+    const util = MenuOnTop.Util;
+    try {
+      let id = util.ToolbarId,
+          isForce = MenuOnTop.Preferences.isForceIconSmall;
+      util.logDebug('forceIconSize()\nForce Small = ' + isForce);
+      let toolbar = win.document.getElementById(id);
+      if (toolbar) {
+        util.logDebug('forceIconSize()\nFound toolbar, changing iconsize attribute...');
+        if (MenuOnTop.Preferences.isForceIconSmall) {
+          toolbar.setAttribute("menuOnTop-forceSmall", "true");
+          toolbar.setAttribute("iconsize", "small");
+        }
+        else {
+          if (toolbar.getAttribute("menuOnTop-forceSmall")) {
+            toolbar.setAttribute("iconsize", ""); // let's not set it at all.
+          }
         }
       }
+    }
+    catch (ex) {
+      util.logException("forceIconSize()", ex);
     }
   } ,
 	
@@ -421,9 +576,32 @@ let MenuOnTop = {
 		debug: false,
 		statusIcon: true,
     customMenu: false,
-    customMenuTitle: ''
+    customMenuTitle: 'MenuOnTop',
+    toolbarMarginRight: 500
   },
 	
+  showOptions: function showOptions(evt, win) {
+    const util = MenuOnTop.Util;
+    var windowManager = Components.classes['@mozilla.org/appshell/window-mediator;1']
+        .getService(Components.interfaces.nsIWindowMediator);
+    var addonWin = windowManager.getMostRecentWindow("addon:MenuOnTop"); // use windowtype to set this
+    if (evt && !win) {
+      win = evt.view.window;
+    }
+    
+    if (addonWin)
+      addonWin.focus();
+    else {
+      util.logDebug('Calling openDialog...');
+      try {
+        win.openDialog("chrome://menuontop/content/menuOnTop_options.xul",'menuontop-options','chrome,titlebar,centerscreen,resizable,alwaysRaised');
+      }
+      catch(ex) {
+        util.logException("openDialog()",ex);
+      }
+    }
+  } ,
+  
 	showAddonButton :function showAddonButton(mainWindow) {
 		MenuOnTop.Util.logDebug ("MenuOnTop.showAddonButton()...");
 		if (!mainWindow) return;
@@ -443,20 +621,7 @@ let MenuOnTop = {
 
 		button.addEventListener("click", function() {
       MenuOnTop.Util.logDebug('click');
-			var windowManager = Components.classes['@mozilla.org/appshell/window-mediator;1']
-					.getService(Components.interfaces.nsIWindowMediator);
-			var addonWin = windowManager.getMostRecentWindow("addon:MenuOnTop"); // use windowtype to set this
-			if (addonWin)
-				addonWin.focus();
-			else {
-        MenuOnTop.Util.logDebug('Calling openDialog...');
-        try {
-          mainWindow.openDialog("chrome://menuontop/content/menuOnTop_options.xul",'menuontop-options','chrome,titlebar,centerscreen,resizable,alwaysRaised');
-        }
-        catch(ex) {
-          MenuOnTop.Util.logException("openDialog()",ex);
-        }
-      }
+      MenuOnTop.showOptions(null, mainWindow);
 		}, false);
 
 		buttonContainer.appendChild(button);
@@ -645,8 +810,8 @@ MenuOnTop.Util = {
 	lastTime:0,
   
 	logTime: function logTime() {
-		let timePassed = '';
-		let end = new Date();
+		let timePassed = '',
+		    end = new Date();
 		try { // AG added time logging for test
 			let endTime = end.getTime();
 			if (this.lastTime==0) {
@@ -678,11 +843,10 @@ MenuOnTop.Util = {
 	},
 	
 	logError: function logError(aMessage, aSourceName, aSourceLine, aLineNumber, aColumnNumber, aFlags) {
-	  var consoleService = Components.classes["@mozilla.org/consoleservice;1"]
-	                                 .getService(Components.interfaces.nsIConsoleService);
-	  var aCategory = '';
-
-	  var scriptError = Components.classes["@mozilla.org/scripterror;1"].createInstance(Components.interfaces.nsIScriptError);
+	  let consoleService = Components.classes["@mozilla.org/consoleservice;1"]
+	                                 .getService(Components.interfaces.nsIConsoleService),
+	      aCategory = '',
+	      scriptError = Components.classes["@mozilla.org/scripterror;1"].createInstance(Components.interfaces.nsIScriptError);
 	  scriptError.init(aMessage, aSourceName, aSourceLine, aLineNumber, aColumnNumber, aFlags, aCategory);
 	  consoleService.logMessage(scriptError);
 	} ,
@@ -695,6 +859,20 @@ MenuOnTop.Util = {
 		let fn = ex.fileName ? ex.fileName : "?";
 		this.logError(msg + "\n" + ex.message, fn, stack, ex.lineNumber, 0, 0x1);
 	},
+  
+  get mailWindow() {
+    var mail3PaneWindow = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                 .getService(Components.interfaces.nsIWindowMediator)
+                 .getMostRecentWindow("mail:3pane");
+    return mail3PaneWindow;
+  } ,
+  get mainDocument() {
+    if (typeof document != 'undefined') return document;
+    let win = this.mailWindow;
+    if (win)
+      return win.document;
+    return null;
+  } ,
 	
   openURL: function openURL(evt,URL) { 
 		if (this.openURLInTab(URL) && null!=evt) {
@@ -705,38 +883,33 @@ MenuOnTop.Util = {
 	
 	openURLInTab: function openURLInTab(URL) {
 		try {
-			var sTabMode="";
-			var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                   .getService(Components.interfaces.nsIWindowMediator);
-			var mainWindow = wm.getMostRecentWindow("navigator:browser");
-			if (mainWindow) {
+			let sTabMode="",
+			    wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                   .getService(Components.interfaces.nsIWindowMediator),
+			    mainWindow = wm.getMostRecentWindow("navigator:browser");
+			if (mainWindow) { // Firefox
 				var newTab = mainWindow.gBrowser.addTab(URL);
 				mainWindow.gBrowser.selectedTab = newTab;
 				return true;
 			}
 
-			let tabmail;
-			tabmail = document.getElementById("tabmail");
-			if (!tabmail) {
-				// Try opening new tabs in an existing 3pane window
-				var mail3PaneWindow = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-										 .getService(Components.interfaces.nsIWindowMediator)
-										 .getMostRecentWindow("mail:3pane");
-				if (mail3PaneWindow) {
-					tabmail = mail3PaneWindow.document.getElementById("tabmail");
-					mail3PaneWindow.focus();
-				}
-			}
-			if (tabmail) {
+      let doc = this.mainDocument,
+			    tabmail = doc ? doc.getElementById("tabmail") : null;
+      if (tabmail) { // Tb Content Tab
+        this.mailWindow.focus()
 				sTabMode = "contentTab";
-				tabmail.openTab(sTabMode,
-				{contentPage: URL, clickHandler: "specialTabs.siteClickHandler(event, QuickPasswords_TabURIregexp._thunderbirdRegExp);"});
+        let browser = MenuOnTop.TopMenu.getBrowser(); // tabmail.getBrowserForDocument(content);
+        tabmail.openTab(sTabMode,
+            { contentPage: URL,
+              background: false,
+              clickHandler: browser ? browser.clickHandler : null });
 			}
 			else
 				window.openDialog("chrome://messenger/content/", "_blank",
 								  "chrome,dialog=no,all", null,
-			  { tabType: "contentTab",
-			   tabParams: {contentPage: URL,
+			  { 
+          tabType: "contentTab",
+			    tabParams: {contentPage: URL,
 			              clickHandler: "specialTabs.siteClickHandler(event, QuickPasswords_TabURIregexp._thunderbirdRegExp);", id:"QuickPasswords_Weblink"}
 			  } );
 		}
@@ -746,39 +919,84 @@ MenuOnTop.Util = {
 		}
 		return true;
 	}	,
+  
+  openMessage: function (msgHdr, forceMethod)  {
+    let util = MenuOnTop.Util,
+        doc = util.MainWindow.document,
+        tabmail = doc.getElementById("tabmail"),
+        prefs = MenuOnTop.Preferences,
+        method = forceMethod || 'currentTab'; // || prefs.getStringPref('bookmarks.openMethod');
+    if (util.Application != 'Thunderbird')
+      throw('Cannot open email, application is not supported:' + util.Application);
+    try {
+      if (!msgHdr) return false;
+      if ((msgHdr.messageId.toString() + msgHdr.author + msgHdr.subject) == '' 
+          && msgHdr.messageSize==0) // invalid message
+        return false;
+    }
+    catch(ex) {
+      util.logException('bookmarks.openMessage',ex);
+      return false;
+    }
+    try {
+      switch (method) {
+        case 'currentTab':
+          let mode = tabmail.selectedTab.mode.name; // mode should be 3pane or folder
+          MailUtils.displayMessageInFolderTab(msgHdr);
+          return true;
+        case 'window':
+          MailUtils.openMessageInNewWindow(msgHdr);
+          return true;
+        default:
+          util.logDebug('Unknown bookmarks.open.method: {' + method + '}'); 
+          // fall through
+        case 'newTab':
+          tabmail.openTab('message', {msgHdr: msgHdr, background: false});  
+          return true;
+      } // switch method
+    }
+    catch(ex) {
+      util.logException('bookmarks.openMessage',ex);
+    }
+      
+    return false;
+  },
 
   // open an email in a new tab
-  openMessageTabFromUri: function openMessageTabFromUri(messageUri) {
-    let tabmail = document.getElementById("tabmail");
-    let hdr = messenger.messageServiceFromURI(messageUri).messageURIToMsgHdr(messageUri);
+  openMessageFromUri: function openMessageFromUri(messageUri, event) {
+    let util = MenuOnTop.Util,
+        isAlt, isCtrl, isShift,
+        win = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                 .getService(Components.interfaces.nsIWindowMediator)
+                 .getMostRecentWindow("mail:3pane");  
+    if (!win) {
+      Services.prompt.alert(null, 'MenuOnTop - openMessageTabFromUri', 'No open mail window found!'); 
+    }    
+    let hdr = win.messenger.messageServiceFromURI(messageUri).messageURIToMsgHdr(messageUri);
     
-    switch (MenuOnTop.Util.Application) {
-      case 'Thunderbird':
-        tabmail.openTab('message', {msgHdr: hdr, background: false});  
-        break;
-      case 'SeaMonkey':
-        let tabMode = tabmail.tabModes['3pane'];
-        let tabInfo = {mode: tabMode, canClose: true};
-        let modeBits = 2; // get current mode? (kTabShowFolderPane = 1, kTabShowMessagePane = 2, kTabShowThreadPane = 4)
-        // gMailNewsTabsType.modes['3pane'].openTab(tabInfo, modeBits, null, hdr);
-        tabmail.openTab('3pane', modeBits, null, hdr);
-        break;
-      case 'Postbox':
-				var win = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-										 .getService(Components.interfaces.nsIWindowMediator)
-										 .getMostRecentWindow("mail:3pane");          
-        // from src/mail/base/content/mailWindowOverlay.js
-        win.MsgOpenNewTabForMessageWithAnimation(
-               hdr.messageKey, 
-               hdr.folder.URI, //
-               '',       // aMode
-               false ,   // Background
-               true      // skipAnimation 
-               // [, aAccountURI (optional) ]
-               )
-        break;
+    if (event) {
+      isAlt = event.altKey;
+      isCtrl = event.ctrlKey;
+      isShift = event.shiftKey;
     }
-  }  
+    let method = 'currentTab';
+    if (isShift) method = 'window';
+    if (isCtrl) method = 'newTab';
+    util.openMessage(hdr, method);
+  } ,
+
+  openFolderFromUri: function openFolder(uri) {
+    const util = MenuOnTop.Util,
+          win = util.MainWindow;
+    if (!win) return false;
+    if (util.Application == 'Thunderbird') {
+      Components.utils.import("resource:///modules/MailUtils.js");
+    }
+    let msgFolder = MailUtils.getFolderForURI(uri, true),
+        theTreeView = win.gFolderTreeView;
+    theTreeView.selectFolder(msgFolder);
+    return true;
+  }
 };  // Util
 
 Components.utils.import("resource://gre/modules/osfile.jsm")
@@ -826,9 +1044,45 @@ MenuOnTop.Preferences = {
 		}
 	},  
   
+  setCharPref: function setCharPref(term, val) {
+		try {
+			return this.service.setCharPref("extensions.menuontop." + term, val);
+		}
+		catch(ex) {
+			MenuOnTop.Util.logException("setCharPref(extensions.menuontop." + term + ")", ex);
+		}
+  },
+  
+  get isColorOnly() {
+    return this.getBoolPref('flavor.coloronly');
+  } ,
+  
 	// GET: specific settings
   get isCustomMenu() {
 		return this.getBoolPref('customMenu');
+  } ,
+  
+  set isCustomMenu(val) {
+    this.setBoolPref('customMenu', val);
+  } ,
+  
+  get isCustomMenuIcon() {
+    return this.getBoolPref('customMenu.icon.use');
+  } ,
+  
+  set isCustomMenuIcon(val) {
+    this.setBoolPref('customMenu.icon.use', val);
+  } ,
+  
+  get customMenuIconSize() {
+    return this.getIntPref('customMenu.icon.size');
+  } ,
+  set customMenuIconSize(val) {  
+    this.setIntPref('customMenu.icon.size', val);
+  } ,
+  
+  get customMenuIconURL() {
+    return this.getCharPref('customMenu.icon.url')
   } ,
   
   get customMenuTitle() {
@@ -854,7 +1108,11 @@ MenuOnTop.Preferences = {
 	get negativeMargin() {
 		return this.getIntPref('negativeMargin');
 	} ,
-	
+  
+	get toolbarMarginRight() {
+    return this.getIntPref('toolbarMargin.right');
+  } ,
+  
 	get menuMarginLeft() {
 		return this.getIntPref('menuMargin.left');
 	} ,
@@ -938,46 +1196,202 @@ Components.utils.import("resource://gre/modules/Promise.jsm");
 MenuOnTop.TopMenu = {
   Entries: [],
   charset: "UTF-8",
+  _document: null,
+  get document() { // document of option window
+    if (this._document) return this._document;
+    let mediator = Components.classes["@mozilla.org/appshell/window-mediator;1"].getService(Components.interfaces.nsIWindowMediator),
+        getWindowEnumerator = 
+            (MenuOnTop.Util.isLinux) ?
+            mediator.getXULWindowEnumerator :
+            mediator.getZOrderXULWindowEnumerator,
+        optionsWindow = getWindowEnumerator ('addon:MenuOnTop', true).getNext();
+    this._document = optionsWindow ? optionsWindow.document : null;
+    return  this._document;
+  },
+  
+  get ListBox() {
+    return this.document.getElementById('bookmarksList');
+  },
   
   addItem: function addItem(url, label, bookmarkType) {
-    let listbox = document.getElementById('bookmarksList');
-    listbox.appendItem(label, url);
+    let listbox = this.ListBox;
+    if (listbox)
+      listbox.appendItem(label, url);
   },
   
-  clearList: function clearList() {
-    let listbox = document.getElementById('bookmarksList');
-    while(listbox.getRowCount())
-      listbox.removeItemAt(0);
-    while (this.Entries.length)
-      this.Entries.pop();
+  clearList: function clearList(onlyUI) {
+    const util = MenuOnTop.Util;
+    if (!onlyUI) {
+      util.logDebug ('clearList() - empty bookmarks list'); 
+      while (this.Entries.length)
+        this.Entries.pop();
+    }
+    if (this.document) {  // only if options window is visible
+      util.logDebug ('clearList() - empty listbox'); 
+      let theList = this.ListBox;
+      if (theList) {
+        while(theList.lastElementChild) {
+          theList.removeChild(theList.lastElementChild);
+        }
+      }
+    }
   },
+  
+  reset: function reset() {
+    // just a test
+    var promptService = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+                              .getService(Components.interfaces.nsIPromptService);
+    if (!promptService.confirm(null, 'Menu On Top', 'Are you sure - Delete all bookmarks?'))
+      return;
+    
+  },
+
+  // repopulates listbox and rebuilds menu!
+  repopulate: function repopulate(lb) {
+    // listbox
+    if (lb) {
+      this.clearList(true);
+      for (let i=0; i<this.Entries.length; i++) {
+        let entry = this.Entries[i];
+        // populate the options list
+        this.addItem(entry.url, entry.label, entry.bookmarkType);
+        // populate the Entries array; fallback to browser bookmark type if undefined
+      }
+    }
+    // main menu
+    let win = MenuOnTop.Util.MainWindow,
+        doc = win.document;
+    MenuOnTop.populateMenu(doc);
+  },
+   
+  onEdit: function onEdit(txt) {
+    // check if one is selected and we just changed it]
+    let url = this.document.getElementById('linkURL').value,
+        label = this.document.getElementById('linkLabel').value,
+        bookmarkType = this.document.getElementById('linkType').value,
+        listbox = this.ListBox,
+        idx = listbox.selectedIndex;
+    if (idx ==-1) return;
+    let e = this.Entries[idx];
+    // check if matches
+    switch (txt.id) {
+      case 'linkUrl':
+        if (e.label == label && e.bookmarkType) {
+          if (e.url == txt.value)
+            return; // no change
+          e.url = txt.value; // modify url
+          listbox.selectedItem.value = e.url;
+        }
+        break;
+      case 'linkLabel':
+        if (e.url == url && e.bookmarkType) {
+          if (e.label == txt.value)
+            return; // no change
+          e.label = txt.value; // modify label
+          listbox.selectedItem.label = e.label;
+        }
+        break;
+    }
+    this.repopulate(false); // rebuild menu
+    this.saveCustomMenu();
+  } ,  
+  
+  checkUrlLabel: function checkUrlLabel(label) {
+    const util = MenuOnTop.Util,
+          prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+                              .getService(Components.interfaces.nsIPromptService),
+          title = "Bookmark title",
+          text = "Please enter a short title:";
+    let input = {value: label},
+        check = {value: false},
+        result = prompts.prompt(util.MainWindow, title, text, input, null, check); 
+    if (!result) return label;
+    return input.value;
+  } ,
   
   add: function add() {
+    const util = MenuOnTop.Util;
     if (MenuOnTop.Preferences.isDebug) debugger;
-    let url = document.getElementById('linkURL').value;
-    let label = document.getElementById('linkLabel').value;
-    let bookmarkType = document.getElementById('linkType').value;
-    this.addItem(url, label, bookmarkType);
-    this.Entries.push({url:url, label:label, bookmarkType: bookmarkType});
+    let url = this.document.getElementById('linkURL').value,
+        label = this.document.getElementById('linkLabel').value,
+        bookmarkType = this.document.getElementById('linkType').value,
+        existingEntry, existingIndex;
+    // check if it exists and replace label
+    for (let i=0; i<this.Entries.length; i++) {
+      let e = this.Entries[i];
+      if (e.url == url && e.bookmarkType) {
+        existingEntry = e;
+        existingIndex = i;
+        break;
+      }
+    }
+    // TO DO:
+    // should we allow changing the URL ? (for selected item only)
+    // do a match of first n characters and display a confirmation?
+    if (!existingEntry) {
+      this.addItem(url, label, bookmarkType);
+      this.Entries.push({url:url, label:label, bookmarkType: bookmarkType});
+    }
+    else {
+      // update existing item (label)
+      util.logDebug('Updating existing item: ' + existingEntry.label + '  [' + existingEntry.url +']');
+      let lb = this.ListBox;
+      lb.ensureIndexIsVisible(existingIndex);
+      lb.getItemAtIndex(existingIndex).label = label;
+      this.Entries[existingIndex].label = label;
+    }
+      
+    this.repopulate(false); // rebuild menu
+    this.saveCustomMenu();
   },
   
   remove: function remove() {
     if (MenuOnTop.Preferences.isDebug) debugger;
-    let listbox = document.getElementById('bookmarksList');
-    if (listbox.selectedIndex>=0) {
-      this.Entries.splice(listbox.selectedIndex, 1); // remove from array
-      listbox.removeItemAt( listbox.selectedIndex );
+    let listbox = this.ListBox,
+        idx = listbox.selectedIndex;
+    if (idx<0) return;
+    this.Entries.splice(idx, 1); // remove from array
+    listbox.removeItemAt( idx );
+    this.repopulate(false); // rebuild menu
+    this.saveCustomMenu();
+  },
+  
+  up: function up() {
+    let listbox = this.ListBox,
+        idx = listbox.selectedIndex;
+    if (idx>0) {
+      let swap = this.Entries[idx-1];
+      this.Entries[idx-1] = this.Entries[idx];
+      this.Entries[idx] = swap;
+      
+      this.repopulate(true);
+      this.saveCustomMenu();
+      listbox.selectedIndex = idx-1;
+    }
+  },
+  
+  down: function down() {
+    let listbox = this.ListBox,
+        idx = listbox.selectedIndex;
+    if (idx < this.Entries.length-1) {
+      let swap = this.Entries[idx+1];
+      this.Entries[idx+1] = this.Entries[idx];
+      this.Entries[idx] = swap;
+      
+      this.repopulate(true);
+      this.saveCustomMenu();
+      listbox.selectedIndex = idx+1;
     }
   },
   
   getBrowser: function getBrowser() {
 		const Ci = Components.interfaces;
-    let util = MenuOnTop.Util;
-		let interfaceType = Ci.nsIDOMWindow;
-    let mediator = Components.classes["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
-    let browsers = null;
-    let DomWindow = null;
-    let theBrowser = null;
+    let util = MenuOnTop.Util, 
+		    interfaceType = Ci.nsIDOMWindow, 
+        mediator = Components.classes["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator), 
+        browsers = null,
+        DomWindow = null,
+        theBrowser = null;
     
     let getWindowEnumerator = 
       (util.isLinux) ?
@@ -1023,13 +1437,13 @@ MenuOnTop.TopMenu = {
   },
   
   getActiveUri: function getActiveUri() {
-    let uriObject= {url:'',label:'', bookmarkType: null};
-    let util = MenuOnTop.Util;
-    let browser = this.getBrowser();
-    let tabmail = null;
-    let currentURI = '';
-    let currentLabel = '';
-    let currentType = '';
+    let uriObject= {url:'',label:'', bookmarkType: null},
+        util = MenuOnTop.Util,
+        browser = this.getBrowser(),
+        tabmail = null,
+        currentURI = '',
+        currentLabel = '',
+        currentType = '';
 		if (browser || document.getElementById("tabmail")) {  // in Linux we cannot get the browser while options dialog is displayed :(
 			try {
 				let isOriginBrowser = (util.Application=='Firefox');
@@ -1051,8 +1465,8 @@ MenuOnTop.TopMenu = {
 				if (!isOriginBrowser) {
 					
 					if (tabmail) {
-						let tab = tabmail.selectedTab ? tabmail.selectedTab : tabmail.currentTab;  // Pb currentTab
-						let theMode = tab.mode ? tab.mode.name : tab.getAttribute("type");
+						let tab = tabmail.selectedTab ? tabmail.selectedTab : tabmail.currentTab,  // Pb currentTab
+						    theMode = tab.mode ? tab.mode.name : tab.getAttribute("type");
 						if (!browser)
 							browser = tab.browser;
 						if (theMode == 'folder') {
@@ -1071,15 +1485,15 @@ MenuOnTop.TopMenu = {
 
 								try {
 									let currentFolder =
-										tab.folderDisplay ?
-										tab.folderDisplay.displayedFolder :
-										browser.GetFirstSelectedMsgFolder().QueryInterface(Components.interfaces.nsIMsgFolder);
+                        tab.folderDisplay ?
+                        tab.folderDisplay.displayedFolder :
+                        browser.GetFirstSelectedMsgFolder().QueryInterface(Components.interfaces.nsIMsgFolder);
 									// let currentFolder2 = tab.folderDisplay.view.displayedFolder.QueryInterface(Components.interfaces.nsIMsgFolder);
 									// let msgFolder = theFolder.QueryInterface(Components.interfaces.nsIMsgFolder);
-									currentURI = currentFolder.server.hostName; // password manager shows the host name
-									if (currentURI == 'localhost') {
-										currentURI = currentFolder.server.realHostName;
-									}
+									currentURI = currentFolder.URI; // password manager shows the host name
+									// if (currentURI == 'localhost') {
+									//	 currentURI = currentFolder.server.realHostName;
+									// }
                   currentLabel = currentFolder.prettyName;
 								}
 								catch(ex) {
@@ -1094,9 +1508,30 @@ MenuOnTop.TopMenu = {
 								break;
 							case 'contentTab':      // fall through
 							case 'thunderbrowse':
-								currentURI = tab.browser.currentURI.host;
-                currentLabel = tab.browser.contentTitle;
                 currentType = 'browser';
+                currentLabel = tab.browser.contentTitle;
+                // check tab.browser.mIconURL :-)
+                try {
+                  try {
+                    currentURI = tab.browser.currentURI.asciiSpec;
+                  } catch (ex) {;}
+                  if (!currentURI) {
+                    currentURI = tab.browser.currentURI.specIgnoringRef;
+                    if (!currentURI)
+                      currentURI = tab.browser.currentURI.host;
+                  }
+                  if (currentURI.indexOf('about:') == 0) {
+                    currentType = 'contentTab.about';
+                  }
+                }
+                catch(ex) {
+                  util.logException('getActiveUri()', ex);
+                  return null;
+                }
+                if (!currentLabel) {
+                  Services.prompt.alert(null, 'MenuOnTop - getActiveUri', 'Failed - could not retrieve  label from content Tab!');
+                  return null;
+                }
 								break;
 							case 'glodaFacet':         // fall through
 							case 'glodaSearch-result': // fall through
@@ -1133,8 +1568,18 @@ MenuOnTop.TopMenu = {
                 currentLabel = tab.title;
                 currentURI = '#msg: not yet implemented - chat bookmarks.';
                 break;
+              case 'miczThStatsTab':
+                currentURI = tab.browser.currentURI.host; // 'thunderstats'
+                currentLabel = tab.title;
+                currentType = 'addon';
+                break;
+              case 'extensions.stationery.options':
+                currentURI = tab.browser.currentURI.host; // 'stationery'
+                currentLabel = tab.title;
+                currentType = 'addon';
+                break;
 							default:  // case 'tasks':
-                alert('Not supported: bookmarking ' + theMode + ' tab!');
+                Services.prompt.alert(null, 'MenuOnTop - getActiveUri', 'Not supported: bookmarking ' + theMode + ' tab!');
 								break;
 						}
 					}
@@ -1147,39 +1592,18 @@ MenuOnTop.TopMenu = {
 					let lB = browser.gBrowser.selectedTab.linkedBrowser;
 					// SM:
 					let uri = lB.registeredOpenURI ? lB.registeredOpenURI : lB.currentURI; // nsIURI
-          currentLabel = lB.contentTitle;
           currentURI = uri.spec;  // whole URL including query parameters; there is also asciiSpec and specIgnoringRef
-					
-          /*
-					// prepend http:// or https:// etc.
-					let uriProtocol = uri.scheme + '://';
-					
-					if (uri.host == "ietab2") {
-						// find first url parameter:
-						let f = uri.path.indexOf("?url=");
-						let ieTabUri = "";
-						if (f > 0) {
-							let ieTabUri = uri.path.substring(f + 5);
-							f = ieTabUri.indexOf("//");
-							if (withServer && f > 0) {
-								uriProtocol = ieTabUri.substring(0, f+2);
-							}
-							else {
-								uriProtocol = "";
-							}
-							let r = ieTabUri.substring(f+2);
-							currentURI = uriProtocol +  r.substring(0 , r.indexOf("/"));
-						  
-						}
-					}
-
-					currentURI = uriProtocol + uri.host;
-          */
+          if (currentURI.indexOf('about:') == 0) {
+            currentType = 'contentTab.about';
+          }
+          currentLabel = lB.contentTitle;
 					
 				}
 			}
 			catch(ex) {
         util.logException("Error retrieving current URL:", ex);
+        if (!currentLabel) currentLabel = 'Error';
+        if (!currentURI) return null;
 			}
 		}
 
@@ -1193,13 +1617,14 @@ MenuOnTop.TopMenu = {
   
   getFromContext: function getFromContext() {
     let uriObject = this.getActiveUri();
-    if (Object.keys(uriObject).length === 0) {
-      alert('Could not determine context URL!');
+    if (null == uriObject || Object.keys(uriObject).length === 0) {
+      Services.prompt.alert(null, 'MenuOnTop - getFromContext', 
+        'Could not safely determine context URL! This type of tab may not be supported.');
       return;
     }
-    document.getElementById('linkURL').value = uriObject.url;
-    document.getElementById('linkLabel').value = uriObject.label;
-    document.getElementById('linkType').value = uriObject.bookmarkType;
+    this.document.getElementById('linkURL').value = uriObject.url;
+    this.document.getElementById('linkLabel').value = uriObject.label;
+    this.document.getElementById('linkType').value = uriObject.bookmarkType;
   },
   
   getLocalFile: function getLocalFile() {
@@ -1215,61 +1640,75 @@ MenuOnTop.TopMenu = {
     // To read & write content to file
     // const {TextDecoder, TextEncoder, OS} = Cu.import("resource://gre/modules/osfile.jsm", {});  
     
-    let profileDir = OS.Constants.Path.profileDir;
-    let path = OS.Path.join(profileDir, "extensions", "menuOnTop.json");
-  
-    let decoder = new TextDecoder();        // This decoder can be reused for several reads
-    let promise = OS.File.read(path, { encoding: "utf-8" }); // Read the complete file as an array - returns Uint8Array 
+    let profileDir = OS.Constants.Path.profileDir,
+        path = OS.Path.join(profileDir, "extensions", "menuOnTop.json"),
+        decoder = new TextDecoder(),        // This decoder can be reused for several reads
+        promise = OS.File.read(path, { encoding: "utf-8" }); // Read the complete file as an array - returns Uint8Array 
     return promise;
   } ,
   
-  loadCustomMenu: function loadCustomMenu() {
+  loadCustomMenu: function loadCustomMenu(fromOptions) {
     if (MenuOnTop.Preferences.isDebug) debugger;
-    let util = MenuOnTop.Util;
+    const util = MenuOnTop.Util;
+    fromOptions = fromOptions ? true : false;
+    util.logDebug ('loadCustomMenu(' + fromOptions + ')...'); 
+    let promise3;
     try {
       // let CustomMenuString='';
-      let topMenu = this; // closure this
-      let promise2 = this.readStringFile().then (
+      let topMenu = this, // closure this
+          promise2 = this.readStringFile().then (
         function onSuccess(CustomMenuData) {
           // populate the bookmarks
-          topMenu.clearList();
+          util.logDebug ('readStringFile() - Success'); 
+          if (MenuOnTop.Preferences.isDebug) debugger;
+          topMenu.clearList(false);
           let entries = JSON.parse(CustomMenuData);  
+          util.logDebug ('parsed ' + entries.length + ' entries'); 
           for (let i=0; i<entries.length; i++) {
             let entry = entries[i];
-            topMenu.addItem(entry.url, entry.label, entry.bookmarkType);
+            // populate the options list
+            if (fromOptions)
+              topMenu.addItem(entry.url, entry.label, entry.bookmarkType);
+            // populate the Entries array; fallback to browser bookmark type if undefined
             topMenu.Entries.push(
               {url:entry.url, 
               label:entry.label, 
-              bookmarkType:entry.bookmarkType}
+              bookmarkType:entry.bookmarkType ? entry.bookmarkType : 'browser'}
               );
           }
         },
         function onFailure(ex) {
+          util.logDebug ('readStringFile() - Failure: ' + ex); 
           if (ex.becauseNoSuchFile) {
             // File does not exist);
           }
           else {
             // Some other error
-            alert('Reading the bookmarks file failed ' + ex);
+            Services.prompt.alert(null, 'MenuOnTop - loadCustomMenu', 'Reading the bookmarks file failed\n' + ex);
           }     
           // no changes to Entries array
         }
       );
       
-      promise2.then(
-        function populateMenu() {
-          let win = MenuOnTop.Util.MainWindow;
-          let doc = win.document;
+      promise3 = promise2.then(
+        function promise2_populateMenu() {
+          const util = MenuOnTop.Util,
+                doc = util.MainWindow.document;
+          util.logDebug ('promise2.then populateMenu() ...'); 
           MenuOnTop.populateMenu(doc);
+          return promise2; // make loadCustomMenu chainable
         },
-        function onFail(ex) {
-          alert('Did not load main menu' + ex);
+        function promise2_onFail(ex) {
+          MenuOnTop.Util.logDebug ('promise2.then onFail():\n' + ex); 
+          Services.prompt.alert(null, 'MenuOnTop - promise2.then', 'Did not load main menu\n' + ex);
+          return promise2; // make loadCustomMenu chainable
         }
       );
     }
     catch(ex) {
       util.logException('MenuOnTop.TopMenu.loadCustomMenu()', ex);
     }
+    return promise3;
   } ,
 
   saveCustomMenu: function saveCustomMenu()  {
@@ -1278,12 +1717,12 @@ MenuOnTop.TopMenu = {
     try {
       const {OS} = Components.utils.import("resource://gre/modules/osfile.jsm", {});
       if (MenuOnTop.Preferences.isDebug) debugger;
-      let topMenu = this; // closure this
-      let profileDir = OS.Constants.Path.profileDir;
-      let path = OS.Path.join(profileDir, "extensions", "menuOnTop.json");
-      let backPath = OS.Path.join(profileDir, "extensions", "menuOnTop.json.bak");
-      let promiseDelete = OS.File.remove(backPath);  // only if it exists
-      let promiseBackup = promiseDelete.then(
+      let topMenu = this, // closure this
+          profileDir = OS.Constants.Path.profileDir,
+          path = OS.Path.join(profileDir, "extensions", "menuOnTop.json"),
+          backPath = OS.Path.join(profileDir, "extensions", "menuOnTop.json.bak"),
+          promiseDelete = OS.File.remove(backPath),  // only if it exists
+          promiseBackup = promiseDelete.then(
         function () { 
           util.logDebug ('OS.File.move is next...'); 
           OS.File.move(path, backPath); 
@@ -1296,8 +1735,8 @@ MenuOnTop.TopMenu = {
 
       promiseBackup.then( 
         function backSuccess() {
-          let entity = topMenu.Entries.length ? topMenu.Entries : '';
-          let outString = JSON.stringify(entity, null, '  '); // prettify
+          let entity = topMenu.Entries.length ? topMenu.Entries : '',
+              outString = JSON.stringify(entity, null, '  '); // prettify
           try {
             // let theArray = new Uint8Array(outString);
             let promise = OS.File.writeAtomic(path, outString, { encoding: "utf-8"});
@@ -1325,8 +1764,28 @@ MenuOnTop.TopMenu = {
         
   },
   
-  addCustomMenuItem: function addCustomMenuItem(menu) {
-    alert('To do:  add custom menu items...');
+  appendBookmark: function appendBookmark(menu) {
+    const topMenu = MenuOnTop.TopMenu,
+          uriObject = topMenu.getActiveUri();
+    if (Object.keys(uriObject).length === 0) {
+      Services.prompt.alert(null, 'MenuOnTop - getFromContext', 'Could not generate bookmark! This type of content might not be supported');
+      return;
+    }
+    
+    // new item: option to ask for modification of name
+    let menuLabel = topMenu.checkUrlLabel(uriObject.label);
+    
+    // listbox only. We 9don't need it (unless dialog is open!)
+    // topMenu.addItem(uriObject.url, uriObject.label, uriObject.bookmarkType);
+    topMenu.Entries.push(
+      {
+        url: uriObject.url, 
+        label: menuLabel, 
+        bookmarkType: uriObject.bookmarkType
+      }
+    );
+    topMenu.repopulate(false); // rebuild menu
+    topMenu.saveCustomMenu();
   }
   
 };  // TopMenu
