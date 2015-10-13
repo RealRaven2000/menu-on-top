@@ -58,6 +58,9 @@
       <preference id="CustomMenuTitle" name="extensions.menuontop.customMenu.title" type="string"  instantApply="true" />
 			<preference id="useCustomMenuIcon" name="extensions.menuontop.customMenu.icon.use" type="bool"  instantApply="true" />
 			<preference id="CustomMenuIconSize" name="extensions.menuontop.customMenu.icon.size" type="int"  instantApply="true" />
+			<preference id="CustomMenuFont"     name="extensions.menuontop.customMenu.label.specialFont" type="bool"  instantApply="true" />
+			<preference id="CustomMenuFontSize" name="extensions.menuontop.customMenu.label.size" type="int"  instantApply="true" />
+			<preference id="CustomMenuBold"     name="extensions.menuontop.customMenu.label.bold" type="bool"  instantApply="true" />
     </preferences>
     <hbox id="mot-options-header">
       <label class="dialogheader-title" 
@@ -393,8 +396,6 @@
 			<groupbox  orient="vertical" >
 				<caption label="Custom Menu"
                  tooltiptext = "In order to show the bookmarks Menu a label must be entered. This will be inserted before the File Menu." />
-				<description>This is experimental technology! 
-				It is meant for adding top level bookmarks in Firefox / Thunderbird + Profile Branding</description>
 				<hbox align="center">
 					<checkbox preference="CustomMenu"
 								label="Custom menu" 
@@ -420,6 +421,19 @@
 									 tooltiptext="(Maximum) Size of the Icon. If the menu height is smaller it will be resized."
 									 onchange="MenuOnTop.Options.onIconSizeChange(this)"
 									 />
+				</hbox>
+				<hbox align="center">
+					<checkbox preference="CustomMenuFont"
+										label="Custom Label" 
+										oncommand="MenuOnTop.Options.onCustomMenu(this);" />
+					<spacer />
+					<label control="txtCustomMenuSize" value="Font Size:" />
+					<textbox id="txtCustomMenuSize" 
+									 type="number" 
+									 preference="CustomMenuFontSize"  
+									 tooltiptext="Size of the top menu label in pt" />
+					<checkbox preference="CustomMenuBold"
+								    label="Bold" />
 				</hbox>
 				
 				<listbox id="bookmarksList" 

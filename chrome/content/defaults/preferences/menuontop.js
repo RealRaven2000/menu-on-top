@@ -33,3 +33,6 @@ pref("extensions.menuontop.textShadow", true);
 pref("extensions.menuontop.customMenu.icon.use", false);
 pref("extensions.menuontop.customMenu.icon.size", 20);
 pref("extensions.menuontop.customMenu.icon.url", '');
+pref("extensions.menuontop.customMenu.label.specialFont", false);
+pref("extensions.menuontop.customMenu.label.size", 11);
+pref("extensions.menuontop.customMenu.label.bold", false);
