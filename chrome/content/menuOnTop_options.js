@@ -89,17 +89,24 @@ MenuOnTop.Options = {
         options = MenuOnTop.Options,
         txtCustomMenu = doc.getElementById('txtCustomMenu'),
         isActive = chk.checked;
-    prefs.isCustomMenu = chk.checked;
-    options.enableCustomMenuControls();
-    // make sure the label is not empty!
-    if (isActive && txtCustomMenu.value == '') {
-      txtCustomMenu.value = 'MenuOnTop';
-      options.updateCustomMenuLabel(txtCustomMenu);
+    // before we set this, we need to put a label 
+    if (isActive) {
+      if (!prefs.customMenuTitle) {
+        // make sure the label is not empty!
+        // Unfortuntately, nsIProfile is deprecated, so we cannot set it to profile name
+        // let profile=Components.classes["@mozilla.org/profile/manager;1"].getService(Components.interfaces.nsIProfile);
+        // profile.currentProfile;  // should set txtCustomMenu already
+        prefs.customMenuTitle='MenuOnTop'; 
+        options.updateCustomMenuLabel(txtCustomMenu);
+      }
     }
-    MenuOnTop.showCustomMenu(win, isActive); // fromOptions param to force repopulating listbox
     if (isActive && prefs.isCustomMenuIcon) { // repaint avatar
       MenuOnTop.setCustomIcon(prefs.customMenuIconURL);
     }
+        
+    prefs.isCustomMenu = chk.checked;  // updates the main menu UI
+    options.enableCustomMenuControls();
+    MenuOnTop.showCustomMenu(win, isActive); // fromOptions param to force repopulating listbox
   } ,
   
   updateCustomMenuLabel: function updateCustomMenuLabel(txtbox) {
@@ -145,18 +152,33 @@ MenuOnTop.Options = {
       }
     };
 
+
     fp.init(window, "Select an icon file", nsIFilePicker.modeOpen);
     fp.appendFilters(nsIFilePicker.filterImages);
 		// needs to be initialized with something that makes sense (UserProfile/QuickFolders)
 		
 //Error: NS_ERROR_XPC_BAD_CONVERT_JS: Could not convert JavaScript argument arg 0 [nsIFilePicker.displayDirectory]
+    const {OS} = Components.utils.import("resource://gre/modules/osfile.jsm", {});
 		let localFile = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile),
-		    lastPath = prefs.getCharPref('customMenu.icon.defaultPath');
-		if (lastPath)
-			localFile.initWithPath(lastPath);
+		    lastPath = prefs.getCharPref('customMenu.icon.defaultPath'),
+        // default to extensions/menuontop/
+        defaultPath = OS.Path.join(OS.Constants.Path.profileDir, "extensions", "menuOnTop@agrude.com", "avatars");
+		localFile.initWithPath(lastPath || defaultPath); // default to menuontop avatars folder
     fp.displayDirectory = localFile; // gLastOpenDirectory.path
     fp.open(fpCallback);		
   } ,  
+  
+  onIconSizeChange: function onIconSizeChange(txt) {
+    const prefs = MenuOnTop.Preferences;
+    let maxHeight = prefs.getIntPref('maxHeight');
+    try {
+      let icSize = parseInt(txt.value, 10);
+      if (icSize > maxHeight) {
+        prefs.setIntPref('maxHeight', icSize);
+      }
+    }
+    catch(ex) { ; }
+  } ,
 	
 	accept: function accept() {
 		this.apply();

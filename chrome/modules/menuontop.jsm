@@ -89,7 +89,6 @@ END LICENSE BLOCK
     
 */
 Components.utils.import("resource://gre/modules/Services.jsm");
-Components.utils.import("resource:///modules/MailUtils.js");
  
 var EXPORTED_SYMBOLS = [ 'MenuOnTop' ];
 
@@ -664,6 +663,9 @@ let MenuOnTop = {
 
 };
 
+Components.utils.import("resource://gre/modules/osfile.jsm")
+Components.utils.import("resource://gre/modules/Services.jsm");
+
 MenuOnTop.Util = {
   get Application() {
     return MenuOnTop.Application;
@@ -902,7 +904,7 @@ MenuOnTop.Util = {
         tabmail.openTab(sTabMode,
             { contentPage: URL,
               background: false,
-              clickHandler: browser ? browser.clickHandler : null });
+              clickHandler: 'specialTabs.siteClickHandler(event);' });  // , new RegExp("^http://quickfolders.mozdev.org/")
 			}
 			else
 				window.openDialog("chrome://messenger/content/", "_blank",
@@ -910,7 +912,8 @@ MenuOnTop.Util = {
 			  { 
           tabType: "contentTab",
 			    tabParams: {contentPage: URL,
-			              clickHandler: "specialTabs.siteClickHandler(event, QuickPasswords_TabURIregexp._thunderbirdRegExp);", id:"QuickPasswords_Weblink"}
+			              clickHandler: 'specialTabs.siteClickHandler(event, new RegExp("^http://quickfolders.mozdev.org/"));', 
+                    id:"MenuOnTop_Weblink"}
 			  } );
 		}
 		catch(e) {
@@ -928,6 +931,7 @@ MenuOnTop.Util = {
         method = forceMethod || 'currentTab'; // || prefs.getStringPref('bookmarks.openMethod');
     if (util.Application != 'Thunderbird')
       throw('Cannot open email, application is not supported:' + util.Application);
+    Components.utils.import("resource:///modules/MailUtils.js");
     try {
       if (!msgHdr) return false;
       if ((msgHdr.messageId.toString() + msgHdr.author + msgHdr.subject) == '' 
@@ -965,14 +969,23 @@ MenuOnTop.Util = {
   // open an email in a new tab
   openMessageFromUri: function openMessageFromUri(messageUri, event) {
     let util = MenuOnTop.Util,
-        isAlt, isCtrl, isShift,
+        isAlt, isCtrl, isShift, hdr,
         win = Components.classes["@mozilla.org/appshell/window-mediator;1"]
                  .getService(Components.interfaces.nsIWindowMediator)
                  .getMostRecentWindow("mail:3pane");  
     if (!win) {
-      Services.prompt.alert(null, 'MenuOnTop - openMessageTabFromUri', 'No open mail window found!'); 
+      Services.prompt.alert(null, 'MenuOnTop - openMessageFromUri', 'No open mail window found!'); 
+      return;
     }    
-    let hdr = win.messenger.messageServiceFromURI(messageUri).messageURIToMsgHdr(messageUri);
+    try {
+      hdr = win.messenger.messageServiceFromURI(messageUri).messageURIToMsgHdr(messageUri);
+    }
+    catch(ex) {
+      Services.prompt.alert(null, 'MenuOnTop', 
+        'Message could not be retrieved - it may have been moved to a different folder?\n'
+        + messageUri);
+      return;
+    }
     
     if (event) {
       isAlt = event.altKey;
@@ -998,9 +1011,6 @@ MenuOnTop.Util = {
     return true;
   }
 };  // Util
-
-Components.utils.import("resource://gre/modules/osfile.jsm")
-Components.utils.import("resource://gre/modules/Services.jsm");
 
 MenuOnTop.Preferences = {
 	service: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch),
@@ -1041,6 +1051,15 @@ MenuOnTop.Preferences = {
 		}
 		catch(ex) {
 			MenuOnTop.Util.logException("setBoolPref(extensions.menuontop." + term + ")", ex);
+		}
+	},  
+  
+  setIntPref: function setIntPref(term, val) {
+		try {
+			return this.service.setIntPref("extensions.menuontop." + term, val);
+		}
+		catch(ex) {
+			MenuOnTop.Util.logException("setIntPref(extensions.menuontop." + term + ")", ex);
 		}
 	},  
   
@@ -1088,6 +1107,10 @@ MenuOnTop.Preferences = {
   get customMenuTitle() {
 		return this.getCharPref('customMenu.title');
   } ,
+  
+  set customMenuTitle(val) {
+    this.setCharPref('customMenu.title', val);
+  },
   
 	get iconSizeNormal() {
 		return this.getIntPref('iconSize.normal');

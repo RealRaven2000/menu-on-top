@@ -2,18 +2,22 @@
 
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xml-stylesheet href="menuOnTop-options.css" type="text/css"?>
+<?xml-stylesheet href="menuOnTop-contribute.css" type="text/css"?>
 
 <!-- tabsize = 2 -->
 <prefwindow xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
             windowtype = "addon:MenuOnTop"
             id="MenuOnTop-preferences"
             title="Menu On Top Preferences"
-            buttons="accept,extra2"
+            buttons="accept,extra1,extra2"
             ondialogaccept="MenuOnTop.Options.accept();"
-            buttonlabelextra2="More Information..."
-            buttonaccesskeyextra2="I"
-            tooltipextra2="Go to the support web site..."
-            ondialogextra2="MenuOnTop.Util.openURL(null,'http://quickfolders.mozdev.org/menuOnTop.html');"
+						buttonlabelextra2="Donate"
+						tooltipextra2="Contribute to the MenuOnTop project..."
+            ondialogextra2="MenuOnTop.Util.openURL(null,'http://quickfolders.mozdev.org/menuOnTopDonate.html');"
+            buttonlabelextra1="More Information..."
+            buttonaccesskeyextra1="I"
+            tooltipextra1="Go to the support web site..."
+            ondialogextra1="MenuOnTop.Util.openURL(null,'http://quickfolders.mozdev.org/menuOnTop.html');"
             onload="MenuOnTop.Options.onLoad();"
             onunload="MenuOnTop.Options.onUnload();"
             minwidth="420">
@@ -339,6 +343,7 @@
 						<label control="txtMaxHeight" value="Maximum menu item height:" />
 						<textbox id="txtMaxHeight" 
 								 type="number" 
+								 increment="2"
 								 min="20"
 								 preference="MaxHeight"  
 								 tooltiptext="Set a number" />
@@ -349,7 +354,7 @@
 				</grid>
 			  </groupbox>
 			  <groupbox>
-				<caption label="Icon Size" />
+				<caption label="Button Icons" />
 				<grid flex="1">
 				  <columns>
 					<column />
@@ -410,8 +415,10 @@
 					<textbox id="customMenuIconSize"
 									 type="number"
 									 increment="2"
+									 min="16"
 									 preference="CustomMenuIconSize"
 									 tooltiptext="(Maximum) Size of the Icon. If the menu height is smaller it will be resized."
+									 onchange="MenuOnTop.Options.onIconSizeChange(this)"
 									 />
 				</hbox>
 				
