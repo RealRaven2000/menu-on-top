@@ -43,7 +43,9 @@ const PREF_BRANCH = "extensions.menuontop.";
 function setDefaultPrefs() {
   let branch = Services.prefs.getDefaultBranch(PREF_BRANCH);
   for (let [key, val] in Iterator( MenuOnTop.defaultPREFS )) {
-		MenuOnTop.Util.logDebug ("Loading default pref " + key + ": " + val);
+    // use x_y to create pref x.y
+    key = key.replace(/_/g,'.');
+		MenuOnTop.Util.logDebug ("Setting default pref " + key + ": " + val);
 		
     switch (typeof val) {
       case "boolean":
@@ -95,6 +97,10 @@ var MenuOnTop  = {};
 var styleSheets = ["chrome://menuontop/skin/menuOnTop_main.css"];
 
 startup = function(data, reason){
+  try { // remove from cache!
+    Cu.unload("chrome://menuontopmod/content/menuontop.jsm");
+  } 
+  catch(ex) {;}
   MenuOnTop = Cu.import("chrome://menuontopmod/content/menuontop.jsm", {}).MenuOnTop; 
 //  Cu.import("chrome://menuontopmod/content/mot_util.jsm", MOT.MenuOnTop); // Add .Util
 //  Cu.import("chrome://menuontopmod/content/mot_prefs.jsm", MOT.MenuOnTop);  // Add .Preferences
@@ -156,7 +162,9 @@ shutdown = function(data, reason){
     if (styleSheetService.sheetRegistered(styleSheetURI, styleSheetService.AUTHOR_SHEET)) {
         styleSheetService.unregisterSheet(styleSheetURI, styleSheetService.AUTHOR_SHEET);
     }  
-}  
+  }  
+  
+  Components.utils.unload("chrome://menuontopmod/content/menuontop.jsm");
 };
 
 
@@ -224,6 +232,7 @@ var start = function(window){
       MenuOnTop.setCustomIcon(prefs.customMenuIconURL);
     }
   }
+  MenuOnTop.Util.checkVersion(window);
 };
 
 var stop = function(window){
