@@ -19,8 +19,9 @@ MenuOnTop.Options = {
 
   onLoad: function onLoad() {
     const util = MenuOnTop.Util,
+          prefs = MenuOnTop.Preferences,
           tabsInTitlebar = util.getTabInTitle();
-    if (MenuOnTop.Preferences.isDebug) debugger;
+    if (prefs.isDebug) debugger;
 		MenuOnTop.ensureMenuBarVisible(util.MainWindow); // more for testing, but it might have its place!
 	  // alert('test');
 		util.logDebug ("MenuOnTop.Options.onLoad()");
@@ -35,7 +36,25 @@ MenuOnTop.Options = {
     document.getElementById('tabsInTitle').checked = tabsInTitlebar;
     document.getElementById('moveBar').disabled = !tabsInTitlebar;
     MenuOnTop.Options.enableCustomMenuControls();
+    // populate version - simple first
+    document.getElementById('lblVersion').value = prefs.getCharPref('version');
+    if (typeof AddonManager == 'undefined')
+      Components.utils.import("resource://gre/modules/AddonManager.jsm");
+    // populate version - complete
+    let w = window;
+    w.setTimeout (function () {
+        AddonManager.getAddonByID(MenuOnTop.Id,
+          function(addon) {
+            w.document.getElementById('lblVersion').value = addon.version;
+          }
+        );
+    }, 500); // delay is just for effect
+    
 	},
+  
+  showVersionHistory: function showVersionHistory() {
+    MenuOnTop.Util.showHistory(MenuOnTop.Preferences.getCharPref('version'));
+  } ,
 	
   onSelectionChange: function onSelectionChange(evt) {
     const util = MenuOnTop.Util,
@@ -73,13 +92,20 @@ MenuOnTop.Options = {
         txtCustomMenu = doc.getElementById('txtCustomMenu'),
         motToolbar = doc.getElementById('motToolbar'),
         btnSelectAvatar = doc.getElementById('btnSelectAvatar'),
-        iconSize = doc.getElementById('customMenuIconSize');
+        iconSize = doc.getElementById('customMenuIconSize'),
+        customFont = doc.getElementById('customMenuFont'),
+        customFontSize = doc.getElementById('txtCustomMenuSize'),
+        customFontBold = doc.getElementById('chkCustomMenuBold');
+        
     
     txtCustomMenu.disabled = !isActive;
     bookmarksList.disabled = !isActive;
     motToolbar.disabled = !isActive;
     iconSize.disabled = !isActive;
     btnSelectAvatar.disabled = !isActive;
+    customFont.disabled = !isActive;
+    customFontSize.disabled = !isActive;
+    customFontBold.disabled = !isActive;
   },
   
   onCustomMenu: function onCustomMenu(chk) {
@@ -100,13 +126,14 @@ MenuOnTop.Options = {
         options.updateCustomMenuLabel(txtCustomMenu);
       }
     }
-    if (isActive && prefs.isCustomMenuIcon) { // repaint avatar
-      MenuOnTop.setCustomIcon(prefs.customMenuIconURL);
-    }
         
     prefs.isCustomMenu = chk.checked;  // updates the main menu UI
     options.enableCustomMenuControls();
     MenuOnTop.showCustomMenu(win, isActive); // fromOptions param to force repopulating listbox
+    
+    if (isActive && prefs.isCustomMenuIcon) { // repaint avatar
+      MenuOnTop.setCustomIcon(prefs.customMenuIconURL);
+    }
   } ,
   
   updateCustomMenuLabel: function updateCustomMenuLabel(txtbox) {
@@ -507,7 +534,7 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuFontColorDefault', '#FFCC66');
 				setElementValue('txtMenuFontColorHover', '#FFFF99');
         break;
-      case 19: // mahogany  - redish brown
+      case 19: // Leather - mahogany  - redish brown
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, #a95f4a 0%,#4f0b0b 29%,#6e272b 64%,#9e5b45 100%)');
 				setElementValue('txtMenuFontColorDefault', '#F2D0BB');
 				setElementValue('txtMenuFontColorHover', '#D68779');

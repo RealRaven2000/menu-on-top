@@ -21,7 +21,7 @@ pref("extensions.menuontop.menuBackground,active",
 pref("extensions.menuontop.menuBorderColor", "#FFFFFF");
 pref("extensions.menuontop.menuBorderWidth", "0");
 pref("extensions.menuontop.menubar.transparent", true);
-pref("extensions.menuontop.toolbarMargin.right", 700);
+pref("extensions.menuontop.toolbarMargin.right", 350);
 pref("extensions.menuontop.menuMargin", 5);
 pref("extensions.menuontop.menuMargin.left", 9);
 pref("extensions.menuontop.menuRadius", "1");
@@ -34,5 +34,5 @@ pref("extensions.menuontop.customMenu.icon.use", false);
 pref("extensions.menuontop.customMenu.icon.size", 20);
 pref("extensions.menuontop.customMenu.icon.url", '');
 pref("extensions.menuontop.customMenu.label.specialFont", false);
-pref("extensions.menuontop.customMenu.label.size", 11);
+pref("extensions.menuontop.customMenu.label.size", 9);
 pref("extensions.menuontop.customMenu.label.bold", false);

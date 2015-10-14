@@ -1,7 +1,7 @@
 
 .dialogheader-title {
-  font-size:large;
-  font-weight:bold;
+  font-size: large;
+  font-weight: bold;
   font-family: calibri, serif;
   text-shadow: 1px 1px 2px rgba(70,70,70,0.75);
   color: rgba(255,255,255,0.9);  
@@ -10,13 +10,44 @@
 .dialogheader-title:hover {
   color: rgba(255,255,255,1.0);  
 }
+#mot-options-icon {
+	margin-left: 8px;
+	margin-right: 8px;
+}
+
+#mot-header-container {
+	border-radius: 6px;
+	border: 1px solid rgba(80,80,80,0.5);
+	box-shadow: inset 3px 3px 4px rgba(80,80,80,0.3);
+}
 
 #lblVersion {
+	border-radius: 3px;
   color: rgba(255,255,255,1.0);  
+	padding: 2px 5px 0px;
+}
+
+#lblVersion:hover {
+  background: transparent linear-gradient(to bottom, rgba(237,4,8,0.8) 0%,rgba(137,13,2,0.8) 45%,rgba(117,23,0,0.8) 100%);
+	color: white;
 }
 
 #mot-options-header {
-  background: transparent linear-gradient(to bottom, #D828B2 0%, #C12397 46%, #900065 51%, #D61696 100%) repeat scroll 0% 0%
+	border-top-right-radius: 6px;
+	border-bottom-right-radius: 6px;
+  background: transparent linear-gradient(to bottom, #a95f4a 0%,#4f0b0b 29%,#6e272b 64%,#9e5b45 100%);
+}
+#mot-options-header:hover {
+  background: transparent linear-gradient(to bottom, #b27237 0%,#7d492e 34%,#774121 56%,#c48b56 100%);
+}
+
+#mot-options-header label {
+	transition-property: color;
+	transition-duration: 0.75s;
+}
+
+#mot-options-header:hover label {
+	color : #FFCC66;
 }
 
 #btnAdd {

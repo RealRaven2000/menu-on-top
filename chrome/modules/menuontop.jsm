@@ -80,19 +80,25 @@ END LICENSE BLOCK
     # Added setting for left margin
     # was auto-updated to 0.9.8.1 signed by AMO
     
-  1.0 - 
+  1.0 - 12/10/2015
     # You can now specify a space for dragging the window if you are using the option "show menu in titlebar"
     # Added lop-left bookmark feature   
     # Added separate color choices for hover / active menu items
     # New theme "Australis Redesigned"
     # Improved layout of settings dialog
     
+  1.1 - WIP
+    # improved instant loading of settings on update
+    # added icons for firefox, thunderbird, earlybird
+    # enabling Custom Menu will show avatar icon instantly
 */
 Components.utils.import("resource://gre/modules/Services.jsm");
  
 var EXPORTED_SYMBOLS = [ 'MenuOnTop' ];
 
 let MenuOnTop = {
+  Id: "menuOnTop@agrude.com",
+  mVersion: "",
   mAppName: null,
   CSSid: "menuOnTop-style",
   CustomMenuId: "menuOnTop-menu-Custom",
@@ -197,8 +203,15 @@ let MenuOnTop = {
                 '#' + util.ToolboxId + ' > #'+ util.ToolbarId +':not(:-moz-lwtheme) { background-color: transparent !important; background-image:none; } ' +
                 menuItemString + 
                 tmargin;
-      if (Prefs.isCustomMenuIcon)
-        cssCode += " #menuOnTop-menu-Custom > image { width:" + Prefs.customMenuIconSize + "px; height:" + Prefs.customMenuIconSize + "px; margin-left: 5px;";
+      if (Prefs.isCustomMenuIcon) {
+        let Id = MenuOnTop.CustomMenuId;
+        cssCode += " #" + Id + " > image { width:" + Prefs.customMenuIconSize + "px; height:" + Prefs.customMenuIconSize + "px; margin-left: 5px; }";
+        if (Prefs.getBoolPref('customMenu.label.specialFont')) {
+          cssCode += " #" + Id + " > label { "
+            + ((Prefs.getBoolPref('customMenu.label.bold')) ? "font-weight: bold; " : "")
+            + "font-size:" + Prefs.getIntPref('customMenu.label.size') + "pt; } ";
+        }
+      }
 
       // apply all styles
 			css.appendChild(document.createTextNode(cssCode));
@@ -552,6 +565,7 @@ let MenuOnTop = {
     }
   } ,
 	
+  // replace pref1.pref2 with pref1_pref2
 	defaultPREFS : {
 		negativeMargin: 2,
 		menuMarginTop: 6,
@@ -561,22 +575,25 @@ let MenuOnTop = {
 		menuRadius: "0.5",
 		menuRadiusLeft: false,
 		menuRadiusRight: true,
-		menubarTransparent: true,
+		menubar_transparent: true,
 		menuBackground: "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3))",
 		menuFontColor: "rgb(15,15,15)",
-		menuBackgroundHover: "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3))",
-		menuFontColorHover: "rgb(15,15,15)",
-		menuBackgroundActive: "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3))",
-		menuFontColorActive: "rgb(15,15,15)",
-		iconSizeSmall: 16,
-		iconSizeNormal: 16,
-    forceSmallIcons: true, // new setting to avoid smudged icons in menu bar!
+		menuBackground_hover: "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3))",
+		menuFontColor_hover: "rgb(15,15,15)",
+		menuBackground_active: "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3))",
+		menuFontColor_active: "rgb(15,15,15)",
+		iconSize_small: 16,
+		iconSize_normal: 16,
+    iconSize_forceSmall: true, // new setting to avoid smudged icons in menu bar!
 		textShadow: false,
 		debug: false,
 		statusIcon: true,
     customMenu: false,
-    customMenuTitle: 'MenuOnTop',
-    toolbarMarginRight: 500
+    customMenu_title: 'MenuOnTop',
+    toolbarMargin_right: 350,
+    customMenu_label_specialFont: false,
+    customMenu_label_size: 9,
+    customMenu_label_bold: false
   },
 	
   showOptions: function showOptions(evt, win) {
@@ -676,6 +693,22 @@ MenuOnTop.Util = {
 						.getService(Components.interfaces.nsIXULAppInfo);
 		return parseFloat(appInfo.version);
   } ,
+  
+	getVersionSimple: function getVersionSimple(ver) {
+		function strip(version, token) {
+			let cutOff = version.indexOf(token);
+			if (cutOff > 0) { 	// make sure to strip of any pre release labels
+				return version.substring(0, cutOff);
+			}
+			return version;
+		}
+
+		let pureVersion = strip(ver, 'pre');
+		pureVersion = strip(pureVersion, 'beta');
+		pureVersion = strip(pureVersion, 'alpha');
+		return strip(pureVersion, '.hc');
+	},
+  
   
   get MainWindowXulId() {
     switch(this.Application) {
@@ -809,6 +842,62 @@ MenuOnTop.Util = {
     return '';
   } ,
   
+  checkVersion: function checkVersion(win) {
+    let current = MenuOnTop.Version,
+        addonId = MenuOnTop.Id;
+    if (typeof AddonManager == 'undefined')
+      Components.utils.import("resource://gre/modules/AddonManager.jsm");
+    MenuOnTop.Util.logDebug('checkVersion() for ' + addonId);
+    win.setTimeout (function () {
+        AddonManager.getAddonByID(addonId,
+          function(addon) {
+            // This is an asynchronous callback function that might not be called immediately, ah well...
+            const util = MenuOnTop.Util;
+            if (addon.version)
+              util.checkFirstRun(addon.version);
+            else
+              util.checkVersion(); // retry
+          }
+        );
+    }, 150);
+  } ,
+
+  checkFirstRun: function checkFirstRun(ver) {
+		const util = MenuOnTop.Util,
+          prefs = MenuOnTop.Preferences;
+		let loggedVer = prefs.getCharPref('version'),
+        freshInstall = false;
+    if (util.Version == ver) return; // we have been here!
+    util.Version = ver;
+    let pureVersion = util.getVersionSimple(ver);
+    // assume this is a new installation if there is no setting for menu background
+    if (!loggedVer && !prefs.getCharPref('menuBackground'))
+      freshInstall = true;
+    util.logDebug('checkFirstRun() Running version: ' + pureVersion + '   [' + ver + ']\n'
+                  + 'logged Version = ' + loggedVer + ' , freshInstall = ' + freshInstall);
+    // save current version
+    prefs.setCharPref('version', pureVersion);
+    if (freshInstall)
+      util.showHistory();
+    else if (pureVersion != loggedVer) {
+      util.showHistory(pureVersion);
+    }
+  } ,
+  
+  showHistory: function showHistory(ver) {
+    let url = 'http://quickfolders.mozdev.org/menuOnTop.html';
+    if (ver) url+= '?version#' + ver;
+    MenuOnTop.Util.openURL(null, url);
+  } ,
+  
+  get Version() {
+    return MenuOnTop.mVersion;
+  } ,
+  
+  set Version(v) {
+    MenuOnTop.mVersion = v;
+  } ,
+
 	lastTime:0,
   
 	logTime: function logTime() {

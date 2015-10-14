@@ -62,15 +62,25 @@
 			<preference id="CustomMenuFontSize" name="extensions.menuontop.customMenu.label.size" type="int"  instantApply="true" />
 			<preference id="CustomMenuBold"     name="extensions.menuontop.customMenu.label.bold" type="bool"  instantApply="true" />
     </preferences>
-    <hbox id="mot-options-header">
-      <label class="dialogheader-title" 
-	         value="Menu On Top" 
-			 flex="1" />
-	  <label id = "lblVersion"
-	         value="1.0"
-					 tooltiptext="Right-click for version history"
-					 oncontextmenu="MenuOnTop.Util.openURL(null,'http://quickfolders.mozdev.org/menuOnTop.html#history');" />
-    </hbox>
+		<hbox id="mot-header-container">
+			<vbox>
+				<spacer flex="1"/>
+				<image id="mot-options-icon" 
+				       src="chrome://menuontop/content/menuOnTop16.png" 
+							 flex="0"/>
+				<spacer flex="1"/>
+			</vbox>
+
+			<hbox id="mot-options-header" flex="1">
+				<label class="dialogheader-title" 
+						 value="Menu On Top" 
+				 flex="1" />
+			<label id = "lblVersion"
+						 value="1.0"
+						 tooltiptext="Right-click for version history"
+						 oncontextmenu="MenuOnTop.Options.showVersionHistory();" />
+			</hbox>
+		</hbox>
 	
 	<tabbox orient="vertical" flex="6" id="mot-Options-Tabbox">
 	<tabs>
@@ -423,16 +433,18 @@
 									 />
 				</hbox>
 				<hbox align="center">
-					<checkbox preference="CustomMenuFont"
-										label="Custom Label" 
-										oncommand="MenuOnTop.Options.onCustomMenu(this);" />
+					<checkbox id="customMenuFont"
+					          preference="CustomMenuFont"
+										label="Custom Label"/>
 					<spacer />
-					<label control="txtCustomMenuSize" value="Font Size:" />
+					<label control="txtCustomMenuSize" 
+					       value="Font Size:" />
 					<textbox id="txtCustomMenuSize" 
 									 type="number" 
 									 preference="CustomMenuFontSize"  
 									 tooltiptext="Size of the top menu label in pt" />
-					<checkbox preference="CustomMenuBold"
+					<checkbox id="chkCustomMenuBold" 
+					          preference="CustomMenuBold"
 								    label="Bold" />
 				</hbox>
 				
