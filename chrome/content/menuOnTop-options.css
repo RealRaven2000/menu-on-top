@@ -51,7 +51,11 @@
 }
 
 #btnAdd {
-	list-style-image:  url("chrome://menuontop/content/icons/fugue-add.png");
+	list-style-image:  url("chrome://menuontop/content/icons/add.png");
+}
+
+#btnUpdate {
+	list-style-image:  url("chrome://menuontop/content/icons/fugue-update.png");
 }
 
 #btnRemove {

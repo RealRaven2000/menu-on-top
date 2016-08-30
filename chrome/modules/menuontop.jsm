@@ -87,16 +87,31 @@ END LICENSE BLOCK
     # New theme "Australis Redesigned"
     # Improved layout of settings dialog
     
-  1.1 - WIP
+	1.1 - 17/10/2015
     # improved instant loading of settings on update
-    # added icons for firefox, thunderbird, earlybird
+    # added icons for firefox, thunderbird, earlybird, Halloween
+		# Font size and bold attribute for custom menuitem.
     # enabling Custom Menu will show avatar icon instantly
+		
+  1.2 - 11/01/2016
+		# fixed global let which breaks MenuOnTop in Firefox 44
+		
+	1.3 - 10/05/2016
+	  # Removed caption buttons space (right of calendar buttons) in Thunderbird under Windows
+		# Added remote port label for developers
+		# Fixed "about" tabs to open in content tabs from Firefox 43.0
+		# Tb 48.0 Support for adding the new preferences tab to bookmark menu
+		# known issue: avatar icon not working if profile name contains special characters (space?)
+		
+	1.4 - WIP
+	  # add spacing to caption bar when in maximized mode
+		
+
 */
 Components.utils.import("resource://gre/modules/Services.jsm");
  
-var EXPORTED_SYMBOLS = [ 'MenuOnTop' ];
-
-let MenuOnTop = {
+var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
+    MenuOnTop = {
   Id: "menuOnTop@agrude.com",
   mVersion: "",
   mAppName: null,
@@ -133,7 +148,8 @@ let MenuOnTop = {
           marginSelector = (util.Application == 'Thunderbird') ? 
                            ' #messengerWindow[tabsintitlebar][sizemode="normal"] #mail-toolbar-menubar2' : 
                            ' #main-window[tabsintitlebar][sizemode="normal"] #navigator-toolbox > #toolbar-menubar',
-          tmargin = util.getTabInTitle() ? (marginSelector + ' { margin-right: ' + Prefs.toolbarMarginRight.toString() + 'px !important;}') : '';
+          tmargin = util.getTabInTitle() ? (marginSelector + ' { margin-right: ' + Prefs.toolbarMarginRight.toString() + 'px !important;}') : '',
+					titlebarplaceholder = util.getTabInTitle() ? ' #messengerWindow:[tabsintitlebar] .titlebar-placeholder { visibility: collapse; }' : '';
       tw = tw.indexOf('px')<0 ? tw +'px' : tw;
 			let borderWidth = 'border-width: ' + tw + ' !important;',
 			    borderStyle = borderWidth
@@ -150,8 +166,8 @@ let MenuOnTop = {
 			    dropDownSmall =  (smallIconSize.indexOf('auto')==0) ? '' : ('toolbar[iconsize="small"].chromeclass-menubar toolbarbutton.toolbarbutton-menubutton-button > image.toolbarbutton-icon { width: ' + smallIconSize + ';  height: ' + smallIconSize + '; } '),
 			    dropDownNormal = (normalIconSize.indexOf('auto')==0) ? '' : ('toolbar:not([iconsize="small"]).chromeclass-menubar toolbarbutton.toolbarbutton-menubutton-button > image.toolbarbutton-icon { width: ' + normalIconSize + ';  height: ' + normalIconSize + '; } '),
 			    menubar = Prefs.menuTransparent ? 
-			      '#'+ util.ToolbarId +':-moz-lwtheme { background-image: none !important;} ' 
-						+ '#'+ util.ToolbarId +':not(:-moz-lwtheme) { background:none !important;} '
+			      '#'+ util.ToolbarId +':-moz-lwtheme { background-color:transparent !important; background-image: none !important;} ' 
+						+ '#'+ util.ToolbarId +':not(:-moz-lwtheme) { background-color:transparent !important; background-image: none !important;} '
 						: ''; // linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5) 50%); 
 			
 			// Prefs.isMenuShadow // later!
@@ -202,7 +218,8 @@ let MenuOnTop = {
                 '#menubar-items > menubar { background: none; ' + menuMarginTop + '; ' + menuMarginLeft +'; } ' + // TT deepdark!
                 '#' + util.ToolboxId + ' > #'+ util.ToolbarId +':not(:-moz-lwtheme) { background-color: transparent !important; background-image:none; } ' +
                 menuItemString + 
-                tmargin;
+                tmargin,
+								titlebarplaceholder;
       if (Prefs.isCustomMenuIcon) {
         let Id = MenuOnTop.CustomMenuId;
         cssCode += " #" + Id + " > image { width:" + Prefs.customMenuIconSize + "px; height:" + Prefs.customMenuIconSize + "px; margin-left: 5px; }";
@@ -219,6 +236,8 @@ let MenuOnTop = {
       MenuOnTop.forceIconSize(window);
       // Avatar
       MenuOnTop.setCustomIcon(Prefs.customMenuIconURL);
+			let controlsPlaceholder = document.getElementById("titlebar-placeholder-on-TabsToolbar-for-captions-buttons");
+			if (controlsPlaceholder) controlsPlaceholder.collapsed=true;
 		}
 		catch (ex) {
 			MenuOnTop.Util.logDebug ("MenuOnTop.loadCSS() failed\n" + ex);
@@ -235,6 +254,8 @@ let MenuOnTop = {
         css.parentNode.removeChild(css);
       else
         MenuOnTop.Util.logDebug ("Could not find the css style element:" + css);
+			let controlsPlaceholder = document.getElementById("titlebar-placeholder-on-TabsToolbar-for-captions-buttons");
+			if (controlsPlaceholder) controlsPlaceholder.collapsed=false;			
 		}
 		catch (ex) {
 			MenuOnTop.Util.logDebug ("MenuOnTop.resetCSS() failed\n" + ex);
@@ -273,25 +294,39 @@ let MenuOnTop = {
           }, false);
         className += ' MOT_mailmessage';
         break;
+			case "preferencesTab":
+				// break;
       case "contentTab.about":
         // the about url is in url
         let tabParams = {
               contentPage: url,
               clickHandler: "specialTabs.aboutClickHandler(event);"
             };
-        if (util.Application == 'Thunderbird') {
-          tm = doc.getElementById('tabmail');
-          menuitem.addEventListener("command", function(event) { 
-            tm.openTab("contentTab", tabParams);
-            }, false);
+        switch (util.Application) {
+				  case 'Thunderbird':
+						tm = doc.getElementById('tabmail');
+						menuitem.addEventListener("command", function(event) { 
+							tm.openTab("contentTab", tabParams);
+							}, false);
+						break;
+          case 'Firefox':
+						let filename = url.replace(":","").replace("?","").replace("=","");
+						if (util.PlatformVersion >=43.0) {  // use a content tab
+						  menuitem.addEventListener("command", function(event) { 
+									util.openURLInTab(url);
+								}, false);
+						}
+						else {
+							menuitem.addEventListener("command", function(event) { 
+								util.MainWindow.openDialog("chrome://viewabout/content/dialogs/"+filename+".xul", filename, "chrome,resizable=yes,width=800,height=500,centerscreen"); 
+								}, false);
+						}
+						break;
         }
-        else {
-          let filename = url.replace(":","").replace("?","").replace("=","");
-          menuitem.addEventListener("command", function(event) { 
-            util.MainWindow.openDialog("chrome://viewabout/content/dialogs/"+filename+".xul", filename, "chrome,resizable=yes,width=800,height=500,centerscreen"); 
-            }, false);
-        }
-        className += ' MOT_about';
+				if (cmdType=='preferencesTab' || url=='about:preferences')
+					className += ' MOT_prefs';
+        else
+					className += ' MOT_about';
         break;
       case "addon":
         switch(url) {
@@ -333,7 +368,7 @@ let MenuOnTop = {
       default:
         menuitem.addEventListener("command", 
           function() { 
-            Services.prompt.alert(null, 'MenuOnTop - makeMenuItem', 'This bookmark type is not currently supported:' + cmdType); 
+            Services.prompt.alert(null, 'MenuOnTop - makeMenuItem', 'This bookmark type is not currently supported: ' + cmdType); 
           }, 
           false);
         break;
@@ -429,7 +464,7 @@ let MenuOnTop = {
         menuId = MenuOnTop.CustomMenuId, 
         doc = win.document,
         menubar = doc.getElementById(util.MenubarId),
-        label = MenuOnTop.Preferences.customMenuTitle;
+        label = MenuOnTop.Preferences.customMenuLabelTitle;
     util.logDebug('showCustomMenu - display = ' + display);
     // create a menu item to th8e left of file menu
     if (menubar) {
@@ -684,6 +719,7 @@ Components.utils.import("resource://gre/modules/osfile.jsm")
 Components.utils.import("resource://gre/modules/Services.jsm");
 
 MenuOnTop.Util = {
+	mPlatformVer: null,
   get Application() {
     return MenuOnTop.Application;
   } ,
@@ -693,6 +729,18 @@ MenuOnTop.Util = {
 						.getService(Components.interfaces.nsIXULAppInfo);
 		return parseFloat(appInfo.version);
   } ,
+	
+	get PlatformVersion() {
+		if (null==this.mPlatformVer)
+			try {
+				let appInfo = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
+				this.mPlatformVer = parseFloat(appInfo.platformVersion);
+			}
+			catch(ex) {
+				this.mPlatformVer = 1.0; // just a guess
+			}
+		return this.mPlatformVer;
+	},
   
 	getVersionSimple: function getVersionSimple(ver) {
 		function strip(version, token) {
@@ -859,7 +907,7 @@ MenuOnTop.Util = {
               util.checkVersion(); // retry
           }
         );
-    }, 150);
+    }, 750);
   } ,
 
   checkFirstRun: function checkFirstRun(ver) {
@@ -885,7 +933,7 @@ MenuOnTop.Util = {
   } ,
   
   showHistory: function showHistory(ver) {
-    let url = 'http://quickfolders.mozdev.org/menuOnTop.html';
+    let url = 'http://quickfolders.mozdev.org/menuOnTopHistory.html';
     if (ver) url+= '?version#' + ver;
     MenuOnTop.Util.openURL(null, url);
   } ,
@@ -1193,6 +1241,17 @@ MenuOnTop.Preferences = {
     return this.getCharPref('customMenu.icon.url')
   } ,
   
+	get customMenuLabelTitle() {
+		let s = this.customMenuTitle;
+		try {
+			if (this.getBoolPref('customMenu.title.remote')) {
+				return s + ': ' + this.service.getIntPref('devtools.debugger.remote-port');
+			}
+		}
+		catch(ex) { s + ': no remote port'; }
+		return s;
+	} ,
+	
   get customMenuTitle() {
 		return this.getCharPref('customMenu.title');
   } ,
@@ -1325,6 +1384,23 @@ MenuOnTop.TopMenu = {
     return this.document.getElementById('bookmarksList');
   },
   
+  get BookmarkTypes() {
+    const util = MenuOnTop.Util;
+    switch (util.Application) {
+      case 'Firefox':
+        return  ['addon', 'browser', 'function', 'contentTab.about'];
+      case 'Thunderbird':
+        return  ['addon', 'browser', 'function', 'contentTab.about', 'calendar', 'message', 'folder', 'preferencesTab'];
+      default:
+        return [];
+    }
+  } ,
+  
+  isTypeSupported: function isTypeSupported(bmType) {
+    let bTypes = this.BookmarkTypes;
+    return (bTypes.indexOf(bmType) >= 0);
+  },
+  
   addItem: function addItem(url, label, bookmarkType) {
     let listbox = this.ListBox;
     if (listbox)
@@ -1421,21 +1497,45 @@ MenuOnTop.TopMenu = {
     return input.value;
   } ,
   
-  add: function add() {
+
+  update: function update(isNew) {
     const util = MenuOnTop.Util;
     if (MenuOnTop.Preferences.isDebug) debugger;
     let url = this.document.getElementById('linkURL').value,
         label = this.document.getElementById('linkLabel').value,
         bookmarkType = this.document.getElementById('linkType').value,
-        existingEntry, existingIndex;
+        existingEntry = null, 
+        existingIndex = null;
+    if (!label.trim()) {
+      Services.prompt.alert(null, 'MenuOnTop', 'Please enter a label!');
+      return;
+    }
+    if (!url.trim()) {
+      Services.prompt.alert(null, 'MenuOnTop', 'Please enter a URL!');
+      return;
+    }
+    if (!bookmarkType.trim()) {
+      Services.prompt.alert(null, 'MenuOnTop', 'Please enter a bookmark type!\n'
+        + 'Supported types are: ' + this.BookmarkTypes.toString());
+      return;
+    }
+    if (!this.isTypeSupported(bookmarkType)) {
+      Services.prompt.alert(null, 'MenuOnTop', 'Invalid bookmark type!\n'
+        + 'Supported types are: ' + this.BookmarkTypes.toString());
+      return;
+    }
+    
     // check if it exists and replace label
-    for (let i=0; i<this.Entries.length; i++) {
-      let e = this.Entries[i];
-      if (e.url == url && e.bookmarkType) {
-        existingEntry = e;
-        existingIndex = i;
-        break;
+    if (!isNew) {
+      let lb = this.ListBox;      
+      existingIndex = lb.selectedIndex;
+      if (existingIndex<0) {
+        Services.prompt.alert(null, 'MenuOnTop - update', 'You have to select an item from the list to update!');
+        return;
       }
+      existingEntry = this.Entries[existingIndex];
+      existingEntry.url = url;
+      existingEntry.label = label;
     }
     // TO DO:
     // should we allow changing the URL ? (for selected item only)
@@ -1618,6 +1718,11 @@ MenuOnTop.TopMenu = {
 								currentURI="Calendar";
                 currentLabel="Calendar";
 								break;
+							case 'preferencesTab':
+                currentType = 'preferencesTab';
+                currentLabel = tab.browser.contentTitle;
+								currentURI = tab.browser.currentURI.asciiSpec;
+							  break;
 							case 'contentTab':      // fall through
 							case 'thunderbrowse':
                 currentType = 'browser';

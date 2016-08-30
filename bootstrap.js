@@ -15,7 +15,7 @@
  *    For version history, please refer to the module chrome/content/menuOnTop.js
  */
 
-const Cu = Components.utils;
+var   Cu = Components.utils;
 
 Cu.import("resource://gre/modules/Services.jsm");
 
@@ -38,7 +38,9 @@ var windows = []; // All windows we're started in, to remove helpers at shutdown
 
 // we cannot have default prefs in a file, so:
 // see http://starkravingfinkle.org/blog/2011/01/restartless-add-ons-%E2%80%93-default-preferences/
-const PREF_BRANCH = "extensions.menuontop.";
+var PREF_BRANCH = "extensions.menuontop.";
+var MenuOnTop  = {};
+var styleSheets = ["chrome://menuontop/skin/menuOnTop_main.css"];
 
 function setDefaultPrefs() {
   let branch = Services.prefs.getDefaultBranch(PREF_BRANCH);
@@ -83,20 +85,17 @@ var winListener = {
   onWindowTitleChange: function(aWindow, aTitle) { },
 };
 
-install = function(data, reason){
+function install(data, reason){
   // We run the first time
 	Components.manager.addBootstrappedManifestLocation(data.installPath);
 	// setDefaultPrefs();
 };
 
-uninstall = function(data, reason){
+function uninstall(data, reason){
   // We'll get deleted and have to clean up
 };
 
-var MenuOnTop  = {};
-var styleSheets = ["chrome://menuontop/skin/menuOnTop_main.css"];
-
-startup = function(data, reason){
+function startup(data, reason){
   try { // remove from cache!
     Cu.unload("chrome://menuontopmod/content/menuontop.jsm");
   } 
@@ -140,7 +139,7 @@ startup = function(data, reason){
 	
 };
 
-shutdown = function(data, reason){
+function shutdown(data, reason){
   // We're shutting down
   
   // Stop listening
@@ -168,7 +167,7 @@ shutdown = function(data, reason){
 };
 
 
-var start = function(window){
+function start(window){
   // We're starting up in a window
   const util = MenuOnTop.Util,
         prefs = MenuOnTop.Preferences;
@@ -235,7 +234,7 @@ var start = function(window){
   MenuOnTop.Util.checkVersion(window);
 };
 
-var stop = function(window){
+function stop(window){
   // We're shutting down in a window
   var document = window.document;
   // Undo changes

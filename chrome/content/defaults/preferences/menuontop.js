@@ -1,5 +1,6 @@
 pref("extensions.menuontop.customMenu", true);
 pref("extensions.menuontop.customMenu.title", "");
+pref("extensions.menuontop.customMenu.title.remote", false);
 pref("extensions.menuontop.debug", false);
 pref("extensions.menuontop.debug.default", false);
 pref("extensions.menuontop.flavor.coloronly", false);

@@ -56,6 +56,7 @@
       <preference id="ShowStatusIcon"  name="extensions.menuontop.statusIcon" type="bool" instantApply="true" />
       <preference id="CustomMenu"      name="extensions.menuontop.customMenu" type="bool"  instantApply="true" />
       <preference id="CustomMenuTitle" name="extensions.menuontop.customMenu.title" type="string"  instantApply="true" />
+			<preference id="CustomMenuRemotePort" name="extensions.menuontop.customMenu.title.remote" type="bool" instantApply="true" />
 			<preference id="useCustomMenuIcon" name="extensions.menuontop.customMenu.icon.use" type="bool"  instantApply="true" />
 			<preference id="CustomMenuIconSize" name="extensions.menuontop.customMenu.icon.size" type="int"  instantApply="true" />
 			<preference id="CustomMenuFont"     name="extensions.menuontop.customMenu.label.specialFont" type="bool"  instantApply="true" />
@@ -73,8 +74,8 @@
 
 			<hbox id="mot-options-header" flex="1">
 				<label class="dialogheader-title" 
-						 value="Menu On Top" 
-				 flex="1" />
+							 value="Menu On Top" 
+							 flex="1" />
 			<label id = "lblVersion"
 						 value="1.0"
 						 tooltiptext="Right-click for version history"
@@ -414,6 +415,7 @@
 							 preference="CustomMenuTitle"
 							 tooltiptext="Enter name of custom menu item"
                onblur="MenuOnTop.Options.updateCustomMenuLabel(this);"
+               oninput="MenuOnTop.Options.updateCustomMenuLabel(this);"
 							 />
 					<checkbox preference="useCustomMenuIcon" 
 					          label = "Avatar"
@@ -433,6 +435,11 @@
 									 />
 				</hbox>
 				<hbox align="center">
+				  <checkbox id="customMenuPort"
+					          preference="CustomMenuRemotePort"
+										label = "Show Remote Port" 
+									  oncommand="setTimeout(MenuOnTop.Options.updateCustomMenuLabel,200);"
+										/>
 					<checkbox id="customMenuFont"
 					          preference="CustomMenuFont"
 										label="Custom Label"/>
@@ -462,7 +469,12 @@
 						    id="btnAdd"
 						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
 								label="Add"
-								oncommand = "MenuOnTop.TopMenu.add();" />
+								oncommand = "MenuOnTop.TopMenu.update(true);" />
+						<toolbarbutton
+						    id="btnUpdate"
+						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
+								label="Update"
+								oncommand = "MenuOnTop.TopMenu.update(false);" />
 						<toolbarbutton
 						    id="btnRemove"
 						    class="toolbarbutton-1 chromeclass-toolbar-additional" 

@@ -95,7 +95,8 @@ MenuOnTop.Options = {
         iconSize = doc.getElementById('customMenuIconSize'),
         customFont = doc.getElementById('customMenuFont'),
         customFontSize = doc.getElementById('txtCustomMenuSize'),
-        customFontBold = doc.getElementById('chkCustomMenuBold');
+        customFontBold = doc.getElementById('chkCustomMenuBold'),
+				customMenuPort = doc.getElementById('customMenuPort');
         
     
     txtCustomMenu.disabled = !isActive;
@@ -104,6 +105,7 @@ MenuOnTop.Options = {
     iconSize.disabled = !isActive;
     btnSelectAvatar.disabled = !isActive;
     customFont.disabled = !isActive;
+		customMenuPort.disabled = !isActive;
     customFontSize.disabled = !isActive;
     customFontBold.disabled = !isActive;
   },
@@ -137,11 +139,19 @@ MenuOnTop.Options = {
   } ,
   
   updateCustomMenuLabel: function updateCustomMenuLabel(txtbox) {
+		const prefs = MenuOnTop.Preferences,
+		      util = MenuOnTop.Util;
     let win = MenuOnTop.Util.MainWindow,
         doc = win.document,
         menu = doc.getElementById(MenuOnTop.CustomMenuId);
-    if (menu)
-      menu.setAttribute("label", txtbox.value);
+    if (menu) {
+			if (!txtbox) {
+				txtbox = document.getElementById('txtCustomMenu');
+			}
+			prefs.customMenuTitle = txtbox.value; // update pref
+			util.logDebug('updateCustomMenuLabel(): ' + txtbox.value);
+      menu.setAttribute("label", prefs.customMenuLabelTitle); // recreate label
+		}
   } ,
   
   onCustomIconToggle: function onCustomIconToggle(chk) {

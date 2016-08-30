@@ -32,3 +32,6 @@
 	list-style-image: url("chrome://lightning/skin/mode-switch-icons-aero.png");
 	-moz-image-region: rect(0px, 16px, 16px, 0px);	
 }
+#menuOnTop-menu-Custom menuitem.MOT_prefs {
+	list-style-image: url("chrome://mozapps/skin/extensions/utilities.svg#utilities");
+}
