@@ -4,20 +4,22 @@
 <?xml-stylesheet href="menuOnTop-options.css" type="text/css"?>
 <?xml-stylesheet href="menuOnTop-contribute.css" type="text/css"?>
 
+<!DOCTYPE prefwindow SYSTEM "chrome://menuontop/locale/options.dtd" >
+
 <!-- tabsize = 2 -->
 <prefwindow xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
             windowtype = "addon:MenuOnTop"
             id="MenuOnTop-preferences"
-            title="Menu On Top Preferences"
+            title="&mot.window.title;"
             buttons="accept,extra1,extra2"
             ondialogaccept="MenuOnTop.Options.accept();"
-						buttonlabelextra2="Donate"
-						tooltipextra2="Contribute to the MenuOnTop project..."
-            ondialogextra2="MenuOnTop.Util.openURL(null,'http://quickfolders.mozdev.org/menuOnTopDonate.html');"
-            buttonlabelextra1="More Information..."
-            buttonaccesskeyextra1="I"
-            tooltipextra1="Go to the support web site..."
-            ondialogextra1="MenuOnTop.Util.openURL(null,'http://quickfolders.mozdev.org/menuOnTop.html');"
+						buttonlabelextra2="&mot.btn.donate;"
+						tooltipextra2="&mot.btn.donate.tooltip;"
+            ondialogextra2="MenuOnTop.Util.openURL(null,'http://quickfolders.org/menuOnTopDonate.html');"
+            buttonlabelextra1="&mot.btn.moreInfo;"
+            buttonaccesskeyextra1="&mot.btn.moreInfo.accessKey;"
+            tooltipextra1="&mot.btn.moreInfo.tooltip;"
+            ondialogextra1="MenuOnTop.Util.openURL(null,'http://quickfolders.org/menuOnTop.html');"
             onload="MenuOnTop.Options.onLoad();"
             onunload="MenuOnTop.Options.onUnload();"
             minwidth="420">
@@ -30,6 +32,7 @@
   <prefpane id="mot-options-prefpane" label="Title">
     <preferences>
       <preference id="NegativeMargin"  name="extensions.menuontop.negativeMargin" type="int"  instantApply="true" />
+      <preference id="TabbarMargin"  name="extensions.menuontop.tabbarMargin" type="int"  instantApply="true" />
       <preference id="MenuMarginTop"   name="extensions.menuontop.menuMargin" type="int"  instantApply="true" />
       <preference id="MenuMarginLeft"  name="extensions.menuontop.menuMargin.left" type="int"  instantApply="true" />
       <preference id="toolbarMarginRight"  name="extensions.menuontop.toolbarMargin.right" type="int"  instantApply="true" />
@@ -85,8 +88,8 @@
 	
 	<tabbox orient="vertical" flex="6" id="mot-Options-Tabbox">
 	<tabs>
-		<tab label="Style" id="mot-style" />
-		<tab label="Advanced" id="mot-advanced" />
+		<tab label="&mot.style;" id="mot-style" />
+		<tab label="&mot.advanced;" id="mot-advanced" />
 	</tabs>
 	<tabpanels onselect="MenuOnTop.Options.onTabSelect(this,event);">
 		<tabpanel id="mot-Options-style"
@@ -96,95 +99,95 @@
 				  
 			<hbox align="center">
 				<groupbox>
-			    <caption label="Primary Menu Options" />
+			    <caption label="&mot.primaryMenu;" />
 					<hbox align="center">
 						<checkbox id="tabsInTitle"
-											label="Paint menu in Titlebar"
-											tooltiptext="On some systems, this option might lead to invisible window controls (min/max/close buttons)"
+											label="&mot.menuInTitle;"
+											tooltiptext="&mot.menuInTitle.tooltip;"
 											oncommand="MenuOnTop.Options.toggleTabsInTitle(this);" />
 						<toolbarseparator />
 						<label control="moveBar"
-									 value="Drag area:" />
+									 value="&mot.dragArea;" />
 						<textbox id="moveBar"
 										 type="number"
 										 increment="50"								 
 										 preference="toolbarMarginRight"
-										 tooltiptext="How much space (in pixels) is reserved for dragging the application by clicking in the title. This will also affect the minimum window width!"
+										 tooltiptext="&mot.dragArea.tooltip;"
 										 />
 					</hbox>
 				</groupbox>
 				<spacer flex="1" />
 				<groupbox>
-			    <caption label="Themes" />
+			    <caption label="&mot.themes;" />
 				  <hbox align="center">
 					<label control="styleFlavors" 
-							 value="Select a flavor:" />
+							   value="&mot.flavors.label;" />
 					<menulist id="styleFlavors"
 								oncommand="MenuOnTop.Options.selectScheme(this.value);">
 						<menupopup>
-						<menuitem label="Select one to set"
+						<menuitem label="&mot.flavors.selectOne;"
 									value="-1" />
 
-						<menuitem label="Morgana - purple"
+						<menuitem label="&mot.flavors.11;"
 						      class="menuitem-iconic morgana"
 									value="11" />
-						<menuitem label="Mountain - blue"
+						<menuitem label="&mot.flavors.12;"
 						      class="menuitem-iconic mountain"
 									value="12" />
-						<menuitem label="Parakeet - jade"
+						<menuitem label="&mot.flavors.13;"
 						      class="menuitem-iconic parakeet"
 									value="13" />
-						<menuitem label="Lime - green"
+						<menuitem label="&mot.flavors.14;"
 						      class="menuitem-iconic lime"
 									value="14" />
-						<menuitem label="Sunflower - yellow"
+						<menuitem label="&mot.flavors.15;"
 						      class="menuitem-iconic sunflower"
 									value="15" />
-						<menuitem label="Tangerine - orange"
+						<menuitem label="&mot.flavors.16;"
 						      class="menuitem-iconic tangerine"
 									value="16" />
-						<menuitem label="Robin - red"
+						<menuitem label="&mot.flavors.17;"
 						      class="menuitem-iconic robin"
 									value="17" />
-						<menuitem label="Oak - brown"
+						<menuitem label="&mot.flavors.18;"
 						      class="menuitem-iconic oak"
 									value="18" />
-						<menuitem label="Leather - mahogany"
+						<menuitem label="&mot.flavors.19;"
 						      class="menuitem-iconic leather"
 									value="19" />
 									
 						<menuseparator />
-						<menuitem label="Australis - default"
+						<menuitem label="&mot.flavors.0;"
 						      class="menuitem-iconic australis"
 									value="0" />
-						<menuitem label="Australis Redesign"
+						<menuitem label="&mot.flavors.9;"
 						      class="menuitem-iconic australis-redesign"
 									value="9" />
-						<menuitem label="TT deepdark - deepdark"
+						<menuitem label="&mot.flavors.1;"
 						      class="menuitem-iconic deepdark"
 									value="1" />
-						<menuitem label="Nautipolis - naval"
+						<menuitem label="&mot.flavors.2;"
 						      class="menuitem-iconic naval"
 									value="2" />
-						<menuitem label="Nuvola - silver"
+						<menuitem label="&mot.flavors.3;"
 						      class="menuitem-iconic silver"
 									value="3" />
-						<menuitem label="Lantana - orange glass"
+						<menuitem label="&mot.flavors.4;"
 						      class="menuitem-iconic lantana"
 									value="4" />
-						<menuitem label="Charamel - fudge"
+						<menuitem label="&mot.flavors.5;"
 						      class="menuitem-iconic fudge"
 									value="5" />
-						<menuitem label="Noja Extreme - white glass"
+						<menuitem label="&mot.flavors.6;"
 						      class="menuitem-iconic whiteglass"
 									value="6" /> 
-						<menuitem label="Walnut 2"
+						<menuitem label="&mot.flavors.7;"
 						      class="menuitem-iconic walnut"
 									value="7" />
-						<menuitem label="Littlebird - small icons"
+						<menuitem label="&mot.flavors.8;"
 						      class="menuitem-iconic littlebird"
 									value="8" />
-						<menuitem label="Phoenity - shredder"
+						<menuitem label="&mot.flavors.10;"
 						      class="menuitem-iconic phoenity"
 									value="10" />												
 									
@@ -192,94 +195,94 @@
 					</menulist>
 				</hbox>
 				<checkbox preference="boolThemeOnlyColor"
-				          label="Only change Color Scheme"
-                  tooltip="Keep all spacing / layout settings"
+				          label="&mot.changeOnlyColors;"
+                  tooltip="&mot.changeOnlyColors.tooltip;"
 									/>
 				</groupbox>
 				
 			</hbox>
 			
 			<groupbox>
-			  <caption label="Colors" />
+			  <caption label="&mot.colors;" />
 				<hbox> 
 					<checkbox id="chkMenubarTransparent"
 							  preference="boolMenuBarTransparent" 
-							  label="Transparent toolbar" />
+							  label="&mot.colors.transparent;" />
 				</hbox>
 				<tabbox orient="vertical" flex="6" id="mot-Colors-Tabbox">
 					<tabs>
-						<tab label="Default" id="mot-col-default" />
-						<tab label="Hover" id="mot-col-hover" />
-						<tab label="Active" id="mot-col-active" />
+						<tab label="&mot.colors.default;" id="mot-col-default" />
+						<tab label="&mot.colors.hover;" id="mot-col-hover" />
+						<tab label="&mot.colors.active;" id="mot-col-active" />
 					</tabs>
 					<tabpanels>
 						<tabpanel id="mot-Color-Default"
 									orient="vertical" 
-									label="Default" 
+									label="&mot.colors.default;" 
 									style="position:relative;">
-							<hbox align="left">
-								<label control="txtMenuFontColorDefault" value="Font color:" />
+							<hbox align="center">
+								<label control="txtMenuFontColorDefault" value="&mot.colors.font.color;"/>
 								<colorpicker id="txtMenuFontColorDefault"
 											 type="button"
 											 color="rgb(0,0,0)"
 											 preference="MenuFontColor"
-											 tooltiptext="Choose a color" />
+											 tooltiptext="&mot.colors.tooltip.pickColor;" />
 								<checkbox id="chkMenuShadow" 
 											preference="boolMenuShadow" 
-											label="Font Shadow" />
+											label="&mot.colors.default.fontshadow;" />
 							</hbox>
-							<hbox align="left">
-								<label control="txtMenuBackgroundDefault" value="Background:" />
+							<hbox align="center">
+								<label control="txtMenuBackgroundDefault" value="&mot.colors.background;" />
 								<textbox 
 										id="txtMenuBackgroundDefault" 
 										flex="1"
 										class="backgroundCSS"
 										preference="MenuBackground"  
-										tooltiptext="Enter a valid css background (background-image or background-color)" />
+										tooltiptext="&mot.colors.tooltip.background;" />
 							</hbox>
 						</tabpanel>
 						<tabpanel id="mot-Color-Hover"
 									orient="vertical" 
-									label="Hover" 
+									label="&mot.colors.hover;" 
 									style="position:relative;">
-							<hbox align="left">
-								<label control="txtMenuFontColorHover" value="Font color:" />
+							<hbox align="center">
+								<label control="txtMenuFontColorHover" value="&mot.colors.font.color;" />
 								<colorpicker id="txtMenuFontColorHover"
 											 type="button"
 											 color="rgb(0,0,0)"
 											 preference="MenuFontColorHover"
-											 tooltiptext="Choose a color" />
+											 tooltiptext="&mot.colors.tooltip.pickColor;" />
 							</hbox>
 							<hbox align="center">
-								<label control="txtMenuBackgroundHover" value="Background:" />
+								<label control="txtMenuBackgroundHover" value="&mot.colors.background;" />
 								<textbox 
 										id="txtMenuBackgroundHover"
 										flex="1"
 										class="backgroundCSS"
 										preference="MenuBackgroundHover"  
-										tooltiptext="Enter a valid css background (background-image or background-color)" />
+										tooltiptext="&mot.colors.tooltip.background;" />
 							</hbox>
 						</tabpanel>
 						<tabpanel id="mot-Color-Active"
 									orient="vertical" 
-									label="Active" 
+									label="&mot.colors.active;" 
 									style="position:relative;">
 							<hbox align="center">
-								<label control="txtMenuFontColorActive" value="Font color:" />
+								<label control="txtMenuFontColorActive" value="&mot.colors.font.color;" />
 								<colorpicker id="txtMenuFontColorActive"
 											 type="button"
 											 color="rgb(0,0,0)"
 											 preference="MenuFontColorActive"
-											 tooltiptext="Choose a color" />
+											 tooltiptext="&mot.colors.tooltip.pickColor;" />
 							</hbox>
 							<hbox align="center">
-								<label control="txtMenuBackgroundActive" value="Background:" />
+								<label control="txtMenuBackgroundActive" value="&mot.colors.background;" />
 								<textbox 
 										id="txtMenuBackgroundActive"
 										flex="1"
 										class="backgroundCSS"
 										preference="MenuBackgroundActive"  
-										tooltiptext="Enter a valid css background (background-image or background-color)" />
+										tooltiptext="&mot.colors.tooltip.background;" />
 							</hbox>
 						</tabpanel>
 					</tabpanels>	
@@ -287,42 +290,42 @@
 			</groupbox>
 			
 			<groupbox>
-				<caption label="Borders" />
+				<caption label="&mot.borders;" />
 				<hbox align="center">
-				  <label control="txtMenuBorderColor" value="Menu border color:" />
+				  <label control="txtMenuBorderColor" value="&mot.borders.color;" />
 				  <colorpicker id="txtMenuBorderColor" 
 							   type="button"
 							   color="rgb(255,255,255)"
 							   preference="MenuBorderColor"  
-							   tooltiptext="Choose a color" />
+							   tooltiptext="&mot.colors.tooltip.pickColor;" />
 				</hbox>
 				<hbox align="center">
-				  <label control="txtMenuBorderWidth" value="Menu border width (0=none):" />
+				  <label control="txtMenuBorderWidth" value="&mot.borders.width;" />
 				  <textbox id="txtMenuBorderWidth" 
 						   type="number" 
 						   preference="MenuBorderWidth"  
-						   tooltiptext="Set border width" />
+						   tooltiptext="&mot.borders.width.tooltip;" />
 				  <label value="px" />
 				</hbox>
 			  <hbox align="center">
-				<label control="txtMenuRadius" value="Corner Radius:" />
+				<label control="txtMenuRadius" value="&mot.borders.radius;" />
 				<textbox id="txtMenuRadius" 
 						 type="number" 
 						 decimalplaces="1"
 						 increment="0.2"
 						 preference="MenuRadius"  
-						 tooltiptext="Set a number" />
+						 tooltiptext="&mot.borders.radius.tooltip;" />
 				<label value="em" />
 				<checkbox preference="MenuRadiusLeft" 
-						  label="Left Side" />
+						  label="&mot.borders.radius.left;" />
 				<checkbox preference="MenuRadiusRight" 
-						  label="Right Side" />
+						  label="&mot.borders.radius.right;" />
 				<spacer flex="2" />
 			  </hbox>
 			</groupbox>
 			<hbox>
 			  <groupbox>
-				<caption label="Spacing" />
+				<caption label="&mot.spacing;" />
 				<grid flex="1">
 				  <columns>
 					<column />
@@ -330,37 +333,45 @@
 				  </columns>
 				  <rows>
 					<row align="left">
-					  <label control="txtNegativeMargin" value="Negative toolbar margin:" />
+					  <label control="txtNegativeMargin" value="&mot.spacing.negativeMargin;" />
 					  <textbox id="txtNegativeMargin" 
 							   type="number" 
 							   preference="NegativeMargin"  
-							   tooltiptext="Set a number to move menu up by. High values can lead to truncated menu!" />
+							   tooltiptext="&mot.spacing.negativeMargin.tooltip;" />
 					  <label value="px" />
 					</row>
 					<row align="left">
-					  <label control="txtMenuMarginTop" value="Menu panel top margin:" />
+					  <label control="txtTabbarMargin" value="&mot.spacing.tabbarMargin;" />
+					  <textbox id="txtTabbarMargin" 
+							   type="number" 
+							   preference="TabbarMargin"  
+							   tooltiptext="&mot.spacing.tabbarMargin.tooltip;" />
+					  <label value="px" />
+					</row>
+					<row align="left">
+					  <label control="txtMenuMarginTop" value="&mot.spacing.topMargin;" />
 					  <textbox id="txtMenuMarginTop" 
 							   type="number" 
 							   preference="MenuMarginTop"  
-							   tooltiptext="Moves menu down by this many pixels. High values can lead to truncated menu!" />
+							   tooltiptext="&mot.spacing.topMargin.tooltip;" />
 					  <label value="px" />
 					</row>
 					<row align="left">
-					  <label control="txtMenuMarginLeft" value="Menu panel left margin:" />
+					  <label control="txtMenuMarginLeft" value="&mot.spacing.leftMargin;" />
 					  <textbox id="txtMenuMarginLeft" 
 							   type="number" 
 							   preference="MenuMarginLeft"  
-							   tooltiptext="Moves menu to the right by this many pixels. High values can lead to truncated menu!" />
+							   tooltiptext="&mot.spacing.leftMargin.tooltip;" />
 					  <label value="px" />
 					</row>
 					<row align="left">
-						<label control="txtMaxHeight" value="Maximum menu item height:" />
+						<label control="txtMaxHeight" value="&mot.spacing.maxHeight;" />
 						<textbox id="txtMaxHeight" 
 								 type="number" 
 								 increment="2"
 								 min="20"
-								 preference="MaxHeight"  
-								 tooltiptext="Set a number" />
+								 preference="MaxHeight"
+								 tooltiptext="&mot.spacing.maxHeight.tooltip;" />
 						<label value="px" />
 						<spacer flex="2" />
 					</row>
@@ -368,7 +379,7 @@
 				</grid>
 			  </groupbox>
 			  <groupbox>
-				<caption label="Button Icons" />
+				<caption label="&mot.buttons;" />
 				<grid flex="1">
 				  <columns>
 					<column />
@@ -376,44 +387,44 @@
 				  </columns>
 				  <rows>
 					<row align="center">
-					  <label control="txtMenuIconSmall" value="Small Icons:" />
+					  <label control="txtMenuIconSmall" value="&mot.buttons.small;" />
 					  <textbox id="txtMenuIconSmall" 
 							   type="number" 
 							   preference="SmallIconSize"  
-							   tooltiptext="Size of small icons in menu (0 for default)" />
+							   tooltiptext="&mot.buttons.small.tooltip;" />
 					  <label value="px" />
 					</row>
 					<row align="center">
-					  <label control="txtMenuIconNormal" value="Normal Icons:" />
+					  <label control="txtMenuIconNormal" value="&mot.buttons.normal;" />
 					  <textbox id="txtMenuIconNormal" 
 							   type="number" 
 							   preference="NormalIconSize"  
-							   tooltiptext="Size of normal icons in menu (0 for default)" />
+							   tooltiptext="&mot.buttons.normal.tooltip;" />
 					  <label value="px" />
 					</row>
 				  </rows>
 				</grid>
 				<checkbox preference="forceSizeWithImportant"
-						  label="Enforce rules with !important" />
+						  label="&mot.buttons.important;" />
 				<checkbox preference="ForceSmallIcons"
-						  label="Force small menu Icons" />
+						  label="&mot.buttons.forceSmall;" />
 			  </groupbox>
 		    </hbox>
 		</tabpanel>
 		<tabpanel id="mot-Options-advanced"
 				  orient="vertical" 
-				  label="Advanced" 
+				  label="&mot.advanced;" 
 				  style="position:relative;">
 			<groupbox  orient="vertical" >
-				<caption label="Custom Menu"
-                 tooltiptext = "In order to show the bookmarks Menu a label must be entered. This will be inserted before the File Menu." />
+				<caption label="&mot.customMenu;"
+                 tooltiptext = "&mot.customMenu.tooltip;" />
 				<hbox align="center">
 					<checkbox preference="CustomMenu"
-								label="Custom menu" 
+								label="&mot.customMenu.label;" 
 								oncommand="MenuOnTop.Options.onCustomMenu(this);" />
 					<textbox id="txtCustomMenu"
 							 preference="CustomMenuTitle"
-							 tooltiptext="Enter name of custom menu item"
+							 tooltiptext="&mot.customMenu.title;"
                onblur="MenuOnTop.Options.updateCustomMenuLabel(this);"
                oninput="MenuOnTop.Options.updateCustomMenuLabel(this);"
 							 />
@@ -421,38 +432,38 @@
 					          label = "Avatar"
 					          oncommand="MenuOnTop.Options.onCustomIconToggle(this);" />
 					<button id = "btnSelectAvatar"
-					        label = "Select Icon..."
+					        label = "&mot.customMenu.selectIcon;"
 					        oncommand="MenuOnTop.Options.onCustomMenuIcon();" />
 					<label control="customMenuIconSize"
-					       value="size:" />
+					       value="&mot.customMenu.size;" />
 					<textbox id="customMenuIconSize"
 									 type="number"
 									 increment="2"
 									 min="16"
 									 preference="CustomMenuIconSize"
-									 tooltiptext="(Maximum) Size of the Icon. If the menu height is smaller it will be resized."
+									 tooltiptext="&mot.customMenu.size.tooltip;"
 									 onchange="MenuOnTop.Options.onIconSizeChange(this)"
 									 />
 				</hbox>
 				<hbox align="center">
 				  <checkbox id="customMenuPort"
 					          preference="CustomMenuRemotePort"
-										label = "Show Remote Port" 
+										label = "&mot.customMenu.showRemotePort;" 
 									  oncommand="setTimeout(MenuOnTop.Options.updateCustomMenuLabel,200);"
 										/>
 					<checkbox id="customMenuFont"
 					          preference="CustomMenuFont"
-										label="Custom Label"/>
+										label="&mot.customMenu.customStyle;"/>
 					<spacer />
 					<label control="txtCustomMenuSize" 
-					       value="Font Size:" />
+					       value="&mot.customMenu.customStyle.fontSize;" />
 					<textbox id="txtCustomMenuSize" 
 									 type="number" 
 									 preference="CustomMenuFontSize"  
-									 tooltiptext="Size of the top menu label in pt" />
+									 tooltiptext="&mot.customMenu.customStyle.fontSize.tooltip;" />
 					<checkbox id="chkCustomMenuBold" 
 					          preference="CustomMenuBold"
-								    label="Bold" />
+								    label="&mot.customMenu.customStyle.bold;" />
 				</hbox>
 				
 				<listbox id="bookmarksList" 
@@ -468,45 +479,45 @@
 						<toolbarbutton
 						    id="btnAdd"
 						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
-								label="Add"
+								label="&mot.bookmarks.add;"
 								oncommand = "MenuOnTop.TopMenu.update(true);" />
 						<toolbarbutton
 						    id="btnUpdate"
 						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
-								label="Update"
+								label="&mot.bookmarks.update;"
 								oncommand = "MenuOnTop.TopMenu.update(false);" />
 						<toolbarbutton
 						    id="btnRemove"
 						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
-								label="Remove"
+								label="&mot.bookmarks.remove;"
 								oncommand = "MenuOnTop.TopMenu.remove();" />
 						<toolbarseparator />
 						<toolbarbutton
 						    id="btnUp"
 						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
-								label="Up"
+								label="&mot.bookmarks.up;"
 								oncommand = "MenuOnTop.TopMenu.up();" />
 						<toolbarbutton
 						    id="btnDown"
 						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
-								label="Down"
+								label="&mot.bookmarks.down;"
 								oncommand = "MenuOnTop.TopMenu.down();" />
 						<toolbarseparator />
 						<toolbarbutton 
 						    id="btnLoad"
 						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
-								label="Load"
+								label="&mot.bookmarks.load;"
 								oncommand = "MenuOnTop.TopMenu.loadCustomMenu(true);" />
 						<toolbarbutton 
 						    id="btnSave"
 						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
-								label="Save"
+								label="&mot.bookmarks.save;"
 								oncommand = "MenuOnTop.TopMenu.saveCustomMenu();" />
 						<toolbarbutton 
 						    id="btnTest"
 						    class="toolbarbutton-1 chromeclass-toolbar-additional" 
 								collapsed="true"
-								label="Test Bookmarks..."
+								label="&mot.bookmarks.test;"
 								oncommand = "MenuOnTop.TopMenu.getFxMarks();" />
 						<spacer flex="1" />
 					</toolbar>
@@ -520,27 +531,27 @@
 						</columns>
 						<rows>
 							<row align="left" id="labelRow">
-								<label control="linkLabel" value="label:" />
+								<label control="linkLabel" value="&mot.bookmarks.label;" />
 								<textbox id="linkLabel" 
 								         flex="1" 
 												 onblur="MenuOnTop.Options.onEdit(this);" />
 							</row>
 							<row align="left" id="linkRow">
-								<label control="linkURL" value="URL:" />
+								<label control="linkURL" value="&mot.bookmarks.url;" />
 								<textbox id="linkURL" 
 								         flex="1" 
 												 onblur="MenuOnTop.Options.onEdit(this);" />
 							</row>
 							<row align="left" id="typeRow">
-								<label control="linkType" value="bookmark type:" />
+								<label control="linkType" value="&mot.bookmarks.type;" />
 								<textbox id="linkType" flex="1" />
 							</row>
 						</rows>
 					</grid>
 					<button
-							label="Current Page"
+							label="&mot.bookmarks.currentPage;"
 							oncommand = "MenuOnTop.TopMenu.getFromContext();"
-							tooltiptext = "retrieve the bookmark for webpage on current tab."
+							tooltiptext = "&mot.bookmarks.currentPage.tooltip;"
 							/>
 				</groupbox>
 				
@@ -550,12 +561,14 @@
 			<hbox>
 				<checkbox id="chkStatus" 
 						  preference="ShowStatusIcon" 
-						  label="Status bar icon"
-						  oncommand = "MenuOnTop.Options.onStatusCheck(this);" />
+						  label="&mot.statusIcon;"
+						  oncommand = "MenuOnTop.Options.onStatusCheck(this);"
+              tooltiptext = "&mot.statusIcon.tooltip;"/>
 				<spacer flex="1" />
 				<checkbox id="chkDebug" 
 						  preference="Debug" 
-						  label="Debug mode" />
+						  label="&mot.debug;"
+							tooltiptext="&mot.debug.tooltip;" />
 			</hbox>
 		</tabpanel>
 	  

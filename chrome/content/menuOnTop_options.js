@@ -3,7 +3,7 @@
 var MenuOnTop = Components.utils.import("chrome://menuontopmod/content/menuontop.jsm", {}).MenuOnTop; 
 
 MenuOnTop.Options = {
-	prefService : null,
+	_prefService : null,
 	bypassObserver: false,
   isLoaded: false,
 	observe : function observe(aSubject, aTopic, aData) {
@@ -16,19 +16,26 @@ MenuOnTop.Options = {
 			this.apply();
 		}
 	},
+	get prefService() {
+		if (!this._prefService) {
+			const Ci = Components.interfaces;
+			this._prefService =
+				 Components.classes["@mozilla.org/preferences-service;1"].getService( 
+				   Ci.nsIPrefBranch);
+		}
+		return this._prefService;
+	},
 
   onLoad: function onLoad() {
     const util = MenuOnTop.Util,
           prefs = MenuOnTop.Preferences,
           tabsInTitlebar = util.getTabInTitle();
-    if (prefs.isDebug) debugger;
 		MenuOnTop.ensureMenuBarVisible(util.MainWindow); // more for testing, but it might have its place!
 	  // alert('test');
+    if (prefs.isDebug) debugger;
 		util.logDebug ("MenuOnTop.Options.onLoad()");
 		// add an event listener that reacts to changing all preferences by reloading the CSS
 		let Ci = Components.interfaces;
-		this.prefService =
-       Components.classes["@mozilla.org/preferences-service;1"].getService( Ci.nsIPrefBranch);
 		this.prefService.QueryInterface(Ci.nsIPrefBranch2);
 		// => 'this' implements observe() interface
 		this.prefService.addObserver('extensions.menuontop.', this, false);
@@ -38,11 +45,11 @@ MenuOnTop.Options = {
     MenuOnTop.Options.enableCustomMenuControls();
     // populate version - simple first
     document.getElementById('lblVersion').value = prefs.getCharPref('version');
-    if (typeof AddonManager == 'undefined')
-      Components.utils.import("resource://gre/modules/AddonManager.jsm");
     // populate version - complete
     let w = window;
     w.setTimeout (function () {
+			  if (typeof AddonManager != 'object')
+					Components.utils.import("resource://gre/modules/AddonManager.jsm");
         AddonManager.getAddonByID(MenuOnTop.Id,
           function(addon) {
             w.document.getElementById('lblVersion').value = addon.version;
@@ -271,28 +278,36 @@ MenuOnTop.Options = {
         isChangeLayout = !prefs.isColorOnly;
 	  if (selection<0)
 			return;
+		function setMaxHeight (nMax) {
+			let nmax = nMax;
+			if (nmax < prefs.customMenuIconSize && prefs.isCustomMenuIcon)
+				nmax = prefs.customMenuIconSize;
+			setElementValue('txtMaxHeight', nmax);
+		}
 		switch(selection) {
 			case 0:  // default - Australis
+			  let defPrefs = MenuOnTop.defaultPREFS;
         if (isChangeLayout) {
-          setElementValue('txtNegativeMargin', MenuOnTop.defaultPREFS.negativeMargin);
-          setElementValue('txtMenuMarginTop', MenuOnTop.defaultPREFS.menuMarginTop);
-          setElementValue('txtMaxHeight', MenuOnTop.defaultPREFS.maxHeight);
-          setElementValue('txtMenuIconSmall', MenuOnTop.defaultPREFS.iconSizeSmall);
+          setElementValue('txtNegativeMargin', defPrefs.negativeMargin);
+          setElementValue('txtMenuMarginTop', defPrefs.menuMarginTop);
+          setElementValue('txtTabbarMargin', defPrefs.tabbarMargin);
+          setMaxHeight(defPrefs.maxHeight);
+          setElementValue('txtMenuIconSmall', defPrefs.iconSizeSmall);
         }
-				setElementValue('chkMenuShadow', MenuOnTop.defaultPREFS.textShadow);
-				setElementValue('txtMenuBackgroundDefault',  MenuOnTop.defaultPREFS.menuBackground);
-				setElementValue('txtMenuFontColorDefault',  MenuOnTop.defaultPREFS.menuFontColor);
-				setElementValue('txtMenuBackgroundHover',  MenuOnTop.defaultPREFS.menuBackgroundHover);
-				setElementValue('txtMenuFontColorHover',  MenuOnTop.defaultPREFS.menuFontColorHover);
-				setElementValue('txtMenuBackgroundActive',  MenuOnTop.defaultPREFS.menuBackgroundActive);
-				setElementValue('txtMenuFontColorActive',  MenuOnTop.defaultPREFS.menuFontColorActive);
+				setElementValue('chkMenuShadow', defPrefs.textShadow);
+				setElementValue('txtMenuBackgroundDefault',  defPrefs.menuBackground);
+				setElementValue('txtMenuFontColorDefault',  defPrefs.menuFontColor);
+				setElementValue('txtMenuBackgroundHover',  defPrefs.menuBackgroundHover);
+				setElementValue('txtMenuFontColorHover',  defPrefs.menuFontColorHover);
+				setElementValue('txtMenuBackgroundActive',  defPrefs.menuBackgroundActive);
+				setElementValue('txtMenuFontColorActive',  defPrefs.menuFontColorActive);
 				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', MenuOnTop.defaultPREFS.menuBorderWidth);
-				setElementValue('chkMenubarTransparent', MenuOnTop.defaultPREFS.menubarTransparent);
+				setElementValue('txtMenuBorderWidth', defPrefs.menuBorderWidth);
+				setElementValue('chkMenubarTransparent', defPrefs.menubarTransparent);
 				break;
 			case 1:  // dark - TT deepdark
         if (isChangeLayout) {
-          setElementValue('txtMaxHeight', 22);
+          setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 0);
           setElementValue('txtMenuIconSmall', 16);
@@ -300,7 +315,7 @@ MenuOnTop.Options = {
         }
 				setElementValue('chkMenuShadow', true);
 				// from Bloomind's TT deepdark, slighly tweaked start point to make it brighter & more apparent (we are missing borders)
-				setElementValue('txtNegativeMargin', 6);
+				setElementValue('txtNegativeMargin', 1);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(rgb(88, 88, 88), rgb(35, 35, 35) 45%, rgb(33, 33, 33) 48%, rgb(24, 24, 24))'); 
 				setElementValue('txtMenuFontColorDefault', 'rgba(220, 220, 220, 0.8)');
         // text-shadow: 0px 0px 3px rgb(0, 173, 238);
@@ -315,7 +330,7 @@ MenuOnTop.Options = {
         if (isChangeLayout) {
           setElementValue('txtNegativeMargin', 2);
           setElementValue('txtMenuRadius', '0.5');
-          setElementValue('txtMaxHeight', 20);
+          setMaxHeight(20);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 16);
         }
@@ -333,7 +348,7 @@ MenuOnTop.Options = {
         if (isChangeLayout) {
           setElementValue('txtNegativeMargin', 2);
           setElementValue('txtMenuMarginTop', 5);
-          setElementValue('txtMaxHeight', 22);
+          setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
         }
@@ -346,7 +361,7 @@ MenuOnTop.Options = {
 				break;
 			case 4:  // orange - Lantana
         if (isChangeLayout) {
-          setElementValue('txtMaxHeight', 22);
+          setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 0);
         }
@@ -361,7 +376,7 @@ MenuOnTop.Options = {
         if (isChangeLayout) {
           setElementValue('txtNegativeMargin', 2);
           setElementValue('txtMenuMarginTop', 8);
-          setElementValue('txtMaxHeight', 24);
+          setMaxHeight(24);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
         }
@@ -377,7 +392,7 @@ MenuOnTop.Options = {
         if (isChangeLayout) {
           setElementValue('txtNegativeMargin', 2);
           setElementValue('txtMenuMarginTop', 12);
-          setElementValue('txtMaxHeight', 26);
+          setMaxHeight(26);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
         }
@@ -393,7 +408,7 @@ MenuOnTop.Options = {
           setElementValue('txtNegativeMargin', 0);
           setElementValue('txtMenuMarginTop', 6);
           setElementValue('txtMenuRadius', '0.5');
-          setElementValue('txtMaxHeight', 21);
+          setMaxHeight(21);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 16);
         }
@@ -411,7 +426,7 @@ MenuOnTop.Options = {
         if (isChangeLayout) {
           setElementValue('txtNegativeMargin', 0);
           setElementValue('txtMenuMarginTop', 2);
-          setElementValue('txtMaxHeight', 20);
+          setMaxHeight(20);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 16);
         }
@@ -427,7 +442,7 @@ MenuOnTop.Options = {
           setElementValue('txtNegativeMargin', 2);
           setElementValue('txtMenuMarginTop', 5);
           setElementValue('txtMenuRadius', '0.4');
-          setElementValue('txtMaxHeight', 24);
+          setMaxHeight(24);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
         }
@@ -446,7 +461,7 @@ MenuOnTop.Options = {
           setElementValue('txtNegativeMargin', 4);
           setElementValue('txtMenuMarginTop', 4);
           setElementValue('txtMenuRadius', '0.3');
-          setElementValue('txtMaxHeight', 22);
+          setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
         }
@@ -467,7 +482,7 @@ MenuOnTop.Options = {
           setElementValue('txtNegativeMargin', 2);
           setElementValue('txtMenuMarginTop', 5);
           setElementValue('txtMenuRadius', '0.5');
-          setElementValue('txtMaxHeight', 22);
+          setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
         }
@@ -486,7 +501,7 @@ MenuOnTop.Options = {
           setElementValue('txtNegativeMargin', 2);
           setElementValue('txtMenuMarginTop', 5);
           setElementValue('txtMenuRadius', '0.75');
-          setElementValue('txtMaxHeight', 22);
+          setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
         }
@@ -512,7 +527,7 @@ MenuOnTop.Options = {
           setElementValue('txtNegativeMargin', 2);
           setElementValue('txtMenuMarginTop', 5);
           setElementValue('txtMenuRadius', '0.75');
-          setElementValue('txtMaxHeight', 22);
+          setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
         }
@@ -528,7 +543,7 @@ MenuOnTop.Options = {
           setElementValue('txtNegativeMargin', 2);
           setElementValue('txtMenuMarginTop', 7);
           setElementValue('txtMenuRadius', '0.5');
-          setElementValue('txtMaxHeight', 22);
+          setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 0);
         }

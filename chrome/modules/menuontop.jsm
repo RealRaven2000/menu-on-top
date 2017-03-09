@@ -103,10 +103,12 @@ END LICENSE BLOCK
 		# Tb 48.0 Support for adding the new preferences tab to bookmark menu
 		# known issue: avatar icon not working if profile name contains special characters (space?)
 		
-	1.4 - WIP
+	1.4 - 09/03/2017
 	  # add spacing to caption bar when in maximized mode
-		
-
+		# added Pale Moon support
+		# added setting for decreasing top-spacing of tab bar
+		# Moved support pages to quickfolders.org
+		# make sure that icon height overrides max menu height
 */
 Components.utils.import("resource://gre/modules/Services.jsm");
  
@@ -149,6 +151,10 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
                            ' #messengerWindow[tabsintitlebar][sizemode="normal"] #mail-toolbar-menubar2' : 
                            ' #main-window[tabsintitlebar][sizemode="normal"] #navigator-toolbox > #toolbar-menubar',
           tmargin = util.getTabInTitle() ? (marginSelector + ' { margin-right: ' + Prefs.toolbarMarginRight.toString() + 'px !important;}') : '',
+          paddingSelector = (util.Application == 'Thunderbird') ? 
+                           ' #messengerWindow[tabsintitlebar][sizemode="maximized"] #mail-toolbar-menubar2' : 
+                           ' #main-window[tabsintitlebar][sizemode="maximized"] #navigator-toolbox > #toolbar-menubar',
+					tpadding = util.getTabInTitle() ? (paddingSelector + ' { padding-right: 200px !important;}') : '',
 					titlebarplaceholder = util.getTabInTitle() ? ' #messengerWindow:[tabsintitlebar] .titlebar-placeholder { visibility: collapse; }' : '';
       tw = tw.indexOf('px')<0 ? tw +'px' : tw;
 			let borderWidth = 'border-width: ' + tw + ' !important;',
@@ -194,12 +200,16 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 			
 			// chrome://messenger/skin/primaryToolbar.css
       let cssCode = '',
-           ordinalTb = '';
+          ordinalTb = '',
+					tabbarMargin = 'margin-top: ' + Prefs.tabbarMargin + 'px !important;';
       if (util.Application=='Thunderbird') {
         ordinalTb = '-moz-box-ordinal-group: 10 !important;';
-        cssCode += '#tabs-toolbar {-moz-box-ordinal-group: 20 !important;} ' +
-                   '#mail-bar3{-moz-box-ordinal-group: 30 !important;} ';
+        cssCode += '#tabs-toolbar{-moz-box-ordinal-group: 20 !important;} '
+				  '#mail-bar3{-moz-box-ordinal-group: 30 !important;} ';
       }
+			
+			cssCode += ' #messengerWindow[tabsintitlebar][sizemode="normal"] > #navigation-toolbox > #tabs-toolbar {' 
+			  + tabbarMargin + '} ';
 			cssCode +=icsSmall +
                 icsNormal +
                 dropDownSmall + 
@@ -208,7 +218,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
                 '.chromeclass-menubar .remote-gloda-search{margin:1px 2px; } ' +
                 '#'+ util.ToolbarId +' {' + ordinalTb +' border-color: transparent !important;} ' +
                 '#'+ util.ToolbarId +' toolbarbutton {border-color: transparent !important;} ' +
-                '#'+ util.ToolbarId +':not([inactive]) {margin-top: ' + m + 'px;} ' +
+                '#'+ util.ToolbarId +':not([inactive]) {margin-top: ' + m + 'px !important;} ' +
                 colorString + 
                 backgroundString +
                 backgroundStringHover +
@@ -218,6 +228,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
                 '#menubar-items > menubar { background: none; ' + menuMarginTop + '; ' + menuMarginLeft +'; } ' + // TT deepdark!
                 '#' + util.ToolboxId + ' > #'+ util.ToolbarId +':not(:-moz-lwtheme) { background-color: transparent !important; background-image:none; } ' +
                 menuItemString + 
+								tpadding +
                 tmargin,
 								titlebarplaceholder;
       if (Prefs.isCustomMenuIcon) {
@@ -434,20 +445,25 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
       // http://mxr.mozilla.org/mozilla-central/source/browser/base/content/browser-places.js#640
       const ellipsis = "\u2026".toString();
       menuPopup.appendChild(doc.createElement('menuseparator'));
-      menuPopup.appendChild(this.makeMenuItem(doc, 
-        function() { 
-          MenuOnTop.TopMenu.appendBookmark(menuPopup); 
-        },
-        (util.Application == 'Thunderbird') ?
-          ('Add current Item' + ellipsis) : ('Add current Webpage' + ellipsis),  
-        'function')
+			let lblAddItem = (util.Application == 'Thunderbird') ?
+           			util.getBundleString('menuontop.custommenu.addcurrentitem', 'Add current Item' + ellipsis) :
+           			util.getBundleString('menuontop.custommenu.addcurrentpage', 'Add current Webpage' + ellipsis),
+					lblOptions = util.getBundleString('menuontop.custommenu.options', 'Menu On Top Options' + ellipsis);
+			
+      menuPopup.appendChild(
+				this.makeMenuItem(
+					doc, 
+					function() { MenuOnTop.TopMenu.appendBookmark(menuPopup); }, 
+					lblAddItem,  
+					'function'
+				)
       ); // add my own command
-      menuPopup.appendChild(this.makeMenuItem(doc, 
-        function(evt) { 
-          MenuOnTop.showOptions(evt); 
-        },
-        'MenuOnTop Options' + ellipsis,  // no URL!
-        'function')
+      menuPopup.appendChild(
+				this.makeMenuItem(
+					doc, 
+					function(evt) { MenuOnTop.showOptions(evt); },
+					lblOptions, 'function'
+				)
       ); // add my own command
         
       util.logDebug('populateMenu() ENDS');
@@ -602,9 +618,10 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 	
   // replace pref1.pref2 with pref1_pref2
 	defaultPREFS : {
-		negativeMargin: 2,
+		negativeMargin: 0,
 		menuMarginTop: 6,
 		menuMarginLeft: 2,
+		tabbarMargin: 3,
 		maxHeight: 20,
     menuBorderWidth: "0",
 		menuRadius: "0.5",
@@ -670,9 +687,10 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 		button.style.listStyleImage = "url(chrome://menuontop/content/menuOnTop16.png)";
 		// button.style.mozImageRegion = "rect(0px, 16px, 16px, 0px)"; // this probably won't work as it isn't declared in CSS2 ElementCSSInlineStyle.style
 
+		let menuOnTop = MenuOnTop; // closure this
 		button.addEventListener("click", function() {
-      MenuOnTop.Util.logDebug('click');
-      MenuOnTop.showOptions(null, mainWindow);
+      menuOnTop.Util.logDebug('click');
+      menuOnTop.showOptions(null, mainWindow);
 		}, false);
 
 		buttonContainer.appendChild(button);
@@ -691,11 +709,13 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 		if (null == this.mAppName) {
 			var appInfo = Components.classes["@mozilla.org/xre/app-info;1"]
 											.getService(Components.interfaces.nsIXULAppInfo);
-			const FIREFOX_ID = "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}";
-			const THUNDERBIRD_ID = "{3550f703-e582-4d05-9a08-453d09bdfdc6}";
-			const SEAMONKEY_ID = "{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}";
-			const POSTBOX_ID = "postbox@postbox-inc.com";
+			const FIREFOX_ID = "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}",
+			      PALEMOON_ID = "{8de7fcbb-c55c-4fbe-bfc5-fc555c87dbc4}",
+			      THUNDERBIRD_ID = "{3550f703-e582-4d05-9a08-453d09bdfdc6}",
+			      SEAMONKEY_ID = "{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}",
+			      POSTBOX_ID = "postbox@postbox-inc.com";
 			switch(appInfo.ID) {
+				case PALEMOON_ID:
 				case FIREFOX_ID:
 					return this.mAppName='Firefox';
 				case THUNDERBIRD_ID:
@@ -823,6 +843,33 @@ MenuOnTop.Util = {
 		}
 		return null;
 	} ,
+	
+	MyBundle: null,
+	get StringBundle() {
+		if (!this.MyBundle) try {
+			let svc = Components.classes["@mozilla.org/intl/stringbundle;1"]
+				.getService(Components.interfaces.nsIStringBundleService);
+			this.MyBundle = svc.createBundle("chrome://menuontop/locale/menuontop.properties")
+				.QueryInterface(Components.interfaces.nsIStringBundle);
+		}
+		catch (ex) {
+			this.logException ("Could not retrieve  StringBundle: ", ex);
+		}
+		
+		return this.MyBundle;
+	} ,
+	
+	getBundleString: function getBundleString(id, defaultText) {
+		let s="";
+		try {
+			s= this.StringBundle.GetStringFromName(id);
+		}
+		catch(e) {
+			s= defaultText;
+			this.logToConsole ("Could not retrieve bundle string: " + id + "");
+		}
+		return s;
+	} ,  
   
   setTabInTitle: function setTabInTitle(flag) {
     let service = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
@@ -893,10 +940,10 @@ MenuOnTop.Util = {
   checkVersion: function checkVersion(win) {
     let current = MenuOnTop.Version,
         addonId = MenuOnTop.Id;
-    if (typeof AddonManager == 'undefined')
-      Components.utils.import("resource://gre/modules/AddonManager.jsm");
     MenuOnTop.Util.logDebug('checkVersion() for ' + addonId);
     win.setTimeout (function () {
+				if (typeof AddonManager != 'object')
+					Components.utils.import("resource://gre/modules/AddonManager.jsm");
         AddonManager.getAddonByID(addonId,
           function(addon) {
             // This is an asynchronous callback function that might not be called immediately, ah well...
@@ -933,7 +980,7 @@ MenuOnTop.Util = {
   } ,
   
   showHistory: function showHistory(ver) {
-    let url = 'http://quickfolders.mozdev.org/menuOnTopHistory.html';
+    let url = 'http://quickfolders.org/menuOnTopHistory.html';
     if (ver) url+= '?version#' + ver;
     MenuOnTop.Util.openURL(null, url);
   } ,
@@ -1041,7 +1088,7 @@ MenuOnTop.Util = {
         tabmail.openTab(sTabMode,
             { contentPage: URL,
               background: false,
-              clickHandler: 'specialTabs.siteClickHandler(event);' });  // , new RegExp("^http://quickfolders.mozdev.org/")
+              clickHandler: 'specialTabs.siteClickHandler(event);' });  // , new RegExp("^http://quickfolders.org/")
 			}
 			else
 				window.openDialog("chrome://messenger/content/", "_blank",
@@ -1049,7 +1096,7 @@ MenuOnTop.Util = {
 			  { 
           tabType: "contentTab",
 			    tabParams: {contentPage: URL,
-			              clickHandler: 'specialTabs.siteClickHandler(event, new RegExp("^http://quickfolders.mozdev.org/"));', 
+			              clickHandler: 'specialTabs.siteClickHandler(event, new RegExp("^http://quickfolders.org/"));', 
                     id:"MenuOnTop_Weblink"}
 			  } );
 		}
@@ -1290,6 +1337,10 @@ MenuOnTop.Preferences = {
   
   get menuMarginTop() {
 		return this.getIntPref('menuMargin');
+	} ,
+	
+	get tabbarMargin() {
+		return this.getIntPref('tabbarMargin');
 	} ,
 	
 	get maxHeight() {

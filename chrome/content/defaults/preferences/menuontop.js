@@ -29,6 +29,7 @@ pref("extensions.menuontop.menuRadius", "1");
 pref("extensions.menuontop.menuRadiusLeft", true);
 pref("extensions.menuontop.menuRadiusRight", true);
 pref("extensions.menuontop.negativeMargin", 2);
+pref("extensions.menuontop.tabbarMargin", 3);
 pref("extensions.menuontop.statusIcon", true);
 pref("extensions.menuontop.textShadow", true);
 pref("extensions.menuontop.customMenu.icon.use", false);

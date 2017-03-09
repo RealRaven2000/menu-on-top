@@ -1,5 +1,7 @@
 content  menuontop  chrome/content/
 content  menuontopmod  chrome/modules/
+locale menuontop en chrome/locale/en/
+locale menuontop de chrome/locale/de/
 skin menuontop classic skin/
 #not allowed when bootstrapped
 #style chrome://menuontop/content/menuOnTop_options.xul chrome://menuontop/content/menuOnTop-options.css
