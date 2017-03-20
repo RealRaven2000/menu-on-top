@@ -106,9 +106,13 @@ END LICENSE BLOCK
 	1.4 - 09/03/2017
 	  # add spacing to caption bar when in maximized mode
 		# added Pale Moon support
-		# added setting for decreasing top-spacing of tab bar
+		# added setting for decreasing top-spacing of tab bar in non-maximized mode
 		# Moved support pages to quickfolders.org
 		# make sure that icon height overrides max menu height
+		
+	1.5 - WIP
+	  # made sure tabbar top-spacing setting from version 1.4 works in Firefox too.
+		# italian Locale?
 */
 Components.utils.import("resource://gre/modules/Services.jsm");
  
@@ -191,9 +195,9 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 			col = Prefs.menuFontColorActive;
 			colorString += col ?  '#' + util.MenubarId + ' > menu[open="true"] > label {color: ' + col + ' !important;} ' : ''; 
       let backgroundStringHover = 
-        '#menubar-items > #' + util.MenubarId + '[id][_moz-menuactive="true"]:not([open="true"]):not([disabled="true"]) { background-image:' + Prefs.menuBackgroundHover + ' !important;} ',
+        '#menubar-items > #' + util.MenubarId + '[id] menu[_moz-menuactive="true"]:not([open="true"]):not([disabled="true"]) { background-image:' + Prefs.menuBackgroundHover + ' !important;} ',
           backgroundStringActive = 
-        '#menubar-items > #' + util.MenubarId + '[id][open="true"]:not([disabled="true"]) { background-image:' + Prefs.menuBackgroundActive + ' !important;} '
+        '#menubar-items > #' + util.MenubarId + '[id] menu[open="true"]:not([disabled="true"]) { background-image:' + Prefs.menuBackgroundActive + ' !important;} '
 
 			// Inject some css!
 			// we override min-height for charamel!
@@ -208,8 +212,13 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 				  '#mail-bar3{-moz-box-ordinal-group: 30 !important;} ';
       }
 			
-			cssCode += ' #messengerWindow[tabsintitlebar][sizemode="normal"] > #navigation-toolbox > #tabs-toolbar {' 
-			  + tabbarMargin + '} ';
+			cssCode +=  ((util.Application == 'Thunderbird') ?
+			  ' #' + util.MainWindowId + '[tabsintitlebar][sizemode="normal"] > #navigation-toolbox > #tabs-toolbar '
+				:
+				' #toolbar-menubar:not([autohide=true]) ~ #TabsToolbar:not([inFullscreen]),' +
+        ' #toolbar-menubar[autohide=true]:not([inactive]) ~ #TabsToolbar:not([inFullscreen])')
+				+ ' {' + tabbarMargin + '} '
+				;
 			cssCode +=icsSmall +
                 icsNormal +
                 dropDownSmall + 
@@ -286,11 +295,26 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
     // get to the original MenuOnTop object (of the main window):
     switch (cmdType) {
       case "calendar":
-        label = doc.getElementById('calendar-tab-button').getAttribute('title');
-        tm = doc.getElementById('tabmail');
-        menuitem.addEventListener("command", function(event) { 
-              tm.openTab('calendar', { title: label });
-            }, false);
+			  let cal;
+				try {
+					cal = doc.getElementById('calendar-tab-button');
+					if (cal) {
+						label = cal.getAttribute('title');
+						tm = doc.getElementById('tabmail');
+						menuitem.addEventListener("command", function(event) { 
+									tm.openTab('calendar', { title: label });
+								}, false);
+					}
+				}
+				catch(ex) {
+					
+				}
+				finally {
+					if (!cal) {
+						label = "Calendar (button) not Available";
+						menuitem.setAttribute("disabled", "true");
+					} 
+				}
         className += ' MOT_calendar';
         break;
       case "browser":
@@ -415,7 +439,8 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
       if (!menu) {
         menu = doc.getElementById(MenuOnTop.CustomMenuId);
       }
-      const util = MenuOnTop.Util;
+      const util = MenuOnTop.Util,
+			      getBundleString = util.getBundleString.bind(util);
       if (!menu) {
         util.logDebug('populateMenu() - menu not active, so early exit!');
         return;
@@ -446,9 +471,9 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
       const ellipsis = "\u2026".toString();
       menuPopup.appendChild(doc.createElement('menuseparator'));
 			let lblAddItem = (util.Application == 'Thunderbird') ?
-           			util.getBundleString('menuontop.custommenu.addcurrentitem', 'Add current Item' + ellipsis) :
-           			util.getBundleString('menuontop.custommenu.addcurrentpage', 'Add current Webpage' + ellipsis),
-					lblOptions = util.getBundleString('menuontop.custommenu.options', 'Menu On Top Options' + ellipsis);
+           			getBundleString('menuontop.custommenu.addcurrentitem', 'Add current Item' + ellipsis) :
+           			getBundleString('menuontop.custommenu.addcurrentpage', 'Add current Webpage' + ellipsis),
+					lblOptions = getBundleString('menuontop.custommenu.options', 'Menu On Top Options' + ellipsis);
 			
       menuPopup.appendChild(
 				this.makeMenuItem(
@@ -805,9 +830,10 @@ MenuOnTop.Util = {
       case 'Thunderbird':
         return 'messengerWindow';
       case 'Firefox':
+			default:
         return 'main-window';
     }
-    return null;
+    return '';
   } ,
 
   get ToolbarId() {
@@ -848,12 +874,12 @@ MenuOnTop.Util = {
 	get StringBundle() {
 		if (!this.MyBundle) try {
 			let svc = Components.classes["@mozilla.org/intl/stringbundle;1"]
-				.getService(Components.interfaces.nsIStringBundleService);
+				  .getService(Components.interfaces.nsIStringBundleService);
 			this.MyBundle = svc.createBundle("chrome://menuontop/locale/menuontop.properties")
-				.QueryInterface(Components.interfaces.nsIStringBundle);
+				  .QueryInterface(Components.interfaces.nsIStringBundle);
 		}
 		catch (ex) {
-			this.logException ("Could not retrieve  StringBundle: ", ex);
+			this.logException ("Could not retrieve StringBundle: ", ex);
 		}
 		
 		return this.MyBundle;
@@ -1537,10 +1563,11 @@ MenuOnTop.TopMenu = {
   
   checkUrlLabel: function checkUrlLabel(label) {
     const util = MenuOnTop.Util,
+		      getBundleString = util.getBundleString.bind(util),
           prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
                               .getService(Components.interfaces.nsIPromptService),
-          title = "Bookmark title",
-          text = "Please enter a short title:";
+          title = getBundleString('menuontop.bookmarks.promptTitle.caption', "Bookmark Title"),
+          text = getBundleString('menuontop.bookmarks.promptTitle', "Please enter a short title:");
     let input = {value: label},
         check = {value: false},
         result = prompts.prompt(util.MainWindow, title, text, input, null, check); 
@@ -1550,44 +1577,51 @@ MenuOnTop.TopMenu = {
   
 
   update: function update(isNew) {
-    const util = MenuOnTop.Util;
+    const util = MenuOnTop.Util,
+		      getBundleString = util.getBundleString.bind(util);
     if (MenuOnTop.Preferences.isDebug) debugger;
     let url = this.document.getElementById('linkURL').value,
         label = this.document.getElementById('linkLabel').value,
         bookmarkType = this.document.getElementById('linkType').value,
         existingEntry = null, 
         existingIndex = null;
-    if (!label.trim()) {
-      Services.prompt.alert(null, 'MenuOnTop', 'Please enter a label!');
-      return;
-    }
-    if (!url.trim()) {
-      Services.prompt.alert(null, 'MenuOnTop', 'Please enter a URL!');
-      return;
-    }
-    if (!bookmarkType.trim()) {
-      Services.prompt.alert(null, 'MenuOnTop', 'Please enter a bookmark type!\n'
-        + 'Supported types are: ' + this.BookmarkTypes.toString());
-      return;
-    }
-    if (!this.isTypeSupported(bookmarkType)) {
-      Services.prompt.alert(null, 'MenuOnTop', 'Invalid bookmark type!\n'
-        + 'Supported types are: ' + this.BookmarkTypes.toString());
-      return;
-    }
-    
-    // check if it exists and replace label
+				
+   // check if it exists and replace label
     if (!isNew) {
       let lb = this.ListBox;      
       existingIndex = lb.selectedIndex;
       if (existingIndex<0) {
-        Services.prompt.alert(null, 'MenuOnTop - update', 'You have to select an item from the list to update!');
+				let txt = getBundleString('menuontop.bookmarks.wrnSelectUpdateItem','You have to select an item from the list to update!'),
+				    title = getBundleString('menuontop.bookmarks.wrnSelectUpdateItem.caption','MenuOnTop - update');
+        Services.prompt.alert(null, title, txt);
         return;
       }
       existingEntry = this.Entries[existingIndex];
       existingEntry.url = url;
       existingEntry.label = label;
     }
+				
+    if (!label.trim()) {
+			let txt = getBundleString('menuontop.bookmarks.wrnEnterLabel','Please enter a label!');
+      Services.prompt.alert(null, 'MenuOnTop', txt);
+      return;
+    }
+    if (!url.trim()) {
+			let txt = getBundleString('menuontop.bookmarks.wrnEnterURL','Please enter a URL!');
+      Services.prompt.alert(null, 'MenuOnTop', txt);
+      return;
+    }
+    if (!bookmarkType.trim()) {
+			let txt = getBundleString('menuontop.bookmarks.wrnEnterType','Please enter bookmark type!\nSupported types are: {0}');
+      Services.prompt.alert(null, 'MenuOnTop', txt.replace('{0}',this.BookmarkTypes.toString()));
+      return;
+    }
+    if (!this.isTypeSupported(bookmarkType)) {
+			let txt = getBundleString('menuontop.bookmarks.wrnInvalidType','Invalid bookmark type!\nSupported types are: {0}');
+      Services.prompt.alert(null, 'MenuOnTop', txt.replace('{0}',this.BookmarkTypes.toString()));
+      return;
+    }
+    
     // TO DO:
     // should we allow changing the URL ? (for selected item only)
     // do a match of first n characters and display a confirmation?

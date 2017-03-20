@@ -66,11 +66,13 @@
 <!ENTITY mot.spacing.maxHeight "Maximum menu item height:">
 <!ENTITY mot.spacing.maxHeight.tooltip "Icon height can influence this setting.">
 <!ENTITY mot.buttons "Button Icons">
+<!ENTITY mot.buttons.sizes.tooltip "Sizes for toolbarbuttons dragged into the menu">
 <!ENTITY mot.buttons.small "Small Icons:">
 <!ENTITY mot.buttons.small.tooltip "Size of small icons in menu (0 for default)">
 <!ENTITY mot.buttons.normal "Normal Icons:">
 <!ENTITY mot.buttons.normal.tooltip "Size of normal icons in menu (0 for default)">
 <!ENTITY mot.buttons.important "Enforce rules with !important">
+<!ENTITY mot.buttons.important.tooltip "This should make sure the layout rules are better obeyed in case other Addons / Themes override them.">
 <!ENTITY mot.buttons.forceSmall "Force small menu Icons">
 <!ENTITY mot.customMenu "Custom Menu">
 <!ENTITY mot.customMenu.tooltip "In order to show the bookmarks Menu a label must be entered. This will be inserted before the File Menu.">
@@ -94,6 +96,7 @@
 <!ENTITY mot.bookmarks.load "Load">
 <!ENTITY mot.bookmarks.save "Save">
 <!ENTITY mot.bookmarks.test "Test Bookmarks…">
+<!ENTITY mot.bookmarks.group "Bookmark">
 <!ENTITY mot.bookmarks.label "Label:">
 <!ENTITY mot.bookmarks.url "URL:">
 <!ENTITY mot.bookmarks.type "bookmark type:">

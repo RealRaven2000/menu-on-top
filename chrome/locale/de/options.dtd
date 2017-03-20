@@ -66,14 +66,16 @@
 <!ENTITY mot.spacing.maxHeight "Maximale Höhe für Menüeintrag:">
 <!ENTITY mot.spacing.maxHeight.tooltip "Iconhöhe kann diese Einstellung beeinflussen.">
 <!ENTITY mot.buttons "Schaltflächen Icons">
+<!ENTITY mot.buttons.sizes.tooltip "Grössen der Schaltflächen die ins Menü gezogen werden">
 <!ENTITY mot.buttons.small "Kleine Icons:">
 <!ENTITY mot.buttons.small.tooltip "Grösse kleiner Menü Icons (0 für Standard)">
 <!ENTITY mot.buttons.normal "Normale Icons:">
 <!ENTITY mot.buttons.normal.tooltip "Grösse normaler icons in Menü (0 für Standard)">
 <!ENTITY mot.buttons.important "Regeln mit !important erzwingen">
+<!ENTITY mot.buttons.important.tooltip "Stellt sicher, dass diese Layout Regeln besser befolgt werden falls andere Addons / Themes sie überschreiben.">
 <!ENTITY mot.buttons.forceSmall "Kleine Menü Icons erzwingen">
 <!ENTITY mot.customMenu "Benutzerdefiniertes Menü">
-<!ENTITY mot.customMenu.tooltip "In order to show the bookmarks Menü a label must be entered. This will be inserted before the File Menu.">
+<!ENTITY mot.customMenu.tooltip "Um das Lesezeichen Menü anzuzeigen, bitte ein Label eingeben. Dies wird vor dem Datei Menü angezeigt.">
 <!ENTITY mot.customMenu.label "Benutzer Menü">
 <!ENTITY mot.customMenu.title "Name des ersten Menüeintrags">
 <!ENTITY mot.customMenu.avatar "Avatar">
@@ -94,6 +96,7 @@
 <!ENTITY mot.bookmarks.load "Laden">
 <!ENTITY mot.bookmarks.save "Speichern">
 <!ENTITY mot.bookmarks.test "Bookmarks testen…">
+<!ENTITY mot.bookmarks.group "Lesezeichen (Bookmarks)">
 <!ENTITY mot.bookmarks.label "Name:">
 <!ENTITY mot.bookmarks.url "URL:">
 <!ENTITY mot.bookmarks.type "Lesezeichen-Typ:">

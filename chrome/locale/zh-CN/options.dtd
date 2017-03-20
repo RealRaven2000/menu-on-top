@@ -1,0 +1,54 @@
+<!ENTITY mot.window.title "Menu On Top 首选项">
+<!ENTITY mot.btn.donate "捐助">
+<!ENTITY mot.btn.donate.tooltip "捐助 MenuOnTop 项目…">
+<!ENTITY mot.btn.moreInfo "更多信息…">
+<!ENTITY mot.btn.moreInfo.tooltip "转至支持网站…">
+<!ENTITY mot.btn.moreInfo.accessKey "I">
+<!ENTITY mot.style "样式">
+<!ENTITY mot.advanced "高级">
+<!ENTITY mot.primaryMenu "主菜单选项">
+<!ENTITY mot.menuInTitle "在标题栏显示菜单">
+<!ENTITY mot.menuInTitle.tooltip "在某些系统上，此操作可能导致窗口控件（最小化、最大化和关闭按钮）不可见">
+<!ENTITY mot.dragArea "拖动区域：">
+<!ENTITY mot.themes "主题">
+<!ENTITY mot.flavors.11 "Morgana - 紫色">
+<!ENTITY mot.flavors.12 "Mountain - 蓝色">
+<!ENTITY mot.flavors.14 "Lime - 绿色">
+<!ENTITY mot.flavors.15 "Sunflower - 黄色">
+<!ENTITY mot.flavors.16 "Tangerine - 橙色">
+<!ENTITY mot.flavors.17 "Robin - 红色">
+<!ENTITY mot.flavors.18 "Oak - 棕色">
+<!ENTITY mot.flavors.19 "Leather - mahogany">
+<!ENTITY mot.flavors.0 "Australis - 默认">
+<!ENTITY mot.flavors.9 "Australis 重新设计">
+<!ENTITY mot.flavors.1 "TT deepdark - 黑色">
+<!ENTITY mot.flavors.2 "Nautipolis - 海蓝">
+<!ENTITY mot.flavors.3 "Nuvola - 银色">
+<!ENTITY mot.flavors.4 "Lantana - 橙色玻璃">
+<!ENTITY mot.changeOnlyColors "仅更改颜色">
+<!ENTITY mot.colors "颜色">
+<!ENTITY mot.colors.transparent "透明工具栏">
+<!ENTITY mot.colors.default "默认">
+<!ENTITY mot.colors.hover "悬停">
+<!ENTITY mot.colors.active "活动">
+<!ENTITY mot.colors.tooltip.pickColor "选择一个颜色">
+<!ENTITY mot.colors.font.color "字体颜色：">
+<!ENTITY mot.colors.default.fontshadow "字体阴影：">
+<!ENTITY mot.colors.background "背景：">
+<!ENTITY mot.borders "边框">
+<!ENTITY mot.borders.color "菜单边框颜色：">
+<!ENTITY mot.customMenu.customStyle "自定义样式">
+<!ENTITY mot.customMenu.customStyle.fontSize "字体大小">
+<!ENTITY mot.customMenu.customStyle.bold "粗体">
+<!ENTITY mot.bookmarks.add "添加">
+<!ENTITY mot.bookmarks.update "更新">
+<!ENTITY mot.bookmarks.remove "移除">
+<!ENTITY mot.bookmarks.up "上移">
+<!ENTITY mot.bookmarks.down "下移">
+<!ENTITY mot.bookmarks.load "载入">
+<!ENTITY mot.bookmarks.save "保存">
+<!ENTITY mot.bookmarks.test "测试书签…">
+<!ENTITY mot.bookmarks.group "书签">
+<!ENTITY mot.bookmarks.label "标题：">
+<!ENTITY mot.bookmarks.url "网址：">
+<!ENTITY mot.bookmarks.type "书签类型：">

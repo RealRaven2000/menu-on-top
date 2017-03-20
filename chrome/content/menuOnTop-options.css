@@ -209,3 +209,15 @@ textbox[type="number"] {
 }
 
 
+.helpIcon {
+  -moz-appearance: none !important;
+  background-image: url("chrome://menuontop/content/icons/fugue-question.png");
+  background-repeat: no-repeat;
+  cursor: help;
+  margin-top: 1px;
+  width: 16px !important;
+  min-width: 18px;
+}
+
+
+

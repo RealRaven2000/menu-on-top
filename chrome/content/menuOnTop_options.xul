@@ -325,89 +325,98 @@
 			</groupbox>
 			<hbox>
 			  <groupbox>
-				<caption label="&mot.spacing;" />
-				<grid flex="1">
-				  <columns>
-					<column />
-					<column />
-				  </columns>
-				  <rows>
-					<row align="left">
-					  <label control="txtNegativeMargin" value="&mot.spacing.negativeMargin;" />
-					  <textbox id="txtNegativeMargin" 
-							   type="number" 
-							   preference="NegativeMargin"  
-							   tooltiptext="&mot.spacing.negativeMargin.tooltip;" />
-					  <label value="px" />
-					</row>
-					<row align="left">
-					  <label control="txtTabbarMargin" value="&mot.spacing.tabbarMargin;" />
-					  <textbox id="txtTabbarMargin" 
-							   type="number" 
-							   preference="TabbarMargin"  
-							   tooltiptext="&mot.spacing.tabbarMargin.tooltip;" />
-					  <label value="px" />
-					</row>
-					<row align="left">
-					  <label control="txtMenuMarginTop" value="&mot.spacing.topMargin;" />
-					  <textbox id="txtMenuMarginTop" 
-							   type="number" 
-							   preference="MenuMarginTop"  
-							   tooltiptext="&mot.spacing.topMargin.tooltip;" />
-					  <label value="px" />
-					</row>
-					<row align="left">
-					  <label control="txtMenuMarginLeft" value="&mot.spacing.leftMargin;" />
-					  <textbox id="txtMenuMarginLeft" 
-							   type="number" 
-							   preference="MenuMarginLeft"  
-							   tooltiptext="&mot.spacing.leftMargin.tooltip;" />
-					  <label value="px" />
-					</row>
-					<row align="left">
-						<label control="txtMaxHeight" value="&mot.spacing.maxHeight;" />
-						<textbox id="txtMaxHeight" 
-								 type="number" 
-								 increment="2"
-								 min="20"
-								 preference="MaxHeight"
-								 tooltiptext="&mot.spacing.maxHeight.tooltip;" />
-						<label value="px" />
-						<spacer flex="2" />
-					</row>
-				  </rows>
-				</grid>
+					<caption label="&mot.spacing;" />
+					<grid flex="1">
+						<columns>
+							<column />
+							<column />
+						</columns>
+						<rows>
+							<row align="left">
+								<label control="txtNegativeMargin" value="&mot.spacing.negativeMargin;" />
+								<textbox id="txtNegativeMargin" 
+										 type="number" 
+										 preference="NegativeMargin"  
+										 tooltiptext="&mot.spacing.negativeMargin.tooltip;" />
+								<label value="px" />
+							</row>
+							<row align="left">
+								<label control="txtTabbarMargin" value="&mot.spacing.tabbarMargin;" />
+								<textbox id="txtTabbarMargin" 
+										 type="number" 
+										 preference="TabbarMargin"  
+										 tooltiptext="&mot.spacing.tabbarMargin.tooltip;" />
+								<label value="px" />
+							</row>
+							<row align="left">
+								<label control="txtMenuMarginTop" value="&mot.spacing.topMargin;" />
+								<textbox id="txtMenuMarginTop" 
+										 type="number" 
+										 preference="MenuMarginTop"  
+										 tooltiptext="&mot.spacing.topMargin.tooltip;" />
+								<label value="px" />
+							</row>
+							<row align="left">
+								<label control="txtMenuMarginLeft" value="&mot.spacing.leftMargin;" />
+								<textbox id="txtMenuMarginLeft" 
+										 type="number" 
+										 preference="MenuMarginLeft"  
+										 tooltiptext="&mot.spacing.leftMargin.tooltip;" />
+								<label value="px" />
+							</row>
+							<row align="left">
+								<label control="txtMaxHeight" value="&mot.spacing.maxHeight;" />
+								<textbox id="txtMaxHeight" 
+										 type="number" 
+										 increment="2"
+										 min="20"
+										 preference="MaxHeight"
+										 tooltiptext="&mot.spacing.maxHeight.tooltip;" />
+								<label value="px" />
+								<spacer flex="2" />
+							</row>
+						</rows>
+					</grid>
 			  </groupbox>
 			  <groupbox>
-				<caption label="&mot.buttons;" />
-				<grid flex="1">
-				  <columns>
-					<column />
-					<column />
-				  </columns>
-				  <rows>
-					<row align="center">
-					  <label control="txtMenuIconSmall" value="&mot.buttons.small;" />
-					  <textbox id="txtMenuIconSmall" 
-							   type="number" 
-							   preference="SmallIconSize"  
-							   tooltiptext="&mot.buttons.small.tooltip;" />
-					  <label value="px" />
-					</row>
-					<row align="center">
-					  <label control="txtMenuIconNormal" value="&mot.buttons.normal;" />
-					  <textbox id="txtMenuIconNormal" 
-							   type="number" 
-							   preference="NormalIconSize"  
-							   tooltiptext="&mot.buttons.normal.tooltip;" />
-					  <label value="px" />
-					</row>
-				  </rows>
-				</grid>
-				<checkbox preference="forceSizeWithImportant"
-						  label="&mot.buttons.important;" />
-				<checkbox preference="ForceSmallIcons"
-						  label="&mot.buttons.forceSmall;" />
+					<caption label="&mot.buttons;" />
+					<grid flex="1">
+						<columns>
+							<column />
+							<column />
+						</columns>
+						<rows>
+							<row align="center">
+								<label control="txtMenuIconSmall" value="&mot.buttons.small;" />
+								<textbox id="txtMenuIconSmall" 
+										 type="number" 
+										 preference="SmallIconSize"  
+										 tooltiptext="&mot.buttons.small.tooltip;" />
+								<label value="px" />
+								<toolbarbutton 
+								  class="helpIcon"
+									tooltiptext="&mot.buttons.sizes.tooltip;"
+									label=""
+									onclick="alert('this is only a tooltip text');"
+									/>
+							</row>
+							<row align="center">
+								<label control="txtMenuIconNormal" value="&mot.buttons.normal;" />
+								<textbox id="txtMenuIconNormal" 
+										 type="number" 
+										 preference="NormalIconSize"  
+										 tooltiptext="&mot.buttons.normal.tooltip;" />
+								<label value="px" />
+							</row>
+						</rows>
+					</grid>
+					<checkbox 
+						preference="forceSizeWithImportant"
+						label="&mot.buttons.important;"
+						tooltiptext="&mot.buttons.important.tooltip;"
+						/>
+					<checkbox preference="ForceSmallIcons"
+								label="&mot.buttons.forceSmall;" />
 			  </groupbox>
 		    </hbox>
 		</tabpanel>
@@ -461,6 +470,7 @@
 									 type="number" 
 									 preference="CustomMenuFontSize"  
 									 tooltiptext="&mot.customMenu.customStyle.fontSize.tooltip;" />
+					<label value="pt" />				 
 					<checkbox id="chkCustomMenuBold" 
 					          preference="CustomMenuBold"
 								    label="&mot.customMenu.customStyle.bold;" />
@@ -523,7 +533,7 @@
 					</toolbar>
 				</hbox>
 				<groupbox orient="horizontal" >
-				  <caption label="Bookmark" />
+				  <caption label="&mot.bookmarks.group;" />
 					<grid>
 						<columns>
 							<column />
