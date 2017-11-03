@@ -44,7 +44,7 @@
 <!ENTITY mot.colors.tooltip.pickColor "Scegli un colore">
 <!ENTITY mot.colors.tooltip.background "Inserisci come sfondo un css valido (immagine o colore di sfondo)">
 <!ENTITY mot.colors.font.color "Colore caratteri:">
-<!ENTITY mot.colors.default.fontshadow "Ombreggiatura caratteri:">
+<!ENTITY mot.colors.default.fontshadow "Ombreggiatura caratteri">
 <!ENTITY mot.colors.background "Sfondo:">
 <!ENTITY mot.borders "Bordi">
 <!ENTITY mot.borders.color "Colore del bordo del menu:">

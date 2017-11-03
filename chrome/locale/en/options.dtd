@@ -44,7 +44,7 @@
 <!ENTITY mot.colors.tooltip.pickColor "Choose a color">
 <!ENTITY mot.colors.tooltip.background "Enter a valid css background (background-image or background-color)">
 <!ENTITY mot.colors.font.color "Font color:">
-<!ENTITY mot.colors.default.fontshadow "Font shadow:">
+<!ENTITY mot.colors.default.fontshadow "Font shadow">
 <!ENTITY mot.colors.background "Background:">
 <!ENTITY mot.borders "Borders">
 <!ENTITY mot.borders.color "Menu border color:">

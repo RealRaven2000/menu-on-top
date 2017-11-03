@@ -44,7 +44,7 @@
 <!ENTITY mot.colors.tooltip.pickColor "Eine Farbe wählen">
 <!ENTITY mot.colors.tooltip.background "Einen gültigen css Hintergrund eingeben (background-image oder background-color)">
 <!ENTITY mot.colors.font.color "Schriftfarbe:">
-<!ENTITY mot.colors.default.fontshadow "Schriftschatten:">
+<!ENTITY mot.colors.default.fontshadow "Schriftschatten">
 <!ENTITY mot.colors.background "Hintergrund:">
 <!ENTITY mot.borders "Ränder">
 <!ENTITY mot.borders.color "Randfarbe:">
