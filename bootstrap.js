@@ -19,6 +19,7 @@ var   Cu = Components.utils;
 
 Cu.import("resource://gre/modules/Services.jsm");
 
+/*
 (function(global) global.include = function include(src) {
 var o = {};
 Components.utils.import("resource://gre/modules/Services.jsm", o);
@@ -26,14 +27,8 @@ var uri = o.Services.io.newURI(
 src, null, o.Services.io.newURI(__SCRIPT_URI_SPEC__, null, null));
 o.Services.scriptloader.loadSubScript(uri.spec, global);
 })(this);
-
-/*
-var mozIJSSubScriptLoader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
-                            .getService(Components.interfaces.mozIJSSubScriptLoader);
-
-mozIJSSubScriptLoader.loadSubScript("chrome://menuontop/content/menuOnTop.js", {},  "ASCII");
 */
-														
+
 var windows = []; // All windows we're started in, to remove helpers at shutdown
 
 // we cannot have default prefs in a file, so:
