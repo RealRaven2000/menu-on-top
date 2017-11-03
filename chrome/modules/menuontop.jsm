@@ -111,8 +111,14 @@ END LICENSE BLOCK
 		# make sure that icon height overrides max menu height
 		
 	1.5 - WIP
-	  # made sure tabbar top-spacing setting from version 1.4 works in Firefox too.
-		# italian Locale?
+	  # made sure the new tabbar top-spacing setting from version 1.4 works in Firefox too.
+		# added italian Locale (thanks to Leopoldo Saggin at Babelzilla)
+		# added Chinese Locale (thanks to YFdyh000 at Babelzilla)
+		# Added option for font shadows
+		# Firefox Pale Moon: fix tab opener for bookmarks
+		# In Firefox: If a tab is already open in the current window, set focus to it instead of opening a duplicate.
+		
+		
 */
 Components.utils.import("resource://gre/modules/Services.jsm");
  
@@ -346,7 +352,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 						break;
           case 'Firefox':
 						let filename = url.replace(":","").replace("?","").replace("=","");
-						if (util.PlatformVersion >=43.0) {  // use a content tab
+						if (util.openURLInTab) {  // use a content tab
 						  menuitem.addEventListener("command", function(event) { 
 									util.openURLInTab(url);
 								}, false);
@@ -1086,22 +1092,117 @@ MenuOnTop.Util = {
     return null;
   } ,
 	
+	getTabInfoLength: function getTabInfoLength(tabmail) {
+		if (tabmail.tabInfo)
+		  return tabmail.tabInfo.length;
+	  if (tabmail.tabOwners)
+		  return tabmail.tabOwners.length;
+		return null;
+	} ,	
+	
+	getTabInfoByIndex: function getTabInfoByIndex(tabmail, idx) {
+		if (tabmail.tabInfo)
+			return tabmail.tabInfo[idx];
+		if (tabmail.tabOwners)
+		  return tabmail.tabOwners[idx];
+		return null;
+	} ,
+	
+	getBaseURI: function baseURI(URL) {
+		let hashPos = URL.indexOf('#'),
+				queryPos = URL.indexOf('?'),
+				baseURL = URL;
+				
+		if (hashPos>0)
+			baseURL = URL.substr(0, hashPos);
+		else if (queryPos>0)
+			baseURL = URL.substr(0, queryPos);
+		if (baseURL.endsWith('/'))
+			return baseURL.substr(0, baseURL.length-1); // match "x.com" with "x.com/"
+		return baseURL;		
+	} ,
+	
+	findMailTab: function findMailTab(tabmail, URL) {
+		const util = MenuOnTop.Util;
+		// mail: tabmail.tabInfo[n].browser		
+		let baseURL = util.getBaseURI(URL),
+				numTabs = util.getTabInfoLength(tabmail);
+		
+		for (let i = 0; i < numTabs; i++) {
+			let info = util.getTabInfoByIndex(tabmail, i);
+			if (info.browser && info.browser.currentURI) {
+				let tabUri = util.getBaseURI(info.browser.currentURI.spec);
+				if (tabUri == baseURL) {
+					tabmail.switchToTab(i);
+					// focus on tabmail ?
+					
+					return true;
+				}
+			}
+		}
+		return false;
+	} ,		
+	
+  findBrowserTab: function findTab(URL) {
+		const Cc = Components.classes,
+					Ci = Components.interfaces,
+		      util = MenuOnTop.Util;
+					
+		let wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator),
+		    browserEnumerator = wm.getEnumerator("navigator:browser"),
+		    found = false,
+				baseURL = util.getBaseURI(URL);
+		// more tolerant URL match; cutting off anchors / queryString for better re-using of tabs!
+		
+		try {
+			while (!found && browserEnumerator.hasMoreElements()) {
+				let browserWin = browserEnumerator.getNext(),
+						tabbrowser = browserWin.gBrowser;
+
+				// Check each tab of this browser instance
+				let numTabs = tabbrowser.browsers.length;
+				for (let index = 0; index < numTabs; index++) {
+					let currentBrowser = tabbrowser.getBrowserAtIndex(index);
+					
+					if (baseURL == util.getBaseURI(currentBrowser.currentURI.spec)) {
+						// The URL is already opened. Select this tab.
+						tabbrowser.selectedTab = tabbrowser.tabContainer.childNodes[index];
+						// Focus *this* browser-window
+						browserWin.focus();
+						// reload with querystring #xyz
+						if (URL != currentBrowser.currentURI.spec)
+							tabbrowser.loadURI(URL);
+						found = true;
+						break;
+					}
+				}				
+			}
+		}
+		catch(ex) {
+			// a problem occurred
+			util.logException("findBrowserTab(" + URL + ")", ex);
+		}
+		return found;
+	} ,	
+	
   openURL: function openURL(evt,URL) { 
 		if (this.openURLInTab(URL) && null!=evt) {
 			evt.preventDefault();
 			evt.stopPropagation();
 		}
-	},
+	} ,
 	
 	openURLInTab: function openURLInTab(URL) {
+		const util = MenuOnTop.Util;		
 		try {
 			let sTabMode="",
 			    wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
                    .getService(Components.interfaces.nsIWindowMediator),
 			    mainWindow = wm.getMostRecentWindow("navigator:browser");
 			if (mainWindow) { // Firefox
-				var newTab = mainWindow.gBrowser.addTab(URL);
-				mainWindow.gBrowser.selectedTab = newTab;
+				if (!util.findBrowserTab(URL))
+				  mainWindow.gBrowser.selectedTab = mainWindow.gBrowser.addTab(URL);
+				mainWindow.focus();
 				return true;
 			}
 
@@ -1127,7 +1228,7 @@ MenuOnTop.Util = {
 			  } );
 		}
 		catch(e) {
-			this.logException("openURLInTab(" + URL + ")", e);
+			util.logException("openURLInTab(" + URL + ")", e);
 			return false;
 		}
 		return true;
