@@ -204,11 +204,6 @@
 			
 			<groupbox>
 			  <caption label="&mot.colors;" />
-				<hbox> 
-					<checkbox id="chkMenubarTransparent"
-							  preference="boolMenuBarTransparent" 
-							  label="&mot.colors.transparent;" />
-				</hbox>
 				<tabbox orient="vertical" flex="6" id="mot-Colors-Tabbox">
 					<tabs>
 						<tab label="&mot.colors.default;" id="mot-col-default" />
@@ -240,6 +235,9 @@
 										preference="MenuBackground"  
 										tooltiptext="&mot.colors.tooltip.background;" />
 							</hbox>
+							<checkbox id="chkMenubarTransparent"
+										preference="boolMenuBarTransparent" 
+										label="&mot.colors.transparent;" />
 						</tabpanel>
 						<tabpanel id="mot-Color-Hover"
 									orient="vertical" 
@@ -438,7 +436,7 @@
                oninput="MenuOnTop.Options.updateCustomMenuLabel(this);"
 							 />
 					<checkbox preference="useCustomMenuIcon" 
-					          label = "Avatar"
+					          label = "&mot.customMenu.avatar;"
 					          oncommand="MenuOnTop.Options.onCustomIconToggle(this);" />
 					<button id = "btnSelectAvatar"
 					        label = "&mot.customMenu.selectIcon;"
@@ -453,6 +451,7 @@
 									 tooltiptext="&mot.customMenu.size.tooltip;"
 									 onchange="MenuOnTop.Options.onIconSizeChange(this)"
 									 />
+					<label value="px" />
 				</hbox>
 				<hbox align="center">
 				  <checkbox id="customMenuPort"
