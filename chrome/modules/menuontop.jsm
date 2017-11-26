@@ -110,13 +110,23 @@ END LICENSE BLOCK
 		# Moved support pages to quickfolders.org
 		# make sure that icon height overrides max menu height
 		
-	1.5 - WIP
+	1.5 - 04/11/2017
 	  # made sure the new tabbar top-spacing setting from version 1.4 works in Firefox too.
 		# added italian Locale (thanks to Leopoldo Saggin at Babelzilla)
 		# added Chinese Locale (thanks to YFdyh000 at Babelzilla)
+		# added Swedish Locale (thanks to A. Regnander at Babelzilla)
 		# Added option for font shadows
 		# Firefox Pale Moon: fix tab opener for bookmarks
 		# In Firefox: If a tab is already open in the current window, set focus to it instead of opening a duplicate.
+		
+  1.6 - 12/11/2017
+    # Completed Swedish Locale (thanks to A. Regnander at Babelzilla)
+		
+	1.7 - 26/11/2017
+		# Removed obsolete references to nsIPrefBranch2. These would break when reading settings in Thunderbird 57.
+		# Removed version options from script tags which also broke settings in Thunderbird 57 and later.
+		# Fixed storing of some default settings (top margin, left margin)
+		
 		
 		
 */
@@ -150,8 +160,8 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 			    shadowString = Prefs.isTextShadow ? 'text-shadow: 1px 1px 1px rgba(128, 128, 128, 0.6) !important;' : '',
 			    maxHeightString = Prefs.maxHeight ? 'max-height: ' + Prefs.maxHeight + 'px;' : '',
 			    menuItemString = (shadowString + maxHeightString) ? '#' + util.MenubarId + ' > menu  {' + shadowString + maxHeightString + '}' : '',
-			    menuMarginTop = 'margin-top: ' + Prefs.menuMarginTop + 'px !important;',
-			    menuMarginLeft = 'margin-left: ' + Prefs.menuMarginLeft + 'px !important;',
+			    menuMarginTop = 'margin-top: ' + Prefs.menuMargin + 'px !important;',
+			    menuMarginLeft = 'margin-left: ' + Prefs.menuMargin_left + 'px !important;',
 			    menuRadiusValue = Prefs.menuRadius,
 			    left  = Prefs.menuRadiusLeft ? menuRadiusValue + 'em' : '0',
 			    right  = Prefs.menuRadiusRight ? menuRadiusValue + 'em' : '0',
@@ -650,8 +660,8 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
   // replace pref1.pref2 with pref1_pref2
 	defaultPREFS : {
 		negativeMargin: 0,
-		menuMarginTop: 6,
-		menuMarginLeft: 2,
+		menuMargin: 6,
+		menuMargin_left: 2,
 		tabbarMargin: 3,
 		maxHeight: 20,
     menuBorderWidth: "0",
@@ -1458,11 +1468,11 @@ MenuOnTop.Preferences = {
     return this.getIntPref('toolbarMargin.right');
   } ,
   
-	get menuMarginLeft() {
+	get menuMargin_left() {
 		return this.getIntPref('menuMargin.left');
 	} ,
   
-  get menuMarginTop() {
+  get menuMargin() {
 		return this.getIntPref('menuMargin');
 	} ,
 	

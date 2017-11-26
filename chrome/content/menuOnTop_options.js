@@ -36,10 +36,10 @@ MenuOnTop.Options = {
 		util.logDebug ("MenuOnTop.Options.onLoad()");
 		// add an event listener that reacts to changing all preferences by reloading the CSS
 		let Ci = Components.interfaces;
-		this.prefService.QueryInterface(Ci.nsIPrefBranch2);
+		this.prefService.QueryInterface(Ci.nsIPrefBranch);
+		// this.prefService.QueryInterface(Ci.nsIPrefBranch2);
 		// => 'this' implements observe() interface
 		this.prefService.addObserver('extensions.menuontop.', this, false);
-		this.prefService.QueryInterface(Ci.nsIPrefBranch);
     document.getElementById('tabsInTitle').checked = tabsInTitlebar;
     document.getElementById('moveBar').disabled = !tabsInTitlebar;
     MenuOnTop.Options.enableCustomMenuControls();
@@ -80,7 +80,7 @@ MenuOnTop.Options = {
   
 	onUnload: function onUnload() {
 		MenuOnTop.Util.logDebug ("MenuOnTop.Options.onClose()");
-	  this.prefService.QueryInterface(Components.interfaces.nsIPrefBranch2);
+	  this.prefService.QueryInterface(Components.interfaces.nsIPrefBranch);
     this.prefService.removeObserver('extensions.menuontop.', this);
 	},
 	

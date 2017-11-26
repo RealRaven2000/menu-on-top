@@ -25,7 +25,7 @@
             minwidth="420">
             <!--persist="screenX, screenY"-->
 
-<script type="application/x-javascript;version=1.7" src="chrome://menuontop/content/menuOnTop_options.js" />
+<script type="application/x-javascript" src="chrome://menuontop/content/menuOnTop_options.js" />
 <script type="text/javascript">
   MenuOnTop.TopMenu._document = window.document;
 </script>
