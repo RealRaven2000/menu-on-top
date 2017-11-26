@@ -39,10 +39,10 @@ var styleSheets = ["chrome://menuontop/skin/menuOnTop_main.css"];
 
 function setDefaultPrefs() {
   let branch = Services.prefs.getDefaultBranch(PREF_BRANCH);
-  for (let [key, val] in Iterator( MenuOnTop.defaultPREFS )) {
+	// replace Iterator
+  for (let [key, val] of  Object.entries(MenuOnTop.defaultPREFS )) {
     // use x_y to create pref x.y
     key = key.replace(/_/g,'.');
-		MenuOnTop.Util.logDebug ("Setting default pref " + key + ": " + val);
 		
     switch (typeof val) {
       case "boolean":
@@ -142,7 +142,7 @@ function shutdown(data, reason){
                       getService(Components.interfaces.nsIWindowMediator);
   wm.removeListener(winListener);
   
-  for each (var window in windows){
+  for (var window of windows) {
     try{
       stop(window);
     } catch (e){}
