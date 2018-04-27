@@ -112,7 +112,7 @@ END LICENSE BLOCK
 		
 	1.5 - 04/11/2017
 	  # made sure the new tabbar top-spacing setting from version 1.4 works in Firefox too.
-		# added italian Locale (thanks to Leopoldo Saggin at Babelzilla)
+		# added Italian Locale (thanks to Leopoldo Saggin at Babelzilla)
 		# added Chinese Locale (thanks to YFdyh000 at Babelzilla)
 		# added Swedish Locale (thanks to A. Regnander at Babelzilla)
 		# Added option for font shadows
@@ -127,11 +127,17 @@ END LICENSE BLOCK
 		# Removed version options from script tags which also broke settings in Thunderbird 57 and later.
 		# Fixed storing of some default settings (top margin, left margin)
 		
+	1.8 - 27/04/2018
+	  # Added Shim modules for backwards compatibility for Thunderbird versions < 51
+		# Added Spanish Locale (thanks to strel at Babelzilla)
+		# Added Waterfox, Firefox Quantum and some Pepe avatars
+		# Made compatible for Thunderbird 60.* (2018 ESR Release)
+		
 		
 		
 */
 Components.utils.import("resource://gre/modules/Services.jsm");
- 
+
 var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
     MenuOnTop = {
   Id: "menuOnTop@agrude.com",
@@ -776,7 +782,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 
 };
 
-Components.utils.import("resource://gre/modules/osfile.jsm")
+// Components.utils.import("resource://gre/modules/osfile.jsm")
 Components.utils.import("resource://gre/modules/Services.jsm");
 
 MenuOnTop.Util = {
@@ -2049,13 +2055,17 @@ MenuOnTop.TopMenu = {
   
   readStringFile: function readStringFile() {
     // To read content from file
-    const {TextDecoder,OS} = Components.utils.import("resource://gre/modules/osfile.jsm", {});
+    // const {OS} = Components.utils.import("resource://gre/modules/osfile.jsm", {}); // TextDecoder
+		
+		const {OS} = (typeof ChromeUtils.import == "undefined") ?
+		  Components.utils.import("resource://gre/modules/osfile.jsm", {}) :
+		  ChromeUtils.import("resource://gre/modules/osfile.jsm", {});
     // To read & write content to file
     // const {TextDecoder, TextEncoder, OS} = Cu.import("resource://gre/modules/osfile.jsm", {});  
     
     let profileDir = OS.Constants.Path.profileDir,
         path = OS.Path.join(profileDir, "extensions", "menuOnTop.json"),
-        decoder = new TextDecoder(),        // This decoder can be reused for several reads
+        // decoder = new TextDecoder(),        // This decoder can be reused for several reads
         promise = OS.File.read(path, { encoding: "utf-8" }); // Read the complete file as an array - returns Uint8Array 
     return promise;
   } ,
@@ -2128,7 +2138,11 @@ MenuOnTop.TopMenu = {
     if (MenuOnTop.Preferences.isDebug) debugger;
     let util = MenuOnTop.Util;
     try {
-      const {OS} = Components.utils.import("resource://gre/modules/osfile.jsm", {});
+      // const {OS} = Components.utils.import("resource://gre/modules/osfile.jsm", {});
+			const {OS} = (typeof ChromeUtils.import == "undefined") ?
+				Components.utils.import("resource://gre/modules/osfile.jsm", {}) :
+				ChromeUtils.import("resource://gre/modules/osfile.jsm", {});
+				
       if (MenuOnTop.Preferences.isDebug) debugger;
       let topMenu = this, // closure this
           profileDir = OS.Constants.Path.profileDir,

@@ -1,6 +1,8 @@
 "use strict";
 
+
 var MenuOnTop = Components.utils.import("chrome://menuontopmod/content/menuontop.jsm", {}).MenuOnTop; 
+
 
 MenuOnTop.Options = {
 	_prefService : null,
@@ -170,15 +172,16 @@ MenuOnTop.Options = {
           Cc = Components.classes,
           nsIFilePicker = Ci.nsIFilePicker,
           util = MenuOnTop.Util,
-          prefs = MenuOnTop.Preferences;
-    let fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
+          prefs = MenuOnTop.Preferences,
+					NSIFILE = Ci.nsILocalFile || Ci.nsIFile;
+    let fp = Cc["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
     
 		// callback, careful, no "this"
     let fpCallback = function fpCallback_done(aResult) {
       if (aResult == nsIFilePicker.returnOK) {
         try {
           if (fp.file) {
-					  let file = fp.file.parent.QueryInterface(Ci.nsILocalFile);
+					  let file = fp.file.parent.QueryInterface(NSIFILE);
 						if (!prefs.isCustomMenuIcon)
               prefs.isCustomMenuIcon=true;
             if (prefs.customMenuIconSize<16)
@@ -201,9 +204,11 @@ MenuOnTop.Options = {
     fp.appendFilters(nsIFilePicker.filterImages);
 		// needs to be initialized with something that makes sense (UserProfile/QuickFolders)
 		
-//Error: NS_ERROR_XPC_BAD_CONVERT_JS: Could not convert JavaScript argument arg 0 [nsIFilePicker.displayDirectory]
-    const {OS} = Components.utils.import("resource://gre/modules/osfile.jsm", {});
-		let localFile = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile),
+		//Error: NS_ERROR_XPC_BAD_CONVERT_JS: Could not convert JavaScript argument arg 0 [nsIFilePicker.displayDirectory]
+		const {OS} = (typeof ChromeUtils.import == "undefined") ?
+		  Components.utils.import("resource://gre/modules/osfile.jsm", {}) :
+		  ChromeUtils.import("resource://gre/modules/osfile.jsm", {});
+		let localFile = Cc["@mozilla.org/file/local;1"].createInstance(NSIFILE),
 		    lastPath = prefs.getCharPref('customMenu.icon.defaultPath'),
         // default to extensions/menuontop/
         defaultPath = OS.Path.join(OS.Constants.Path.profileDir, "extensions", "menuOnTop@agrude.com", "avatars");

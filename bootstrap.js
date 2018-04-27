@@ -36,28 +36,6 @@ var windows = []; // All windows we're started in, to remove helpers at shutdown
 var PREF_BRANCH = "extensions.menuontop.";
 var MenuOnTop  = {};
 var styleSheets = ["chrome://menuontop/skin/menuOnTop_main.css"];
-
-function setDefaultPrefs() {
-  let branch = Services.prefs.getDefaultBranch(PREF_BRANCH);
-	// replace Iterator
-  for (let [key, val] of  Object.entries(MenuOnTop.defaultPREFS )) {
-    // use x_y to create pref x.y
-    key = key.replace(/_/g,'.');
-		
-    switch (typeof val) {
-      case "boolean":
-        branch.setBoolPref(key, val);
-        break;
-      case "number":
-        branch.setIntPref(key, val);
-        break;
-      case "string":
-        branch.setCharPref(key, val);
-        break;
-    }
-  }
-}
-
 var winListener = {
   onOpenWindow: function(aWindow) {
     // Wait for the window to finish loading
@@ -93,14 +71,16 @@ function uninstall(data, reason){
 function startup(data, reason){
   try { // remove from cache!
     Cu.unload("chrome://menuontopmod/content/menuontop.jsm");
+    Cu.unload("chrome://shimMenuOnTopECMA/content/menuontop_shim.jsm");
   } 
   catch(ex) {;}
   MenuOnTop = Cu.import("chrome://menuontopmod/content/menuontop.jsm", {}).MenuOnTop; 
+  MenuOnTop.Shim = Cu.import("chrome://shimMenuOnTopECMA/content/menuontop_shim.jsm", {}).MenuOnTop_Shim; 
 //  Cu.import("chrome://menuontopmod/content/mot_util.jsm", MOT.MenuOnTop); // Add .Util
 //  Cu.import("chrome://menuontopmod/content/mot_prefs.jsm", MOT.MenuOnTop);  // Add .Preferences
 //  Cu.import("chrome://menuontopmod/content/mot_prefs.jsm", MOT.MenuOnTop);  // Add .TopMenu
   
-	setDefaultPrefs(); // we need to do this every time!
+	MenuOnTop.Shim.setDefaultPrefs(PREF_BRANCH, MenuOnTop.defaultPREFS); // we need to do this every time!
   
   // We're starting up
   var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"].
@@ -142,11 +122,7 @@ function shutdown(data, reason){
                       getService(Components.interfaces.nsIWindowMediator);
   wm.removeListener(winListener);
   
-  for (var window of windows) {
-    try{
-      stop(window);
-    } catch (e){}
-  }
+	MenuOnTop.Shim.stopWindows();
   
   // Unload stylesheets
   let styleSheetService = Components.classes["@mozilla.org/content/style-sheet-service;1"]
@@ -158,7 +134,8 @@ function shutdown(data, reason){
     }  
   }  
   
-  Components.utils.unload("chrome://menuontopmod/content/menuontop.jsm");
+  Cu.unload("chrome://menuontopmod/content/menuontop.jsm");
+	Cu.unload("chrome://shimMenuOnTopECMA/content/menuontop_shim.jsm");
 };
 
 
