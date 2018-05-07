@@ -133,7 +133,8 @@ END LICENSE BLOCK
 		# Added Waterfox, Firefox Quantum and some Pepe avatars
 		# Made compatible for Thunderbird 60.* (2018 ESR Release)
 		
-		
+	1.8.1 - 
+	  # Updated ES locale
 		
 */
 Components.utils.import("resource://gre/modules/Services.jsm");
