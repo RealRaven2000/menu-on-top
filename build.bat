@@ -3,4 +3,4 @@ set /P menuOnTopRev=<revision.txt
 set /a menuOnTopRev+=1
 echo %menuOnTopRev% > revision.txt
 move *.xpi "..\..\Test\1.8\"
-rename menuOnTop.zip menuOnTop-1.8pre%menuOnTopRev%.xpi
+rename menuOnTop.zip menuOnTop-1.8.1pre%menuOnTopRev%.xpi
