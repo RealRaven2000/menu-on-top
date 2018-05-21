@@ -12,6 +12,7 @@
 <!ENTITY mot.dragArea "Drag-Bereich:">
 <!ENTITY mot.dragArea.tooltip "Wieviel Platz (in Pixeln) reserviert ist um das Programm mittels Titelbalken zu verschieben. Beeinflusst auch die minimale Fenstergrösse!">
 <!ENTITY mot.themes "Themes">
+<!ENTITY mot.fullthemes "Vollständige Themes">
 <!ENTITY mot.flavors.label "Eine Variante wählen:">
 <!ENTITY mot.flavors.selectOne "Bitte eine auswählen">
 <!ENTITY mot.flavors.11 "Morgana - violet">

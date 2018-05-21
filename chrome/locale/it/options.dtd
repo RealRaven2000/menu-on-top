@@ -12,6 +12,7 @@
 <!ENTITY mot.dragArea "Area di trascinamento:">
 <!ENTITY mot.dragArea.tooltip "Definisce lo spazio (in pixel) riservato al trascinamento dell'applicazione (Thunderbird) quando si fa clic sulla barra del titolo. Questo parametro influenza anche l'ampiezza minima della finestra">
 <!ENTITY mot.themes "Temi">
+<!ENTITY mot.fullthemes "Temi completi">
 <!ENTITY mot.flavors.label "Scegli una tipologia:">
 <!ENTITY mot.flavors.selectOne "Seleziona…">
 <!ENTITY mot.flavors.11 "Morgana - viola">

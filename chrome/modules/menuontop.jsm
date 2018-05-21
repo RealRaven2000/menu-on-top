@@ -127,14 +127,20 @@ END LICENSE BLOCK
 		# Removed version options from script tags which also broke settings in Thunderbird 57 and later.
 		# Fixed storing of some default settings (top margin, left margin)
 		
-	1.8 - 27/04/2018
+	1.8.1 - 27/04/2018
 	  # Added Shim modules for backwards compatibility for Thunderbird versions < 51
 		# Added Spanish Locale (thanks to strel at Babelzilla)
 		# Added Waterfox, Firefox Quantum and some Pepe avatars
 		# Made compatible for Thunderbird 60.* (2018 ESR Release)
-		
-	1.8.1 - 
 	  # Updated ES locale
+		
+	1.9 - planned for 26/05/2018
+		# Added more color flavors (May Green, Cloud Blue, Rose Pink, Photon Bright & Dark)
+    # Added menu border style options (solid, hidden, inset, outset, groove, ridge, dotted, dashed, double)
+		# changed Radius settings from em to px because Thunderbird removed the em binding in XUL input items
+		# Added New Avatar Icon for Thunderbird 60
+		# Added function to sanitise the CSS for menu backgrounds 
+		  (removes background: and semicolon when pasting rules from colorzilla.com)
 		
 */
 Components.utils.import("resource://gre/modules/Services.jsm");
@@ -169,9 +175,9 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 			    menuItemString = (shadowString + maxHeightString) ? '#' + util.MenubarId + ' > menu  {' + shadowString + maxHeightString + '}' : '',
 			    menuMarginTop = 'margin-top: ' + Prefs.menuMargin + 'px !important;',
 			    menuMarginLeft = 'margin-left: ' + Prefs.menuMargin_left + 'px !important;',
-			    menuRadiusValue = Prefs.menuRadius,
-			    left  = Prefs.menuRadiusLeft ? menuRadiusValue + 'em' : '0',
-			    right  = Prefs.menuRadiusRight ? menuRadiusValue + 'em' : '0',
+			    menuRadiusValue = Prefs.menuRadiusValue,
+			    left  = Prefs.menuRadiusLeft ? menuRadiusValue + 'px' : '0',
+			    right  = Prefs.menuRadiusRight ? menuRadiusValue + 'px' : '0',
 			    radiusString = 'border-radius: ' + left + ' ' + right + ' ' + right + ' ' + left +' !important;',
           tw = Prefs.menuBorderWidth.toString(), // allow for full 4 falue syntax, e.g. 1px 1px 1px 0  to avoid left border
           marginSelector = (util.Application == 'Thunderbird') ? 
@@ -186,7 +192,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
       tw = tw.indexOf('px')<0 ? tw +'px' : tw;
 			let borderWidth = 'border-width: ' + tw + ' !important;',
 			    borderStyle = borderWidth
-			                + 'border-style: solid !important; ' 
+			                + 'border-style: ' + Prefs.menuBorderStyle + ' !important; ' 
 											+ 'border-color: ' + Prefs.menuBorderColor + ' !important;',
 			    smallIconSize = Prefs.iconSizeSmall ? Prefs.iconSizeSmall + 'px' : 'auto',
 			    normalIconSize = Prefs.iconSizeNormal ? Prefs.iconSizeNormal + 'px' : 'auto';
@@ -672,7 +678,8 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 		tabbarMargin: 3,
 		maxHeight: 20,
     menuBorderWidth: "0",
-		menuRadius: "0.5",
+		menuBorderStyle: "solid",
+		menuRadiusValue: "4px",
 		menuRadiusLeft: false,
 		menuRadiusRight: true,
 		menubar_transparent: true,
@@ -1431,7 +1438,7 @@ MenuOnTop.Preferences = {
   get customMenuIconURL() {
     return this.getCharPref('customMenu.icon.url')
   } ,
-  
+	
 	get customMenuLabelTitle() {
 		let s = this.customMenuTitle;
 		try {
@@ -1491,8 +1498,8 @@ MenuOnTop.Preferences = {
 		return this.getIntPref('maxHeight');
 	} ,
 	
-	get menuRadius() {
-		return this.getCharPref('menuRadius'); // in em!
+	get menuRadiusValue() {
+		return this.getCharPref('menuRadiusValue'); // in em!
 	} ,
 	
 	get menuBorderWidth() {
@@ -1502,6 +1509,10 @@ MenuOnTop.Preferences = {
 	get menuBorderColor() {
 		return this.getCharPref('menuBorderColor'); 
 	},
+	
+	get menuBorderStyle() {
+    return this.getCharPref('menuBorderStyle');
+	} ,
 	
 	get menuRadiusLeft() {
 		return this.getBoolPref('menuRadiusLeft'); 

@@ -12,6 +12,7 @@
 <!ENTITY mot.dragArea "Dragområde:">
 <!ENTITY mot.dragArea.tooltip "Hur mycket utrymme (i bildpunkter) reserveras för att dra applikationen genom att klicka på titeln. Detta kommer även påverka den minimala fönsterbredden!">
 <!ENTITY mot.themes "Teman">
+<!ENTITY mot.fullthemes "Kompletta Teman">
 <!ENTITY mot.flavors.label "Välj ett tema:">
 <!ENTITY mot.flavors.selectOne "Välj ett att tillämpa">
 <!ENTITY mot.flavors.11 "Morgana - lila">

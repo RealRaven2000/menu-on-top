@@ -21,11 +21,12 @@ pref("extensions.menuontop.menuBackground,active",
      "linear-gradient(to bottom, rgba(4,160,238,0.8) 0%,rgba(2,79,138,0.8) 47%,rgba(0,53,118,0.8) 100%)");
 pref("extensions.menuontop.menuBorderColor", "#FFFFFF");
 pref("extensions.menuontop.menuBorderWidth", "0");
+pref("extensions.menuontop.menuBorderSolid", "solid");
 pref("extensions.menuontop.menubar.transparent", true);
 pref("extensions.menuontop.toolbarMargin.right", 350);
 pref("extensions.menuontop.menuMargin", 5);
 pref("extensions.menuontop.menuMargin.left", 9);
-pref("extensions.menuontop.menuRadius", "1");
+pref("extensions.menuontop.menuRadiusValue", "4");
 pref("extensions.menuontop.menuRadiusLeft", true);
 pref("extensions.menuontop.menuRadiusRight", true);
 pref("extensions.menuontop.negativeMargin", 2);

@@ -261,11 +261,25 @@ MenuOnTop.Options = {
     MenuOnTop.TopMenu.onEdit(txt);
   },
 	
+	sanitizeCSS: function sanitizeCSS(el) {
+		let val = el.value,
+		    colon = val.indexOf(':');
+		if (colon>=0) val = val.substr(colon+1);
+		let semicolon = val.indexOf(';');
+		if (semicolon>0) val = val.substr(0,semicolon);
+		el.value = val.trim ? val.trim() : val;
+	},
+	
+	
+	selectBorderStyle: function selectBorderStyle(sel) {
+		this.apply();
+	},
+	
 	selectScheme: function selectScheme(sel) {
 	  // set a value and notify the bound preference via an input event; thanks to John-Galt !!
 	  function setElementValue(id, val) {
-			let doc = window.document;
-			let element = doc.getElementById(id);
+			let doc = window.document,
+			    element = doc.getElementById(id);
       if (element.tagName=='colorpicker') 
         element.color = val;
 			else if (typeof val == 'boolean')
@@ -334,7 +348,7 @@ MenuOnTop.Options = {
 			case 2:  // bright - Nautipolis
         if (isChangeLayout) {
           setElementValue('txtNegativeMargin', 2);
-          setElementValue('txtMenuRadius', '0.5');
+          setElementValue('txtMenuRadius', '6');
           setMaxHeight(20);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 16);
@@ -412,7 +426,7 @@ MenuOnTop.Options = {
         if (isChangeLayout) {
           setElementValue('txtNegativeMargin', 0);
           setElementValue('txtMenuMarginTop', 6);
-          setElementValue('txtMenuRadius', '0.5');
+          setElementValue('txtMenuRadius', '6');
           setMaxHeight(21);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 16);
@@ -446,7 +460,7 @@ MenuOnTop.Options = {
         if (isChangeLayout) {
           setElementValue('txtNegativeMargin', 2);
           setElementValue('txtMenuMarginTop', 5);
-          setElementValue('txtMenuRadius', '0.4');
+          setElementValue('txtMenuRadius', '5');
           setMaxHeight(24);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
@@ -465,7 +479,7 @@ MenuOnTop.Options = {
         if (isChangeLayout) {
           setElementValue('txtNegativeMargin', 4);
           setElementValue('txtMenuMarginTop', 4);
-          setElementValue('txtMenuRadius', '0.3');
+          setElementValue('txtMenuRadius', '4');
           setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
@@ -486,7 +500,7 @@ MenuOnTop.Options = {
         if (isChangeLayout) {
           setElementValue('txtNegativeMargin', 2);
           setElementValue('txtMenuMarginTop', 5);
-          setElementValue('txtMenuRadius', '0.5');
+          setElementValue('txtMenuRadius', '6');
           setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
@@ -505,7 +519,7 @@ MenuOnTop.Options = {
         if (isChangeLayout) {
           setElementValue('txtNegativeMargin', 2);
           setElementValue('txtMenuMarginTop', 5);
-          setElementValue('txtMenuRadius', '0.75');
+          setElementValue('txtMenuRadius', '9');
           setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
@@ -518,7 +532,7 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuBorderWidth', '0');
 				break;	
       case 14:  // Lime - green
-				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(223,242,84,0.86) 0%,rgba(155,239,76,0.81) 53%,rgba(135,174,68,0.81) 100%)');
+				setElementValue('txtMenuBackgroundDefault', 'linear-gradient(to bottom, rgba(223,242,84,0.86) 0%,rgba(155,239,76,0.81) 53%,rgba(135,174,68,0.81) 100%)');
 				setElementValue('txtMenuFontColorDefault', '#003300');
 				setElementValue('txtMenuFontColorHover', '#006600');
         break;
@@ -531,7 +545,7 @@ MenuOnTop.Options = {
         if (isChangeLayout) {
           setElementValue('txtNegativeMargin', 2);
           setElementValue('txtMenuMarginTop', 5);
-          setElementValue('txtMenuRadius', '0.75');
+          setElementValue('txtMenuRadius', '9');
           setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
@@ -547,7 +561,7 @@ MenuOnTop.Options = {
         if (isChangeLayout) {
           setElementValue('txtNegativeMargin', 2);
           setElementValue('txtMenuMarginTop', 7);
-          setElementValue('txtMenuRadius', '0.5');
+          setElementValue('txtMenuRadius', '6');
           setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 0);
@@ -569,6 +583,39 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuFontColorDefault', '#F2D0BB');
 				setElementValue('txtMenuFontColorHover', '#D68779');
         break;
+      case 20:  // May - green
+				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, #b8d31b 0%,#7aa612 50%,#5c8a00 51%,#87b513 100%)');
+				setElementValue('txtMenuFontColorDefault', '#F0F0F0');
+				setElementValue('txtMenuFontColorHover', '#FFFF66'); // yellow
+				setElementValue('txtMenuBorderColor', '#003300');
+				break;
+			case 21: // Cloud - Light Blue 
+				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(149,248,253,0.8) 0%,rgba(109,231,253,0.8) 47%,rgba(99,213,255,0.8) 100%)');
+				setElementValue('txtMenuFontColorDefault', '#000066'); // dark blue
+				setElementValue('txtMenuFontColorHover', '#CCFFFF'); // light blue
+				setElementValue('txtMenuBorderColor', '#CCFFFF'); 
+        break;
+			case 22: // Pink - Rose #FF66CC
+				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(255,93,177,1) 0%,rgba(239,1,124,1) 100%)');
+				setElementValue('txtMenuFontColorDefault', '#FFFFFF'); 
+				setElementValue('txtMenuBackgroundHover',  'linear-gradient(to bottom, rgba(222,0,115,1) 0%,rgba(153,1,80,1) 100%)');
+				setElementValue('txtMenuFontColorHover', '#FFFFCC'); // light yellow
+				setElementValue('txtMenuBorderColor', '#663366'); // dark purple border
+				setElementValue('txtMenuBorderWidth', 1);
+        break;
+			case 23: // Photon Default
+				setElementValue('txtMenuBackgroundDefault',  'rgba(255,255,255,0.4)');
+				setElementValue('txtMenuFontColorDefault', '#000000');
+				setElementValue('txtMenuFontColorHover', '#666666'); 
+				setElementValue('txtMenuBorderColor', '#9C9C9C');
+				break;
+			case 24: // Photon Dark (brighttext)
+				setElementValue('txtMenuBackgroundDefault',  'rgba(255,255,255,0.4)');
+				setElementValue('txtMenuFontColorDefault', '#FFFFFF');
+				setElementValue('txtMenuFontColorHover', '#FFFFFF'); 
+				setElementValue('txtMenuBorderColor', '#333333');
+				break;
+			
 		}
 		this.apply();
 		window.setTimeout( function() { 

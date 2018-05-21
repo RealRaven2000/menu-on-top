@@ -12,6 +12,7 @@
 <!ENTITY mot.dragArea "Área de arrastre:">
 <!ENTITY mot.dragArea.tooltip "Cuánto espacio (en píxeles) está reservado para arrastrar la aplicación al pulsar en el título. ¡Esto también afectará a la anchura mínima de la ventana!">
 <!ENTITY mot.themes "Temas">
+<!ENTITY mot.fullthemes "Temas completos">
 <!ENTITY mot.flavors.label "Seleccionar un sabor:">
 <!ENTITY mot.flavors.selectOne "Seleccione uno a establecer">
 <!ENTITY mot.flavors.11 "Morgana - púrpura">

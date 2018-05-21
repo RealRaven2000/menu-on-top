@@ -188,6 +188,19 @@ textbox[type="number"] {
 	list-style-image: url("chrome://menuontop/content/flavors/lime.png");
 }
 
+#styleFlavors .may {
+	list-style-image: url("chrome://menuontop/content/flavors/may.png");
+}
+
+#styleFlavors .cloud {
+	list-style-image: url("chrome://menuontop/content/flavors/cloud.png");
+}
+
+#styleFlavors .rose {
+	list-style-image: url("chrome://menuontop/content/flavors/rose.png");
+}
+
+
 #styleFlavors .sunflower {
 	list-style-image: url("chrome://menuontop/content/flavors/sunflower.png");
 }
@@ -203,6 +216,20 @@ textbox[type="number"] {
 #styleFlavors .leather {
 	list-style-image: url("chrome://menuontop/content/flavors/mahogany.png");
 }
+ 
+#styleFlavors .photon-bright {
+	/* default photon - Thunderbird 60 */
+	list-style-image: url("chrome://menuontop/content/flavors/photon-bright.png");
+}
+
+
+#styleFlavors .photon-dark {
+	/* bright-text. dark background - Thunderbird 60 brighttext */
+	list-style-image: url("chrome://menuontop/content/flavors/photon-dark.png");
+}
+
+
+
 
 #customMenuIconSize {
 	max-width: 10em;

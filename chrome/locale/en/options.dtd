@@ -12,6 +12,7 @@
 <!ENTITY mot.dragArea "Drag area:">
 <!ENTITY mot.dragArea.tooltip "How much space (in pixels) is reserved for dragging the application by clicking in the title. This will also affect the minimum window width!">
 <!ENTITY mot.themes "Themes">
+<!ENTITY mot.fullthemes "Complete Themes">
 <!ENTITY mot.flavors.label "Select a flavor:">
 <!ENTITY mot.flavors.selectOne "Select one to set">
 <!ENTITY mot.flavors.11 "Morgana - purple">
