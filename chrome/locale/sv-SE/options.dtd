@@ -23,6 +23,11 @@
 <!ENTITY mot.flavors.17 "Robin - röd">
 <!ENTITY mot.flavors.18 "Ek - brun">
 <!ENTITY mot.flavors.19 "Läder - mahogny">
+<!ENTITY mot.flavors.20 "Maj - grön">
+<!ENTITY mot.flavors.21 "Moln - ljusblå">
+<!ENTITY mot.flavors.22 "Ros - rosa">
+<!ENTITY mot.flavors.23 "Foton - Standard">
+<!ENTITY mot.flavors.24 "Foton - Mörkt">
 <!ENTITY mot.flavors.0 "Australis - standard">
 <!ENTITY mot.flavors.9 "Australis omdesign">
 <!ENTITY mot.flavors.1 "TT deepdark - svart">
@@ -49,6 +54,7 @@
 <!ENTITY mot.borders "Kanter">
 <!ENTITY mot.borders.color "Menykantfärg:">
 <!ENTITY mot.borders.width "Menykantsbredd:">
+<!ENTITY mot.borders.style "Kantstil för meny:">
 <!ENTITY mot.borders.width.tooltip "Ange kantbredd (0=ingen)">
 <!ENTITY mot.borders.radius "Hörnradie:">
 <!ENTITY mot.borders.radius.tooltip "Ange en siffra">
