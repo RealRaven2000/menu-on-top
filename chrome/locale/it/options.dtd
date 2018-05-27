@@ -24,6 +24,11 @@
 <!ENTITY mot.flavors.17 "Robin - rosso">
 <!ENTITY mot.flavors.18 "Oak - marrone">
 <!ENTITY mot.flavors.19 "Leather - mogano">
+<!ENTITY mot.flavors.20 "May - verde">
+<!ENTITY mot.flavors.21 "Clud - celeste">
+<!ENTITY mot.flavors.22 "Rose - rosa">
+<!ENTITY mot.flavors.23 "Photon - Predefinito">
+<!ENTITY mot.flavors.24 "Photon - Scuro">
 <!ENTITY mot.flavors.0 "Australis - predefinito">
 <!ENTITY mot.flavors.9 "Australis - rivisitato">
 <!ENTITY mot.flavors.1 "TT deepdark - nero">
@@ -50,6 +55,7 @@
 <!ENTITY mot.borders "Bordi">
 <!ENTITY mot.borders.color "Colore del bordo del menu:">
 <!ENTITY mot.borders.width "Ampiezza del bordo del menu:">
+<!ENTITY mot.borders.style "Stile del bordo del menu:">
 <!ENTITY mot.borders.width.tooltip "Imposta l'ampiezza del bordo (0=bordo assente)">
 <!ENTITY mot.borders.radius "Raggio angolare:">
 <!ENTITY mot.borders.radius.tooltip "Imposta un numero">

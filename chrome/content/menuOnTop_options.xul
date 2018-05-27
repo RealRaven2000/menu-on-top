@@ -126,7 +126,7 @@
 					<label control="styleFlavors" 
 							   value="&mot.flavors.label;" />
 					<menulist id="styleFlavors"
-								oncommand="MenuOnTop.Options.selectScheme(this.value);">
+								    oncommand="MenuOnTop.Options.selectScheme(event, this);">
 						<menupopup>
 						<menuitem label="&mot.flavors.selectOne;"
 									value="-1" />

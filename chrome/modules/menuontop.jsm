@@ -134,7 +134,7 @@ END LICENSE BLOCK
 		# Made compatible for Thunderbird 60.* (2018 ESR Release)
 	  # Updated ES locale
 		
-	1.9 - planned for 26/05/2018
+	1.9 - 27/05/2018
 		# Added more color flavors (May Green, Cloud Blue, Rose Pink, Photon Bright & Dark)
     # Added menu border style options (solid, hidden, inset, outset, groove, ridge, dotted, dashed, double)
 		# changed Radius settings from em to px because Thunderbird removed the em binding in XUL input items

@@ -275,7 +275,7 @@ MenuOnTop.Options = {
 		this.apply();
 	},
 	
-	selectScheme: function selectScheme(sel) {
+	selectScheme: function selectScheme(event, el) {
 	  // set a value and notify the bound preference via an input event; thanks to John-Galt !!
 	  function setElementValue(id, val) {
 			let doc = window.document,
@@ -293,7 +293,9 @@ MenuOnTop.Options = {
 		}
     const prefs = MenuOnTop.Preferences;
 		this.bypassObserver = true
-		let selection = parseInt(sel, 10),
+		let target = event.target,
+		    sel = target.value,
+		    selection = parseInt(sel, 10),
         isChangeLayout = !prefs.isColorOnly;
 	  if (selection<0)
 			return;
@@ -312,6 +314,7 @@ MenuOnTop.Options = {
           setElementValue('txtTabbarMargin', defPrefs.tabbarMargin);
           setMaxHeight(defPrefs.maxHeight);
           setElementValue('txtMenuIconSmall', defPrefs.iconSizeSmall);
+					setElementValue('txtMenuBorderWidth', defPrefs.menuBorderWidth);
         }
 				setElementValue('chkMenuShadow', defPrefs.textShadow);
 				setElementValue('txtMenuBackgroundDefault',  defPrefs.menuBackground);
@@ -321,7 +324,6 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuBackgroundActive',  defPrefs.menuBackgroundActive);
 				setElementValue('txtMenuFontColorActive',  defPrefs.menuFontColorActive);
 				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', defPrefs.menuBorderWidth);
 				setElementValue('chkMenubarTransparent', defPrefs.menubarTransparent);
 				break;
 			case 1:  // dark - TT deepdark
@@ -331,6 +333,7 @@ MenuOnTop.Options = {
           setElementValue('txtMenuIconNormal', 0);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 16);
+					setElementValue('txtMenuBorderWidth', '0');
         }
 				setElementValue('chkMenuShadow', true);
 				// from Bloomind's TT deepdark, slighly tweaked start point to make it brighter & more apparent (we are missing borders)
@@ -343,7 +346,6 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuBackgroundActive',  'linear-gradient(rgb(45,45,45))'); 
 				setElementValue('txtMenuFontColorActive', 'rgba(255, 255, 255, 0.9)');
 				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
 				break;
 			case 2:  // bright - Nautipolis
         if (isChangeLayout) {
@@ -352,6 +354,7 @@ MenuOnTop.Options = {
           setMaxHeight(20);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 16);
+					setElementValue('txtMenuBorderWidth', '0');
         }
 				setElementValue('chkMenuShadow', false);
         setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(215, 215, 215, 0.9))');
@@ -361,7 +364,6 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuBackgroundActive',  'linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(215, 215, 215, 0.9))');
 				setElementValue('txtMenuFontColorActive', 'rgb(15,15,15)');
 				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
 				break;
 			case 3:  // Nuvola - silver
         if (isChangeLayout) {
@@ -370,26 +372,26 @@ MenuOnTop.Options = {
           setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
+					setElementValue('txtMenuBorderWidth', '0');
         }
 				setElementValue('chkMenuShadow', false);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(#f4f4f9,#c0c1ca)');
 				setElementValue('txtMenuFontColorDefault', 'rgb(0, 0, 0)');
 				setElementValue('txtMenuFontColorHover', 'rgba(255,255,255,0.9)');
 				setElementValue('txtMenuBorderColor', 'transparent');
-        setElementValue('txtMenuBorderWidth', '0');
 				break;
 			case 4:  // orange - Lantana
         if (isChangeLayout) {
           setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 0);
+					setElementValue('txtMenuBorderWidth', '0');
         }
 				setElementValue('chkMenuShadow', true);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(252,219,143,0.9) 0%,rgba(249,156,62,0.9) 49%,rgba(229,143,45,0.9) 52%,rgba(234,122,37,1) 100%)');
 				setElementValue('txtMenuFontColorDefault', 'rgba(102,10,4,0.9)');
 				setElementValue('txtMenuFontColorHover', 'rgba(102,51,0,0.9)');
 				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
 				break;
 			case 5:  // fudge - Charamel
         if (isChangeLayout) {
@@ -398,6 +400,7 @@ MenuOnTop.Options = {
           setMaxHeight(24);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
+					setElementValue('txtMenuBorderWidth', '0');
         }
 				setElementValue('chkMenuShadow', true);
 				setElementValue('chkMenubarTransparent', true);
@@ -405,7 +408,6 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuFontColorDefault', 'rgb(127, 83, 44)');
 				setElementValue('txtMenuFontColorHover', '#663300');
 				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
 				break;
 			case 6:  // Noja Extreme - needs white shadow!
         if (isChangeLayout) {
@@ -414,13 +416,13 @@ MenuOnTop.Options = {
           setMaxHeight(26);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
+					setElementValue('txtMenuBorderWidth', '0');
         }
 				setElementValue('chkMenuShadow', false);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(184,185,197,1) 27%,rgba(184,185,197,1) 48%,rgba(210,212,219,1) 65%,rgba(245,245,255,1) 100%)');
 				setElementValue('txtMenuFontColorDefault', 'rgb(0,0,0)');
 				setElementValue('txtMenuFontColorHover', '#000066');
 				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
 				break;
 			case 7:  // Walnut 2
         if (isChangeLayout) {
@@ -430,6 +432,7 @@ MenuOnTop.Options = {
           setMaxHeight(21);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 16);
+					setElementValue('txtMenuBorderWidth', '0');
         }
 				setElementValue('chkMenuShadow', false);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(228, 208, 155, 0.95), rgba(228, 208, 155, 0.5))');
@@ -439,7 +442,6 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuBackgroundActive',  'linear-gradient(to bottom, rgb(105,41,3), rgb(105,41,3))');
 				setElementValue('txtMenuFontColorActive', 'rgb(255,255,255)');
 				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
 				break;
 			case 8:  // small icons - Littlebird
         if (isChangeLayout) {
@@ -448,13 +450,13 @@ MenuOnTop.Options = {
           setMaxHeight(20);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 16);
+					setElementValue('txtMenuBorderWidth', '0');
         }
 				setElementValue('chkMenuShadow', true);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(215, 215, 215, 0.9))');
 				setElementValue('txtMenuFontColorDefault', 'rgb(15,15,15)');
 				setElementValue('txtMenuFontColorHover', '#000066'); 
 				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
 				break;
       case 9: // Australis Redesign
         if (isChangeLayout) {
@@ -464,6 +466,7 @@ MenuOnTop.Options = {
           setMaxHeight(24);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
+					setElementValue('txtMenuBorderWidth', '1');
         }
 				setElementValue('chkMenuShadow', false);
 				setElementValue('txtMenuBackgroundDefault',  '#EAF2FB');
@@ -473,7 +476,6 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuBackgroundHover',  '#ffffff');
 				setElementValue('txtMenuFontColorActive', '#113366');
 				setElementValue('txtMenuBorderColor', '#7A8D9B');
-				setElementValue('txtMenuBorderWidth', '1');
 				break;	
 			case 10:  // phoenity (shredder)
         if (isChangeLayout) {
@@ -483,13 +485,13 @@ MenuOnTop.Options = {
           setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
+					setElementValue('txtMenuBorderWidth', '0');
         }
 				setElementValue('chkMenuShadow', false);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(206,206,206,1) 0%,rgba(212,212,212,1) 45%,rgba(206,206,206,1) 45%,rgba(199,199,199,1) 100%)');
 				setElementValue('txtMenuFontColorDefault', 'rgba(0, 0, 25, 1)');
 				setElementValue('txtMenuFontColorHover', '#0784FF');
 				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
 				break;
       case 11:  // Morgana - purple
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, #c040a4 0%,#961072 50%,#d5279b 100%)');
@@ -513,7 +515,6 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuBackgroundActive',  'linear-gradient(to bottom, rgba(4,160,238,0.8) 0%,rgba(2,79,138,0.8) 47%,rgba(0,53,118,0.8) 100%)');
 				setElementValue('txtMenuFontColorActive', 'rgba(225, 245, 255, 0.95)');
 				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
 				break;
 			case 13:  // Parakeet - green
         if (isChangeLayout) {
@@ -529,7 +530,6 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuFontColorDefault', 'rgba(225, 255, 250, 0.95)');
 				setElementValue('txtMenuFontColorHover', '#FFFF33');
 				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
 				break;	
       case 14:  // Lime - green
 				setElementValue('txtMenuBackgroundDefault', 'linear-gradient(to bottom, rgba(223,242,84,0.86) 0%,rgba(155,239,76,0.81) 53%,rgba(135,174,68,0.81) 100%)');
@@ -549,13 +549,13 @@ MenuOnTop.Options = {
           setMaxHeight(22);
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
+					setElementValue('txtMenuBorderWidth', '1');
         }
 				setElementValue('chkMenuShadow', true);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(255,183,107,1) 0%,rgba(255,167,61,1) 11%,rgba(255,124,0,1) 51%,rgba(255,127,4,1) 100%)');
 				setElementValue('txtMenuFontColorDefault', 'rgba(225, 255, 250, 0.99)');
 				setElementValue('txtMenuFontColorHover', '#660000');
 				setElementValue('txtMenuBorderColor', 'rgba(255,255,255,0.7)');
-				setElementValue('txtMenuBorderWidth', '1');
 				break;	
 			case 17:  // robin - red
         if (isChangeLayout) {
@@ -571,7 +571,6 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuFontColorDefault', 'rgba(255, 240, 255, 1)');
 				setElementValue('txtMenuFontColorHover', '#FFFFCC');
 				setElementValue('txtMenuBorderColor', 'transparent');
-				setElementValue('txtMenuBorderWidth', '0');
 				break;
       case 18: // oak - light brown
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, #b27237 0%,#7d492e 34%,#774121 56%,#c48b56 100%)');
@@ -601,7 +600,9 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuBackgroundHover',  'linear-gradient(to bottom, rgba(222,0,115,1) 0%,rgba(153,1,80,1) 100%)');
 				setElementValue('txtMenuFontColorHover', '#FFFFCC'); // light yellow
 				setElementValue('txtMenuBorderColor', '#663366'); // dark purple border
-				setElementValue('txtMenuBorderWidth', 1);
+        if (isChangeLayout) {
+					setElementValue('txtMenuBorderWidth', 1);
+				}
         break;
 			case 23: // Photon Default
 				setElementValue('txtMenuBackgroundDefault',  'rgba(255,255,255,0.4)');
