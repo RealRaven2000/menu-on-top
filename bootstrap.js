@@ -12,12 +12,13 @@
  *   Nor is this tested with a load of other toolbar related addons, so ymmv. It works well with my own addons and a big bunch
  *   that I am using, but that's not saying much.
  * VERSION HISTORY
- *    For version history, please refer to the module chrome/content/menuOnTop.js
+ *    For version history, please refer to http://quickfolders.org/menuOnTopHistory.html
  */
 
 var   Cu = Components.utils;
 
 Cu.import("resource://gre/modules/Services.jsm");
+
 
 /*
 (function(global) global.include = function include(src) {
@@ -60,12 +61,27 @@ var winListener = {
 
 function install(data, reason){
   // We run the first time
-	Components.manager.addBootstrappedManifestLocation(data.installPath);
+	if (data && data.installPath)
+		try {
+			/* gone since Fx 9.0! See https://bugzilla.mozilla.org/show_bug.cgi?id=1528489#c15
+					Cu.import("resource://gre/modules/Console.jsm");
+					Components.manager.addBootstrappedManifestLocation(data.installPath);
+			*/
+		}
+		catch (ex) {
+			console.log("MenuOnTop install() generated an error:\n" + ex.message);
+		}
 	// setDefaultPrefs();
+
+	
 };
 
 function uninstall(data, reason){
   // We'll get deleted and have to clean up
+  const util = MenuOnTop.Util,
+        prefs = MenuOnTop.Preferences;
+	if (prefs.isStatusIcon)
+		MenuOnTop.hideAddonButton(util.MainWindow);	
 };
 
 function startup(data, reason){
@@ -87,7 +103,9 @@ function startup(data, reason){
                       getService(Components.interfaces.nsIWindowMediator);
   // Start in all current windows:
   var enumerator = wm.getEnumerator(MenuOnTop.Util.MainWindowXulId); // "mail:3pane"
-	Components.manager.addBootstrappedManifestLocation(data.installPath);
+	/* gone since Fx 9.0! See https://bugzilla.mozilla.org/show_bug.cgi?id=1528489#c15
+		Components.manager.addBootstrappedManifestLocation(data.installPath);
+		*/
 	
   while (enumerator.hasMoreElements()) {
     var window = enumerator.getNext().QueryInterface(Components.interfaces.nsIDOMWindow);
@@ -122,7 +140,8 @@ function shutdown(data, reason){
                       getService(Components.interfaces.nsIWindowMediator);
   wm.removeListener(winListener);
   
-	MenuOnTop.Shim.stopWindows();
+	let shim = Cu.import("chrome://shimMenuOnTopECMA/content/menuontop_shim.jsm", {}).MenuOnTop_Shim; 
+  shim.stopWindows();
   
   // Unload stylesheets
   let styleSheetService = Components.classes["@mozilla.org/content/style-sheet-service;1"]

@@ -557,6 +557,24 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuFontColorHover', '#660000');
 				setElementValue('txtMenuBorderColor', 'rgba(255,255,255,0.7)');
 				break;	
+			case 25:  // Fire - orange
+        if (isChangeLayout) {
+          setElementValue('txtNegativeMargin', 2);
+          setElementValue('txtMenuMarginTop', 5);
+          setElementValue('txtMenuRadius', '9');
+          setMaxHeight(22);
+          setElementValue('txtMenuIconSmall', 16);
+          setElementValue('txtMenuIconNormal', 24);
+					setElementValue('txtMenuBorderWidth', '1');
+					MenuOnTop.Options.selectBorderStyle("solid");
+        }
+				setElementValue('chkMenuShadow', true);
+				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(254,189,0,1) 0%,rgba(255,142,0,1) 66%,rgba(239,71,3,1) 100%)');
+				setElementValue('txtMenuFontColorDefault', 'rgba(225, 255, 250, 0.99)');
+				setElementValue('txtMenuFontColorHover', '#660000');
+				setElementValue('txtMenuBorderColor', 'rgba(124,0,4,0.9)');
+				break;	
+				
 			case 17:  // robin - red
         if (isChangeLayout) {
           setElementValue('txtNegativeMargin', 2);

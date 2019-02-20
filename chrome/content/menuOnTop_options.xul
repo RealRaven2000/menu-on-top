@@ -40,7 +40,7 @@
       <preference id="toolbarMarginRight"  name="extensions.menuontop.toolbarMargin.right" type="int"  instantApply="true" />
       <preference id="NormalIconSize"  name="extensions.menuontop.iconSize.normal" type="int"  instantApply="true" />
       <preference id="SmallIconSize"   name="extensions.menuontop.iconSize.small" type="int"  instantApply="true" />
-      <preference id="forceSizeWithImportant"   name="extensions.menuontop.iconSize.force" type="bool"  instantApply="true" />
+      <preference id="forceSizeWithImportant"   name="extensions.menuontop.iconSize.forced" type="bool"  instantApply="true" />
       <preference id="ForceSmallIcons" name="extensions.menuontop.iconSize.forceSmall" type="bool"  instantApply="true" />
       <preference id="MaxHeight"       name="extensions.menuontop.maxHeight" type="int"  instantApply="true" />
       <preference id="boolMenuBarTransparent"  name="extensions.menuontop.menubar.transparent" type="bool" instantApply="true" />
@@ -102,7 +102,7 @@
 				  
 			<hbox align="center">
 				<groupbox>
-			    <caption label="&mot.primaryMenu;" />
+			    <label class="groupbox-caption" value="&mot.primaryMenu;" />
 					<hbox align="center">
 						<checkbox id="tabsInTitle"
 											label="&mot.menuInTitle;"
@@ -121,7 +121,7 @@
 				</groupbox>
 				<spacer flex="1" />
 				<groupbox>
-			    <caption label="&mot.themes;" />
+			    <label class="groupbox-caption" value="&mot.themes;" />
 				  <hbox align="center">
 					<label control="styleFlavors" 
 							   value="&mot.flavors.label;" />
@@ -199,6 +199,9 @@
 						<menuitem label="&mot.flavors.16;"
 						      class="menuitem-iconic tangerine"
 									value="16" />
+						<menuitem label="&mot.flavors.25;"
+						      class="menuitem-iconic fire"
+									value="25" />
 						<menuitem label="&mot.flavors.17;"
 						      class="menuitem-iconic robin"
 									value="17" />
@@ -227,7 +230,7 @@
 			</hbox>
 			
 			<groupbox>
-			  <caption label="&mot.colors;" />
+			  <label class="groupbox-caption" value="&mot.colors;" />
 				<tabbox orient="vertical" flex="6" id="mot-Colors-Tabbox">
 					<tabs>
 						<tab label="&mot.colors.default;" id="mot-col-default" />
@@ -315,7 +318,7 @@
 			</groupbox>
 			
 			<groupbox>
-				<caption label="&mot.borders;" />
+				<label class="groupbox-caption" value="&mot.borders;" />
 				<hbox align="center">
 				  <label control="txtMenuBorderColor" value="&mot.borders.color;" />
 				  <colorpicker id="txtMenuBorderColor" 
@@ -371,7 +374,7 @@
 			</groupbox>
 			<hbox>
 			  <groupbox>
-					<caption label="&mot.spacing;" />
+					<label class="groupbox-caption" value="&mot.spacing;" />
 					<grid flex="1">
 						<columns>
 							<column />
@@ -425,7 +428,7 @@
 					</grid>
 			  </groupbox>
 			  <groupbox>
-					<caption label="&mot.buttons;" />
+					<label class="groupbox-caption" value="&mot.buttons;" />
 					<grid flex="1">
 						<columns>
 							<column />
@@ -471,7 +474,7 @@
 				  label="&mot.advanced;" 
 				  style="position:relative;">
 			<groupbox  orient="vertical" >
-				<caption label="&mot.customMenu;"
+				<label class="groupbox-caption" value="&mot.customMenu;"
                  tooltiptext = "&mot.customMenu.tooltip;" />
 				<hbox align="center">
 					<checkbox preference="CustomMenu"
@@ -523,10 +526,10 @@
 								    label="&mot.customMenu.customStyle.bold;" />
 				</hbox>
 				
-				<listbox id="bookmarksList" 
+				<richlistbox id="bookmarksList" 
 				         flex="1"
 								 onselect="MenuOnTop.Options.onSelectionChange(event);">
-				</listbox>
+				</richlistbox>
 				
 				<hbox>
 				  <toolbar id = "motToolbar"
@@ -580,7 +583,7 @@
 					</toolbar>
 				</hbox>
 				<groupbox orient="horizontal" >
-				  <caption label="&mot.bookmarks.group;" />
+				  <label class="groupbox-caption" value="&mot.bookmarks.group;" />
 					<grid>
 						<columns>
 							<column />

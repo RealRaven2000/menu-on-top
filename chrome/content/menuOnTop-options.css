@@ -1,4 +1,7 @@
 
+/* Thunderbird 63+ */
+@import url("chrome://messenger/skin/");
+
 .dialogheader-title {
   font-size: large;
   font-weight: bold;
@@ -183,6 +186,9 @@ textbox[type="number"] {
 #styleFlavors .tangerine {
 	list-style-image: url("chrome://menuontop/content/flavors/tangerine.png");
 }
+#styleFlavors .fire {
+	list-style-image: url("chrome://menuontop/content/flavors/fire.png");
+}
 
 #styleFlavors .lime {
 	list-style-image: url("chrome://menuontop/content/flavors/lime.png");
@@ -228,7 +234,10 @@ textbox[type="number"] {
 	list-style-image: url("chrome://menuontop/content/flavors/photon-dark.png");
 }
 
-
+#bookmarksList {
+  min-height: 36px;
+  max-height: 210px;
+}
 
 
 #customMenuIconSize {
@@ -244,6 +253,19 @@ textbox[type="number"] {
   margin-top: 1px;
   width: 16px !important;
   min-width: 18px;
+}
+/* groupbox fix Tb 64+ */
+groupbox {
+	margin-bottom: 9px;
+}
+
+groupbox label.groupbox-caption {
+	background-color: -moz-field;
+	font-weight: bold;
+	margin-top: -12px;
+  margin-left: 6px;
+  margin-bottom:	6px;
+	padding-left: 5px;
 }
 
 

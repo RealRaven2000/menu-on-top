@@ -6,7 +6,7 @@ pref("extensions.menuontop.debug.default", false);
 pref("extensions.menuontop.flavor.coloronly", false);
 pref("extensions.menuontop.forceSmall", false);
 pref("extensions.menuontop.iconSize.forceSmall", true);
-pref("extensions.menuontop.iconSize.force", false);
+pref("extensions.menuontop.iconSize.forced", false);
 pref("extensions.menuontop.iconSize.normal", 24);
 pref("extensions.menuontop.iconSize.small", 16);
 pref("extensions.menuontop.maxHeight", 22);

@@ -1,5 +1,4 @@
 //"use strict";
-
 /* BEGIN LICENSE BLOCKAMO
 for detail, please refer to license.txt in the root folder of this extension
 
@@ -24,7 +23,6 @@ copy by writing to:
   Boston, MA 02110-1301, USA.
 END LICENSE BLOCK 
 */
-
 
 /*=============================
   Project History - Menu On Top
@@ -142,13 +140,22 @@ END LICENSE BLOCK
 		# Added function to sanitise the CSS for menu backgrounds 
 		  (removes background: and semicolon when pasting rules from colorzilla.com)
 		
+	1.10 - 15/10/2018
+	  # Made compatible with Thunderbird 63 - replaced listbox with richlistbox
+		
+	1.11 - 19/02/2019
+	  # Made compatible with Thunderbird 66 - removed some errors with missing default prefs and fixed statusbar icon
+    # Added new darker orange color choice 'fire'
+    # Improved positioning of status bar icon when it is configured 
+    # Added cleanup code that hides the Status bar icon when uinstalling / updating.		
 */
 Components.utils.import("resource://gre/modules/Services.jsm");
 
 var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
     MenuOnTop = {
   Id: "menuOnTop@agrude.com",
-  mVersion: "",
+  _Version: "",
+	_CurrentBuild: "1.11",  // workaround for missing AddonManager in Tb 63
   mAppName: null,
   CSSid: "menuOnTop-style",
   CustomMenuId: "menuOnTop-menu-Custom",
@@ -157,7 +164,6 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 		// Inject CSS for themes with the menubar under the tabbar, which looks terrible after moving the toolbar up
 		try {
 			let document = window.document,
-          util = MenuOnTop.Util,
           txt = "################################" +'\n'
               + "###    MenuOnTop.loadCSS()   ###" +'\n'
               + "################################";
@@ -289,25 +295,25 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 			if (controlsPlaceholder) controlsPlaceholder.collapsed=true;
 		}
 		catch (ex) {
-			MenuOnTop.Util.logDebug ("MenuOnTop.loadCSS() failed\n" + ex);
+			util.logDebug ("MenuOnTop.loadCSS() failed\n" + ex);
 		}
 	},
 	
 	resetCSS: function resetCSS(window) {
 		try {
-			MenuOnTop.Util.logDebug ("MenuOnTop.resetCSS()...");
+			util.logDebug ("MenuOnTop.resetCSS()...");
 			let document = window.document, 
           styleId = MenuOnTop.CSSid,
 			    css = document.getElementById(styleId);
       if (css)
         css.parentNode.removeChild(css);
       else
-        MenuOnTop.Util.logDebug ("Could not find the css style element:" + css);
+        util.logDebug ("Could not find the css style element:" + css);
 			let controlsPlaceholder = document.getElementById("titlebar-placeholder-on-TabsToolbar-for-captions-buttons");
 			if (controlsPlaceholder) controlsPlaceholder.collapsed=false;			
 		}
 		catch (ex) {
-			MenuOnTop.Util.logDebug ("MenuOnTop.resetCSS() failed\n" + ex);
+			util.logDebug ("MenuOnTop.resetCSS() failed\n" + ex);
 		}
   } ,
 	
@@ -317,7 +323,6 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 	} ,
   
   makeMenuItem : function makeMenuItem(doc, url, label, cmdType) {
-    const util = MenuOnTop.Util;
     let menuitem = doc.createElement('menuitem'),
         className = 'menuitem-iconic',
         tm;
@@ -409,7 +414,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
             menuitem.addEventListener("command", function(event) { 
               let win = util.MainWindow;
               if (win.miczThunderStatsButton)
-                MenuOnTop.Util.MainWindow.miczThunderStatsButton.onCommand();
+                util.MainWindow.miczThunderStatsButton.onCommand();
               else
                 Services.prompt.alert(null, 'MenuOnTop', 'Could not find miczThunderStatsButton - is ThunderStats installed?');
             }, false);
@@ -454,12 +459,12 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
       }
     }
     try {
-      MenuOnTop.Util.logDebug('deconstructMenu()');
+      util.logDebug('deconstructMenu()');
       removeChildren('menuitem');
       removeChildren('menuseparator');
     }
     catch(ex) {
-      MenuOnTop.Util.logException('deconstructMenu()', ex);
+      util.logException('deconstructMenu()', ex);
     }
   } ,
   
@@ -468,8 +473,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
       if (!menu) {
         menu = doc.getElementById(MenuOnTop.CustomMenuId);
       }
-      const util = MenuOnTop.Util,
-			      getBundleString = util.getBundleString.bind(util);
+      const getBundleString = util.getBundleString.bind(util);
       if (!menu) {
         util.logDebug('populateMenu() - menu not active, so early exit!');
         return;
@@ -478,7 +482,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
           '******************************\n'
         + '** populateMenu()  ' + menu.id + '\n'
         + '******************************');
-      if (MenuOnTop.Preferences.isDebug) debugger;
+      if (prefs.isDebug) debugger;
       
       this.deconstructMenu(doc, menu);
       
@@ -523,18 +527,17 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
       util.logDebug('populateMenu() ENDS');
     }
     catch(ex) {
-      MenuOnTop.Util.logException('populateMenu()', ex);
+      util.logException('populateMenu()', ex);
     }
   } ,
   
   showCustomMenu: function showCustomMenu(win, fromOptions) {
-    if (MenuOnTop.Preferences.isDebug) debugger;
-    const util = MenuOnTop.Util;
-    let display = MenuOnTop.Preferences.isCustomMenu,
+    if (prefs.isDebug) debugger;
+    let display = prefs.isCustomMenu,
         menuId = MenuOnTop.CustomMenuId, 
         doc = win.document,
         menubar = doc.getElementById(util.MenubarId),
-        label = MenuOnTop.Preferences.customMenuLabelTitle;
+        label = prefs.customMenuLabelTitle;
     util.logDebug('showCustomMenu - display = ' + display);
     // create a menu item to th8e left of file menu
     if (menubar) {
@@ -574,17 +577,16 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
   hideCustomMenu: function hideCustomMenu(win) {
     let doc = win.document,
         menuId = "menuOnTop-menu-Custom",
-        menubar = doc.getElementById(MenuOnTop.Util.MenubarId),
+        menubar = doc.getElementById(util.MenubarId),
         menu = doc.getElementById(menuId);
     if (menu)
       menubar.removeChild(menu);
   } ,
   
   setCustomIcon: function setCustomIcon(iconURL) {
-    const util = MenuOnTop.Util; 
     let menuItem = util.MainWindow.document.getElementById('menuOnTop-menu-Custom');
     if (menuItem) {
-      if (MenuOnTop.Preferences.isCustomMenuIcon) {
+      if (prefs.isCustomMenuIcon) {
         util.logDebug('Setting avatar icon, URL: ' + iconURL);
         try {
           if (iconURL) {
@@ -616,13 +618,13 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 	ensureMenuBarVisible: function ensureMenuBarVisible(win) {
 		// see also  c-c/source/suite/common/utilityOverlay.js
 		// goToggleToolbar  
-		MenuOnTop.Util.logDebug('ensureMenuBarVisible()');
+		util.logDebug('ensureMenuBarVisible()');
     try {
-      if (MenuOnTop.Preferences.isDebug) debugger;
-      let id = MenuOnTop.Util.ToolbarId,
+      if (prefs.isDebug) debugger;
+      let id = util.ToolbarId,
           doc = win.document,
           toolbar = doc.getElementById(id);
-      MenuOnTop.Util.logDebug('toolbar (' + id +') = ' + toolbar);
+      util.logDebug('toolbar (' + id +') = ' + toolbar);
       let isChange = false,
           hidingAttribute = "autohide",
           attribValue = toolbar.getAttribute("autohide") ;
@@ -641,20 +643,19 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
       // MenuOnTop.showCustomMenu(win);
     }
     catch(ex) {
-      MenuOnTop.Util.logException('ensureMenuBarVisible()', ex);
+      util.logException('ensureMenuBarVisible()', ex);
     }
 	} ,
   
   forceIconSize: function forceIconSize(win) {
-    const util = MenuOnTop.Util;
     try {
       let id = util.ToolbarId,
-          isForce = MenuOnTop.Preferences.isForceIconSmall;
+          isForce = prefs.isForceIconSmall;
       util.logDebug('forceIconSize()\nForce Small = ' + isForce);
       let toolbar = win.document.getElementById(id);
       if (toolbar) {
         util.logDebug('forceIconSize()\nFound toolbar, changing iconsize attribute...');
-        if (MenuOnTop.Preferences.isForceIconSmall) {
+        if (prefs.isForceIconSmall) {
           toolbar.setAttribute("menuOnTop-forceSmall", "true");
           toolbar.setAttribute("iconsize", "small");
         }
@@ -691,9 +692,11 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 		menuFontColor_active: "rgb(15,15,15)",
 		iconSize_small: 16,
 		iconSize_normal: 16,
+		iconSize_forced: false,
     iconSize_forceSmall: true, // new setting to avoid smudged icons in menu bar!
 		textShadow: false,
 		debug: false,
+		debug_default: false,
 		statusIcon: true,
     customMenu: false,
     customMenu_title: 'MenuOnTop',
@@ -704,7 +707,6 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
   },
 	
   showOptions: function showOptions(evt, win) {
-    const util = MenuOnTop.Util;
     var windowManager = Components.classes['@mozilla.org/appshell/window-mediator;1']
         .getService(Components.interfaces.nsIWindowMediator);
     var addonWin = windowManager.getMostRecentWindow("addon:MenuOnTop"); // use windowtype to set this
@@ -726,15 +728,21 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
   } ,
   
 	showAddonButton :function showAddonButton(mainWindow) {
-		MenuOnTop.Util.logDebug ("MenuOnTop.showAddonButton()...");
+		
+		util.logDebug ("MenuOnTop.showAddonButton()...");
 		if (!mainWindow) return;
 
-		let buttonContainer = MenuOnTop.Util.ButtonPanel(mainWindow);  
+		let buttonContainer = util.ButtonPanel(mainWindow);  
 		// Get the anchor for "overlaying" but make sure the UI is loaded
 		if (!buttonContainer) return;
 
 		// Place the new button after the last button in the top set
-		let button = mainWindow.document.createElement("statusbarpanel");
+		let doc = mainWindow.document,
+		    panel = doc.createElement("statusbarpanel"),
+		    button = doc.createElement("toolbarbutton");
+		panel.setAttribute("id", "menuOnTop-statusPanel");
+		panel.classList.add("statusbarpanel");
+		
 		button.setAttribute("id", "menuOnTop-statusButton");
 		button.setAttribute("label", "");
 		button.setAttribute("tooltiptext", "Menu on Top - click for options");
@@ -748,15 +756,27 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
       menuOnTop.showOptions(null, mainWindow);
 		}, false);
 
-		buttonContainer.appendChild(button);
+		let resizer = doc.getElementsByClassName("statusbar-resizerpanel"),
+		    before = resizer.length ? resizer[0] : buttonContainer.lastChild;
+		buttonContainer.insertBefore(panel, before);
+		panel.appendChild(button);
+		// buttonContainer.appendChild(panel);
 	} ,
 	
 	hideAddonButton : function hideAddonButton(window) {
-		MenuOnTop.Util.logDebug ("MenuOnTop.hideAddonButton()...");
+		util.logDebug ("MenuOnTop.hideAddonButton()...");
 		if (!window) return;
-		let button = window.document.getElementById("menuOnTop-statusButton");
-		if (button)
-			button.parentNode.removeChild(button);
+		let button = true, panel = true;
+		while (button) {
+			button = window.document.getElementById("menuOnTop-statusButton");
+			if (button)
+				button.parentNode.removeChild(button);
+		}
+		while (panel) {
+			panel = window.document.getElementById("menuOnTop-statusPanel")
+			if (panel)
+				panel.parentNode.removeChild(panel);
+		}
 	
 	} ,
   
@@ -817,7 +837,7 @@ MenuOnTop.Util = {
 		return this.mPlatformVer;
 	},
   
-	getVersionSimple: function getVersionSimple(ver) {
+	simplifyVersion: function simplifyVersion(verStringOrNum) {
 		function strip(version, token) {
 			let cutOff = version.indexOf(token);
 			if (cutOff > 0) { 	// make sure to strip of any pre release labels
@@ -825,8 +845,8 @@ MenuOnTop.Util = {
 			}
 			return version;
 		}
-
-		let pureVersion = strip(ver, 'pre');
+		let ver = verStringOrNum.toString(),
+		    pureVersion = strip(ver, 'pre');
 		pureVersion = strip(pureVersion, 'beta');
 		pureVersion = strip(pureVersion, 'alpha');
 		return strip(pureVersion, '.hc');
@@ -903,9 +923,13 @@ MenuOnTop.Util = {
 	MyBundle: null,
 	get StringBundle() {
 		if (!this.MyBundle) try {
+			const bundlePath = "chrome://menuontop/locale/menuontop.properties";
+			if (Services.strings) {
+				this.MyBundle = Services.strings.createBundle(bundlePath);
+			}
 			let svc = Components.classes["@mozilla.org/intl/stringbundle;1"]
 				  .getService(Components.interfaces.nsIStringBundleService);
-			this.MyBundle = svc.createBundle("chrome://menuontop/locale/menuontop.properties")
+			this.MyBundle = svc.createBundle(bundlePath)
 				  .QueryInterface(Components.interfaces.nsIStringBundle);
 		}
 		catch (ex) {
@@ -958,10 +982,10 @@ MenuOnTop.Util = {
       case 'Firefox':
         id = "addonbarteo-addon-bar";
         bar = win.document.getElementById(id);
-        if (!bar) {
-          id = "nav-bar";
+				if (!bar) {
+          id = "addon-bar";
           bar = win.document.getElementById(id);
-        }
+				}
         // we could potentially look at last child of browser-bottombox (must be visible and have a toolbar tag)
         if (!bar) {
           let par = win.document.getElementById("browser-bottombox");
@@ -973,13 +997,18 @@ MenuOnTop.Util = {
             }
           }
         }
+				// last resort: the main toolbar
+        if (!bar) {
+          id = "nav-bar";
+          bar = win.document.getElementById(id);
+        }
         break;
     }
     let txt = "ButtonPanel() returns:"+  bar;
     if (id) {
       txt += '\nDetermined id of button container:' + id;
     }
-    MenuOnTop.Util.logDebug(txt);
+    util.logDebug(txt);
     return bar;
   } ,
   
@@ -994,16 +1023,20 @@ MenuOnTop.Util = {
   } ,
   
   checkVersion: function checkVersion(win) {
-    let current = MenuOnTop.Version,
+		let current = MenuOnTop.Version,
         addonId = MenuOnTop.Id;
-    MenuOnTop.Util.logDebug('checkVersion() for ' + addonId);
+    util.logDebug('checkVersion() for ' + addonId);
+		const platformVer = util.simplifyVersion(util.PlatformVersion);
+		if (platformVer >= 61) { // don't use AddonManager for now
+			util.checkFirstRun(MenuOnTop._CurrentBuild);
+		}
+		else
     win.setTimeout (function () {
 				if (typeof AddonManager != 'object')
 					Components.utils.import("resource://gre/modules/AddonManager.jsm");
         AddonManager.getAddonByID(addonId,
           function(addon) {
             // This is an asynchronous callback function that might not be called immediately, ah well...
-            const util = MenuOnTop.Util;
             if (addon.version)
               util.checkFirstRun(addon.version);
             else
@@ -1014,13 +1047,11 @@ MenuOnTop.Util = {
   } ,
 
   checkFirstRun: function checkFirstRun(ver) {
-		const util = MenuOnTop.Util,
-          prefs = MenuOnTop.Preferences;
 		let loggedVer = prefs.getCharPref('version'),
         freshInstall = false;
     if (util.Version == ver) return; // we have been here!
     util.Version = ver;
-    let pureVersion = util.getVersionSimple(ver);
+    let pureVersion = util.simplifyVersion(ver);
     // assume this is a new installation if there is no setting for menu background
     if (!loggedVer && !prefs.getCharPref('menuBackground'))
       freshInstall = true;
@@ -1038,15 +1069,15 @@ MenuOnTop.Util = {
   showHistory: function showHistory(ver) {
     let url = 'http://quickfolders.org/menuOnTopHistory.html';
     if (ver) url+= '?version#' + ver;
-    MenuOnTop.Util.openURL(null, url);
+    util.openURL(null, url);
   } ,
   
   get Version() {
-    return MenuOnTop.mVersion;
+    return MenuOnTop._Version;
   } ,
   
   set Version(v) {
-    MenuOnTop.mVersion = v;
+    MenuOnTop._Version = v;
   } ,
 
 	lastTime:0,
@@ -1075,12 +1106,12 @@ MenuOnTop.Util = {
 	},	
 
   logDebug: function logDebug(msg) {
-	  if (MenuOnTop.Preferences.isDebug)
+	  if (prefs.isDebug)
 			this.logToConsole(msg);	
 	},
 	
 	logDebugOptional: function logDebugOptional(option, msg) {
-		if (MenuOnTop.Preferences.isDebugOption(option))
+		if (prefs.isDebugOption(option))
 			this.logToConsole(msg, option);
 	},
 	
@@ -1147,7 +1178,6 @@ MenuOnTop.Util = {
 	} ,
 	
 	findMailTab: function findMailTab(tabmail, URL) {
-		const util = MenuOnTop.Util;
 		// mail: tabmail.tabInfo[n].browser		
 		let baseURL = util.getBaseURI(URL),
 				numTabs = util.getTabInfoLength(tabmail);
@@ -1169,8 +1199,7 @@ MenuOnTop.Util = {
 	
   findBrowserTab: function findTab(URL) {
 		const Cc = Components.classes,
-					Ci = Components.interfaces,
-		      util = MenuOnTop.Util;
+					Ci = Components.interfaces;
 					
 		let wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator),
 		    browserEnumerator = wm.getEnumerator("navigator:browser"),
@@ -1217,7 +1246,6 @@ MenuOnTop.Util = {
 	} ,
 	
 	openURLInTab: function openURLInTab(URL) {
-		const util = MenuOnTop.Util;		
 		try {
 			let sTabMode="",
 			    wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
@@ -1259,10 +1287,8 @@ MenuOnTop.Util = {
 	}	,
   
   openMessage: function (msgHdr, forceMethod)  {
-    let util = MenuOnTop.Util,
-        doc = util.MainWindow.document,
+    let doc = util.MainWindow.document,
         tabmail = doc.getElementById("tabmail"),
-        prefs = MenuOnTop.Preferences,
         method = forceMethod || 'currentTab'; // || prefs.getStringPref('bookmarks.openMethod');
     if (util.Application != 'Thunderbird')
       throw('Cannot open email, application is not supported:' + util.Application);
@@ -1303,8 +1329,7 @@ MenuOnTop.Util = {
 
   // open an email in a new tab
   openMessageFromUri: function openMessageFromUri(messageUri, event) {
-    let util = MenuOnTop.Util,
-        isAlt, isCtrl, isShift, hdr,
+    let isAlt, isCtrl, isShift, hdr,
         win = Components.classes["@mozilla.org/appshell/window-mediator;1"]
                  .getService(Components.interfaces.nsIWindowMediator)
                  .getMostRecentWindow("mail:3pane");  
@@ -1334,8 +1359,7 @@ MenuOnTop.Util = {
   } ,
 
   openFolderFromUri: function openFolder(uri) {
-    const util = MenuOnTop.Util,
-          win = util.MainWindow;
+    const win = util.MainWindow;
     if (!win) return false;
     if (util.Application == 'Thunderbird') {
       Components.utils.import("resource:///modules/MailUtils.js");
@@ -1346,6 +1370,10 @@ MenuOnTop.Util = {
     return true;
   }
 };  // Util
+
+// var utilMOT = MenuOnTop.Util;
+
+
 
 MenuOnTop.Preferences = {
 	service: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch),
@@ -1467,7 +1495,7 @@ MenuOnTop.Preferences = {
 	} ,
 	
 	get isForceIconSize() {
-		return this.getBoolPref('iconSize.force'); 
+		return this.getBoolPref('iconSize.forced'); 
 	} ,
   
   get isForceIconSmall() {
@@ -1580,9 +1608,15 @@ MenuOnTop.TopMenu = {
         getWindowEnumerator = 
             (MenuOnTop.Util.isLinux) ?
             mediator.getXULWindowEnumerator :
-            mediator.getZOrderXULWindowEnumerator,
-        optionsWindow = getWindowEnumerator ('addon:MenuOnTop', true).getNext();
-    this._document = optionsWindow ? optionsWindow.document : null;
+            mediator.getZOrderXULWindowEnumerator;
+		// Thunderbird 63 getNext throws!			
+		if (getWindowEnumerator ('addon:MenuOnTop', true).hasMoreElements()) {
+			try {
+				let optionsWindow = getWindowEnumerator ('addon:MenuOnTop', true).getNext();
+				this._document = optionsWindow ? optionsWindow.document : null;
+			}
+			catch( ex) { ; }
+		}
     return  this._document;
   },
   
@@ -1704,11 +1738,10 @@ MenuOnTop.TopMenu = {
     return input.value;
   } ,
   
-
   update: function update(isNew) {
     const util = MenuOnTop.Util,
 		      getBundleString = util.getBundleString.bind(util);
-    if (MenuOnTop.Preferences.isDebug) debugger;
+    if (prefs.isDebug) debugger;
     let url = this.document.getElementById('linkURL').value,
         label = this.document.getElementById('linkLabel').value,
         bookmarkType = this.document.getElementById('linkType').value,
@@ -1763,7 +1796,7 @@ MenuOnTop.TopMenu = {
       util.logDebug('Updating existing item: ' + existingEntry.label + '  [' + existingEntry.url +']');
       let lb = this.ListBox;
       lb.ensureIndexIsVisible(existingIndex);
-      lb.getItemAtIndex(existingIndex).label = label;
+      lb.getItemAtIndex(existingIndex).firstChild.value = label; // changed to richlistitem
       this.Entries[existingIndex].label = label;
     }
       
@@ -1772,12 +1805,16 @@ MenuOnTop.TopMenu = {
   },
   
   remove: function remove() {
-    if (MenuOnTop.Preferences.isDebug) debugger;
+    if (prefs.isDebug) debugger;
     let listbox = this.ListBox,
         idx = listbox.selectedIndex;
     if (idx<0) return;
     this.Entries.splice(idx, 1); // remove from array
-    listbox.removeItemAt( idx );
+		if (listbox.removeItemAt) // method was removed in Tb 61
+			listbox.removeItemAt(idx);
+		else { 
+			listbox.getItemAtIndex(idx).remove();
+		}
     this.repopulate(false); // rebuild menu
     this.saveCustomMenu();
   },
@@ -1824,7 +1861,7 @@ MenuOnTop.TopMenu = {
       mediator.getXULWindowEnumerator :
       mediator.getZOrderXULWindowEnumerator;
     browsers = getWindowEnumerator ('navigator:browser', true);
-    if (browsers) {
+    if (browsers && browsers.hasMoreElements()) {
       theBrowser = browsers.getNext();
       if (theBrowser) {
         if (theBrowser.getInterface)
@@ -1907,8 +1944,6 @@ MenuOnTop.TopMenu = {
 						util.logDebugOptional("default", "Selected Tab mode: " + theMode);
 						switch (theMode) {
 							case 'folder':
-								isMailbox = true;
-
 								try {
 									let currentFolder =
                         tab.folderDisplay ?
@@ -2083,7 +2118,7 @@ MenuOnTop.TopMenu = {
   } ,
   
   loadCustomMenu: function loadCustomMenu(fromOptions) {
-    if (MenuOnTop.Preferences.isDebug) debugger;
+    if (prefs.isDebug) debugger;
     const util = MenuOnTop.Util;
     fromOptions = fromOptions ? true : false;
     util.logDebug ('loadCustomMenu(' + fromOptions + ')...'); 
@@ -2095,7 +2130,7 @@ MenuOnTop.TopMenu = {
         function onSuccess(CustomMenuData) {
           // populate the bookmarks
           util.logDebug ('readStringFile() - Success'); 
-          if (MenuOnTop.Preferences.isDebug) debugger;
+          if (prefs.isDebug) debugger;
           topMenu.clearList(false);
           let entries = JSON.parse(CustomMenuData);  
           util.logDebug ('parsed ' + entries.length + ' entries'); 
@@ -2147,15 +2182,15 @@ MenuOnTop.TopMenu = {
   } ,
 
   saveCustomMenu: function saveCustomMenu()  {
-    if (MenuOnTop.Preferences.isDebug) debugger;
-    let util = MenuOnTop.Util;
+    if (prefs.isDebug) debugger;
+    const util = MenuOnTop.Util;
     try {
       // const {OS} = Components.utils.import("resource://gre/modules/osfile.jsm", {});
 			const {OS} = (typeof ChromeUtils.import == "undefined") ?
 				Components.utils.import("resource://gre/modules/osfile.jsm", {}) :
 				ChromeUtils.import("resource://gre/modules/osfile.jsm", {});
 				
-      if (MenuOnTop.Preferences.isDebug) debugger;
+      if (prefs.isDebug) debugger;
       let topMenu = this, // closure this
           profileDir = OS.Constants.Path.profileDir,
           path = OS.Path.join(profileDir, "extensions", "menuOnTop.json"),
@@ -2229,5 +2264,6 @@ MenuOnTop.TopMenu = {
   
 };  // TopMenu
 
-
-
+// my "globals"
+const util = MenuOnTop.Util,
+      prefs = MenuOnTop.Preferences;

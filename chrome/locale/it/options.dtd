@@ -5,8 +5,8 @@
 <!ENTITY mot.btn.moreInfo.tooltip "Vai al sito web di supporto…">
 <!ENTITY mot.btn.moreInfo.accessKey "I">
 <!ENTITY mot.style "Stile">
-<!ENTITY mot.advanced "Avanzato">
-<!ENTITY mot.primaryMenu "Opzioni del Menu primario">
+<!ENTITY mot.advanced "Avanzate">
+<!ENTITY mot.primaryMenu "Opzioni del Menu principale">
 <!ENTITY mot.menuInTitle "Menu Paint nella barra del titolo">
 <!ENTITY mot.menuInTitle.tooltip "In alcuni sistemi questa opzione può rendere invisibili i controlli della finestra (pulsanti minimizza/massimizza/chiudi)">
 <!ENTITY mot.dragArea "Area di trascinamento:">
@@ -16,19 +16,19 @@
 <!ENTITY mot.flavors.label "Scegli una tipologia:">
 <!ENTITY mot.flavors.selectOne "Seleziona…">
 <!ENTITY mot.flavors.11 "Morgana - viola">
-<!ENTITY mot.flavors.12 "Mountain - blu">
-<!ENTITY mot.flavors.13 "Parakeet - verde giada">
+<!ENTITY mot.flavors.12 "Montagne - blu">
+<!ENTITY mot.flavors.13 "Parrocchetto - verde giada">
 <!ENTITY mot.flavors.14 "Lime - verde">
-<!ENTITY mot.flavors.15 "Sunflower - giallo">
-<!ENTITY mot.flavors.16 "Tangerine - arancione">
-<!ENTITY mot.flavors.17 "Robin - rosso">
-<!ENTITY mot.flavors.18 "Oak - marrone">
-<!ENTITY mot.flavors.19 "Leather - mogano">
-<!ENTITY mot.flavors.20 "May - verde">
-<!ENTITY mot.flavors.21 "Clud - celeste">
-<!ENTITY mot.flavors.22 "Rose - rosa">
-<!ENTITY mot.flavors.23 "Photon - Predefinito">
-<!ENTITY mot.flavors.24 "Photon - Scuro">
+<!ENTITY mot.flavors.15 "Girasole - giallo">
+<!ENTITY mot.flavors.16 "Mandarino - arancione">
+<!ENTITY mot.flavors.17 "Pettirosso - rosso">
+<!ENTITY mot.flavors.18 "Quercia - marrone">
+<!ENTITY mot.flavors.19 "Cuoio - mogano">
+<!ENTITY mot.flavors.20 "Maggio - verde">
+<!ENTITY mot.flavors.21 "Cloud - celeste">
+<!ENTITY mot.flavors.22 "Rosa - rosa">
+<!ENTITY mot.flavors.23 "Fotone - Predefinito">
+<!ENTITY mot.flavors.24 "Fotone - Scuro">
 <!ENTITY mot.flavors.0 "Australis - predefinito">
 <!ENTITY mot.flavors.9 "Australis - rivisitato">
 <!ENTITY mot.flavors.1 "TT deepdark - nero">
@@ -82,7 +82,7 @@
 <!ENTITY mot.buttons.important.tooltip "In questo modo dovrebbe essere garantito un maggior rispetto delle regole del layout nel caso in cui altre estensioni/temi cerchino di non tenerne conto">
 <!ENTITY mot.buttons.forceSmall "Forza icone piccole nel menu">
 <!ENTITY mot.customMenu "Menu personalizzato">
-<!ENTITY mot.customMenu.tooltip "Per mostrare il manu dei segnalibri bisogna inserire un'etichetta che verrà posizionata prima della voce di menu File">
+<!ENTITY mot.customMenu.tooltip "Per mostrare il menu dei segnalibri bisogna inserire un'etichetta che verrà posizionata prima della voce di menu File">
 <!ENTITY mot.customMenu.label "Menu personalizzato">
 <!ENTITY mot.customMenu.title "Inserisci il nome dell'elemento del menu personalizzato">
 <!ENTITY mot.customMenu.avatar "Avatar">
