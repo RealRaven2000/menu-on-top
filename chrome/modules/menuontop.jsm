@@ -159,7 +159,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
     MenuOnTop = {
   Id: "menuOnTop@agrude.com",
   _Version: "",
-	_CurrentBuild: "1.11",  // workaround for missing AddonManager in Tb 63
+	_CurrentBuild: "1.13",  // workaround for missing AddonManager in Tb 63
   mAppName: null,
 	mAppNameFull: "",
   CSSid: "menuOnTop-style",
@@ -250,7 +250,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
           ordinalTb = '',
 					tabbarMargin = 'margin-top: ' + Prefs.tabbarMargin + 'px !important;';
       if (util.Application=='Thunderbird') {
-				if (util.ApplicationName !='Interlink') {
+				if (util.ApplicationName =='Interlink') {
 					// no reordering necessary.
 				}
 				else {
