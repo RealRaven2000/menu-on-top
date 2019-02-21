@@ -147,7 +147,11 @@ END LICENSE BLOCK
 	  # Made compatible with Thunderbird 66 - removed some errors with missing default prefs and fixed statusbar icon
     # Added new darker orange color choice 'fire'
     # Improved positioning of status bar icon when it is configured 
-    # Added cleanup code that hides the Status bar icon when uinstalling / updating.		
+    # Added cleanup code that hides the Status bar icon when uinstalling / updating.
+
+   1.12 - 21/02/2019
+    # Resolved Positioning problems in Interlink Mail Client.
+		
 */
 Components.utils.import("resource://gre/modules/Services.jsm");
 
@@ -157,6 +161,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
   _Version: "",
 	_CurrentBuild: "1.11",  // workaround for missing AddonManager in Tb 63
   mAppName: null,
+	mAppNameFull: "",
   CSSid: "menuOnTop-style",
   CustomMenuId: "menuOnTop-menu-Custom",
   CustomMenuPopupId: "menu_menuOnTopPopup",
@@ -172,6 +177,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 								appendChild(document.createElementNS("http://www.w3.org/1999/xhtml", "style"));
 			css.setAttribute("type", "text/css");
 			css.id = MenuOnTop.CSSid;
+			
 			
 			let Prefs = MenuOnTop.Preferences,
 			    m = '-' + (Math.abs(Prefs.negativeMargin)).toString(),
@@ -236,19 +242,27 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 
 			// Inject some css!
 			// we override min-height for charamel!
+			let isInterlink = (util.ApplicationName == 'Interlink');
+
 			
 			// chrome://messenger/skin/primaryToolbar.css
       let cssCode = '',
           ordinalTb = '',
 					tabbarMargin = 'margin-top: ' + Prefs.tabbarMargin + 'px !important;';
       if (util.Application=='Thunderbird') {
-        ordinalTb = '-moz-box-ordinal-group: 10 !important;';
-        cssCode += '#tabs-toolbar{-moz-box-ordinal-group: 20 !important;} '
-				  '#mail-bar3{-moz-box-ordinal-group: 30 !important;} ';
+				if (util.ApplicationName !='Interlink') {
+					// no reordering necessary.
+				}
+				else {
+					ordinalTb = '-moz-box-ordinal-group: 10 !important;';
+					cssCode += '#tabs-toolbar{-moz-box-ordinal-group: 20 !important;} ' 
+					cssCode	+= '#mail-bar3{-moz-box-ordinal-group: 30 !important;} ';
+				}
       }
 			
+			// note Interlink has toolboxId = #mail-toolbox
 			cssCode +=  ((util.Application == 'Thunderbird') ?
-			  ' #' + util.MainWindowId + '[tabsintitlebar][sizemode="normal"] > #navigation-toolbox > #tabs-toolbar '
+			  ' #' + util.MainWindowId + '[tabsintitlebar][sizemode="normal"] > #' + util.ToolboxId + ' > #tabs-toolbar '
 				:
 				' #toolbar-menubar:not([autohide=true]) ~ #TabsToolbar:not([inFullscreen]),' +
         ' #toolbar-menubar[autohide=true]:not([inactive]) ~ #TabsToolbar:not([inFullscreen])')
@@ -276,6 +290,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
                 tmargin,
 								titlebarplaceholder;
       if (Prefs.isCustomMenuIcon) {
+
         let Id = MenuOnTop.CustomMenuId;
         cssCode += " #" + Id + " > image { width:" + Prefs.customMenuIconSize + "px; height:" + Prefs.customMenuIconSize + "px; margin-left: 5px; }";
         if (Prefs.getBoolPref('customMenu.label.specialFont')) {
@@ -292,7 +307,9 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
       // Avatar
       MenuOnTop.setCustomIcon(Prefs.customMenuIconURL);
 			let controlsPlaceholder = document.getElementById("titlebar-placeholder-on-TabsToolbar-for-captions-buttons");
-			if (controlsPlaceholder) controlsPlaceholder.collapsed=true;
+			if (controlsPlaceholder) {
+				controlsPlaceholder.collapsed=true;
+			}
 		}
 		catch (ex) {
 			util.logDebug ("MenuOnTop.loadCSS() failed\n" + ex);
@@ -539,7 +556,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
         menubar = doc.getElementById(util.MenubarId),
         label = prefs.customMenuLabelTitle;
     util.logDebug('showCustomMenu - display = ' + display);
-    // create a menu item to th8e left of file menu
+    // create a menu item to the left of file menu
     if (menubar) {
       if (display) {
         let menu = doc.getElementById(menuId);
@@ -640,7 +657,6 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
         );
       }
       MenuOnTop.showCustomMenu(win);
-      // MenuOnTop.showCustomMenu(win);
     }
     catch(ex) {
       util.logException('ensureMenuBarVisible()', ex);
@@ -782,13 +798,15 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
   
   get Application() {
 		if (null == this.mAppName) {
+			const CI = Components.interfaces;
 			var appInfo = Components.classes["@mozilla.org/xre/app-info;1"]
-											.getService(Components.interfaces.nsIXULAppInfo);
+											.getService(CI.nsIXULAppInfo);
 			const FIREFOX_ID = "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}",
 			      PALEMOON_ID = "{8de7fcbb-c55c-4fbe-bfc5-fc555c87dbc4}",
 			      THUNDERBIRD_ID = "{3550f703-e582-4d05-9a08-453d09bdfdc6}",
 			      SEAMONKEY_ID = "{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}",
 			      POSTBOX_ID = "postbox@postbox-inc.com";
+			this.mAppNameFull = appInfo.name;
 			switch(appInfo.ID) {
 				case PALEMOON_ID:
 				case FIREFOX_ID:
@@ -806,7 +824,15 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 			}
 		}
 		return this.mAppName;  
-  }   
+  } ,
+	
+	get ApplicationName() {
+		if (!this.mAppNameFull) {
+			var appInfo = Components.classes["@mozilla.org/xre/app-info;1"].getService(CI.nsIXULAppInfo);
+			this.mAppNameFull = appInfo.name;
+		}
+		return this.mAppNameFull;
+	}
 
 };
 
@@ -818,6 +844,10 @@ MenuOnTop.Util = {
   get Application() {
     return MenuOnTop.Application;
   } ,
+	
+	get ApplicationName() {
+    return MenuOnTop.ApplicationName; // the real name - e.g. Palemoon, Interlink
+	} ,
   
   get AppVersion() {
 		var appInfo = Components.classes["@mozilla.org/xre/app-info;1"]
@@ -899,6 +929,8 @@ MenuOnTop.Util = {
   get ToolboxId() {
     switch(this.Application) {
       case 'Thunderbird':
+			  if (this.ApplicationName=='Interlink')
+					return 'mail-toolbox';
         return 'navigation-toolbox';
       case 'Firefox':
         return 'navigator-toolbox';

@@ -163,15 +163,16 @@ function start(window){
   const util = MenuOnTop.Util,
         prefs = MenuOnTop.Preferences;
   util.logDebug ("MenuOnTop.start()");
-  let document = window.document;
-  // let toolbar = document.getElementById("mail-bar3"); // toolbar with buttons
-  let navigationBox = document.getElementById(MenuOnTop.Util.ToolboxId);
-	let menubar =  document.getElementById(MenuOnTop.Util.ToolbarId);
+  let document = window.document,
+      navigationBox = document.getElementById(util.ToolboxId), // mail-toolbox
+	    menubar =  document.getElementById(util.ToolbarId);      // mail-toolbar-menubar2
+			
   if (!(menubar && navigationBox)) {
     util.logDebug ("MenuOnTop.start(): early exit, no navigation-toolbox or menubar found");
     return; // We're only interested in windows with the menubar in it
   }
-  windows.unshift(window);
+
+	windows.unshift(window);
   
   // Save the position for restoring if we get disabled / uninstalled, also our attrchange handler
   menubar.menuOnTop = {
@@ -198,17 +199,33 @@ function start(window){
 	// ║│ │   #TabsToolbar                                                        ││║
 	// ║│ └───────────────────────────────────────────────────────────────────────┘│║
 	// ╚╧══════════════════════════════════════════════════════════════════════════╧╝
+  // 
+	// ╔╤══INTERLINK════════════════  #mail-toolbox ═══════════════════════════════╤╗
+	// ║│ ┌───────────────────────────────────────────────────────────────────────┐│║
+	// ║│ │   #mail-toolbar-menubar2                                              ││║
+	// ║│ └───────────────────────────────────────────────────────────────────────┘│║
+	// ║│ ┌───────────────────────────────────────────────────────────────────────┐│║
+	// ║│ │   #tabs-toolbar                                                       ││║
+	// ║│ └───────────────────────────────────────────────────────────────────────┘│║
+	// ╚╧══════════════════════════════════════════════════════════════════════════╧╝
+	
   let first = navigationBox.firstChild;
   if (util.Application=='Firefox' && util.AppVersion>20.0) {
     util.logDebug("No change in menubar order");
   }
   else {
-    util.logDebug("inserting menubar before: " + first + '\n'
-                  + first.tagName + ': ['
-                  + (first.id ? first.id : '') + ']');
-    navigationBox.insertBefore(menubar, first);
-    menubar.menuOnTop.restacked = true;
+		if (MenuOnTop.ApplicationName == 'Interlink') {
+			util.logDebug("Interlink: no repositioning necessary");
+		}
+		else {
+			util.logDebug("inserting menubar before: " + first + '\n'
+										+ first.tagName + ': ['
+										+ (first.id ? first.id : '') + ']');
+			navigationBox.insertBefore(menubar, first);
+			menubar.menuOnTop.restacked = true;
+		}
   }
+	
 
   // Inject CSS for themes with the menubar under the tabbar:
 	MenuOnTop.loadCSS(window);

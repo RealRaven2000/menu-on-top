@@ -42,9 +42,17 @@ MenuOnTop.Options = {
 		// this.prefService.QueryInterface(Ci.nsIPrefBranch2);
 		// => 'this' implements observe() interface
 		this.prefService.addObserver('extensions.menuontop.', this, false);
-    document.getElementById('tabsInTitle').checked = tabsInTitlebar;
-    document.getElementById('moveBar').disabled = !tabsInTitlebar;
+		if (util.ApplicationName =='Interlink') { // not supported
+			document.getElementById('tabsInTitle').disabled = true;
+			document.getElementById('moveBar').disabled = true;
+		}
+		else { 
+			document.getElementById('tabsInTitle').checked = tabsInTitlebar;
+			document.getElementById('moveBar').disabled = !tabsInTitlebar;
+		}
+		
     MenuOnTop.Options.enableCustomMenuControls();
+			
     // populate version - simple first
     document.getElementById('lblVersion').value = prefs.getCharPref('version');
     // populate version - complete
