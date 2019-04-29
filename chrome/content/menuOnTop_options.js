@@ -32,7 +32,7 @@ MenuOnTop.Options = {
     const util = MenuOnTop.Util,
           prefs = MenuOnTop.Preferences,
           tabsInTitlebar = util.getTabInTitle();
-		MenuOnTop.ensureMenuBarVisible(util.MainWindow); // more for testing, but it might have its place!
+//		MenuOnTop.ensureMenuBarVisible(util.MainWindow); // more for testing, but it might have its place!
 	  // alert('test');
     if (prefs.isDebug) debugger;
 		util.logDebug ("MenuOnTop.Options.onLoad()");
@@ -650,7 +650,28 @@ MenuOnTop.Options = {
 			MenuOnTop.Options.bypassObserver = false; 
 		}, 500); // avoid too many loadCSS calls.
 		// this.bypassObserver = false;
-	} 
+	} ,
   
+	
+	loadPreferences: function mot_loadPreferences() {
+		const util = MenuOnTop.Util;
+		util.logDebug("loadPreferences - start:");
+		debugger;
+		let myprefs = document.getElementsByTagName("preference");
+		if (myprefs.length) {
+			let prefArray = [];
+			for (let it of myprefs) {
+				let p = new Object({ id: it.id, 
+						      name: it.getAttribute('name'),
+						      type: it.getAttribute('type') });
+				if (it.getAttribute('instantApply') == "true") p.instantApply = true;
+				prefArray.push(p);
+			}
+			util.logDebug("Adding " + prefArray.length + " preferences to Preferences loader...")
+			if (Preferences)
+				Preferences.addAll(prefArray);
+		}
+		util.logDebug("loadPreferences - finished.");
+	} 		
 
 }

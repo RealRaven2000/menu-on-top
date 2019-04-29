@@ -152,6 +152,9 @@ END LICENSE BLOCK
    1.12 - 21/02/2019
     # Resolved Positioning problems in Interlink Mail Client.
 		
+	 1.13 - WIP
+	   # make compatible with thunderbird 66
+		
 */
 Components.utils.import("resource://gre/modules/Services.jsm");
 
@@ -726,21 +729,19 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
     var windowManager = Components.classes['@mozilla.org/appshell/window-mediator;1']
         .getService(Components.interfaces.nsIWindowMediator);
     var addonWin = windowManager.getMostRecentWindow("addon:MenuOnTop"); // use windowtype to set this
-    if (evt && !win) {
-      win = evt.view.window;
-    }
-    
-    if (addonWin)
+    if (addonWin) {
       addonWin.focus();
-    else {
-      util.logDebug('Calling openDialog...');
-      try {
-        win.openDialog("chrome://menuontop/content/menuOnTop_options.xul",'menuontop-options','chrome,titlebar,centerscreen,resizable,alwaysRaised');
-      }
-      catch(ex) {
-        util.logException("openDialog()",ex);
-      }
-    }
+			return;
+		}	
+		
+    if (!win) {
+			if (evt)
+				win = evt.view.window;
+			else
+				win = window;
+		}
+    
+		win.openDialog("chrome://menuontop/content/menuOnTop_options66.xul",'menuontop-options','chrome,titlebar,centerscreen,resizable,alwaysRaised');
   } ,
   
 	showAddonButton :function showAddonButton(mainWindow) {
@@ -1400,7 +1401,7 @@ MenuOnTop.Util = {
         theTreeView = win.gFolderTreeView;
     theTreeView.selectFolder(msgFolder);
     return true;
-  }
+  } 
 };  // Util
 
 // var utilMOT = MenuOnTop.Util;
