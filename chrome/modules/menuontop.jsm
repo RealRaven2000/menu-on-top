@@ -149,11 +149,14 @@ END LICENSE BLOCK
     # Improved positioning of status bar icon when it is configured 
     # Added cleanup code that hides the Status bar icon when uinstalling / updating.
 
-   1.12 - 21/02/2019
+   1.13 - 21/02/2019 - Released for Interlink
     # Resolved Positioning problems in Interlink Mail Client.
 		
-	 1.13 - WIP
-	   # make compatible with thunderbird 66
+	 1.14 - WIP
+	  # Make compatible with Thunderbird beta 67.0
+		# Replaced all colorpickers with HTML elements (standard color picker, OS dependant).
+		# Replaced all groupbox elements with HTML fieldsets
+
 		
 */
 Components.utils.import("resource://gre/modules/Services.jsm");
@@ -162,7 +165,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
     MenuOnTop = {
   Id: "menuOnTop@agrude.com",
   _Version: "",
-	_CurrentBuild: "1.13",  // workaround for missing AddonManager in Tb 63
+	_CurrentBuild: "1.14",  // workaround for missing AddonManager in Tb 63
   mAppName: null,
 	mAppNameFull: "",
   CSSid: "menuOnTop-style",
@@ -552,7 +555,6 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
   } ,
   
   showCustomMenu: function showCustomMenu(win, fromOptions) {
-    if (prefs.isDebug) debugger;
     let display = prefs.isCustomMenu,
         menuId = MenuOnTop.CustomMenuId, 
         doc = win.document,
@@ -580,6 +582,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
           function onSuccess() {
             util.logDebug('showCustomMenu - after loadCustomMenu - populate');
             MenuOnTop.populateMenu(doc, menu);
+						menu.style.visibility = "visible";
           },
           function onFailure(ex) {
             util.logDebug('showCustomMenu - after loadCustomMenu - failure:\n' + ex);
@@ -650,11 +653,12 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
           attribValue = toolbar.getAttribute("autohide") ;
       
       if ( attribValue == "true" ) {
-        let hidden =  "false"; // aEvent.originalTarget.getAttribute("checked") !=
+        let hidden = "false"; // aEvent.originalTarget.getAttribute("checked") !=
         toolbar.setAttribute(hidingAttribute, hidden);
         win.setTimeout(
           function() {
-            doc.persist(toolbar.id, hidingAttribute);
+						if (doc.persist)
+							doc.persist(toolbar.id, hidingAttribute);
             MenuOnTop.Util.logDebug('ensureMenuBarVisible() - after document.persist();');
           }
         );
@@ -1080,18 +1084,18 @@ MenuOnTop.Util = {
   } ,
 
   checkFirstRun: function checkFirstRun(ver) {
-		let loggedVer = prefs.getCharPref('version'),
+		let loggedVer = prefs.getStringPref('version'),
         freshInstall = false;
     if (util.Version == ver) return; // we have been here!
     util.Version = ver;
     let pureVersion = util.simplifyVersion(ver);
-    // assume this is a new installation if there is no setting for menu background
-    if (!loggedVer && !prefs.getCharPref('menuBackground'))
+    // assume this is a new installation?
+    if (!loggedVer )  // && !prefs.getStringPref('menuBackground')
       freshInstall = true;
     util.logDebug('checkFirstRun() Running version: ' + pureVersion + '   [' + ver + ']\n'
                   + 'logged Version = ' + loggedVer + ' , freshInstall = ' + freshInstall);
     // save current version
-    prefs.setCharPref('version', pureVersion);
+    prefs.setStringPref('version', pureVersion);
     if (freshInstall)
       util.showHistory();
     else if (pureVersion != loggedVer) {
@@ -1401,7 +1405,113 @@ MenuOnTop.Util = {
         theTreeView = win.gFolderTreeView;
     theTreeView.selectFolder(msgFolder);
     return true;
-  } 
+  } ,
+
+	getSystemColor: function getSystemColor(sColorString, doc) {
+    function hex(x) { return ("0" + parseInt(x).toString(16)).slice(-2); }
+
+		let getContainer = function() {
+			return doc.getElementById('mot-options-prefpane');
+		}
+		
+		const prefs = MenuOnTop.Preferences,
+		      util = MenuOnTop.Util;
+		
+		try {
+			if (sColorString.startsWith('rgb')) {
+				// rgb colors.
+				let components = sColorString.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/),
+				    hexColor = "#" + hex(components[1]) + hex(components[2]) + hex(components[3]); // ignore transparency
+				return hexColor;
+			}
+			
+			if (sColorString.startsWith('#') || sColorString=='transparent')
+				return sColorString;
+			
+			if (prefs.isDebug) debugger;
+			
+			let win = MenuOnTop.TopMenu.optionsWindow || util.MainWindow;
+			if (!doc) {
+				doc = win.document;
+			}
+			let theColor, // convert system colors such as menubackground etc. to hex
+			    d = doc.createElement("div");
+			d.style.color = sColorString;
+			getContainer().appendChild(d)
+			theColor = win.getComputedStyle(d,null).color;
+			getContainer().removeChild(d);
+
+			if (theColor.search("rgb") == -1)
+				return theColor; // unchanged
+			else {
+				// rgb colors.
+				theColor = theColor.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/);
+				let hexColor = "#" + hex(theColor[1]) + hex(theColor[2]) + hex(theColor[3]);
+				return hexColor;
+			}
+		}
+		catch(ex) { // Bug 26387
+			if (prefs.isDebug) debugger;
+			this.logException('getSystemColor(' + sColorString + ') failed', ex);
+			return "#000000";
+		}
+
+	},
+
+	getRGBA: function getRGBA(hexIn, alpha) {
+		function cutHex(h) {
+			let rv = ((h.toString()).charAt(0)=='#') ? h.substring(1,7) : h;
+			return rv.toString();
+		}
+		function HexToR(h) {
+			return parseInt(h.substring(0,2),16);
+		}
+		function HexToG(h) {
+			return parseInt(h.substring(2,4),16);
+		}
+		function HexToB(h) {
+		  return parseInt(h.substring(4,6),16);
+		}
+		
+		const util = MenuOnTop.Util;
+
+		let hex = hexIn,
+		    isRGB = (hexIn.indexOf('rgb')>=0),
+		    isRGBA = (hexIn.indexOf('rgba')>=0);
+		if (isRGB) {
+		  // inject alpha value:
+			let li = isRGBA ?
+               hexIn.lastIndexOf(',') :   // replace alpha
+			         hexIn.indexOf(')');        // append alpha
+			hex = hexIn.substring(0, li) + ',' +  alpha.toString() +')';
+			if (!isRGBA)
+			  hex = hex.replace('rgb','rgba');
+			return hex;
+		}
+		else {
+			try {
+        if (hex.charAt(0) == '#')
+          parseInt(cutHex(hex),16);
+        else
+          hex = util.getSystemColor(hex);
+			}
+			catch(e) {
+				hex = util.getSystemColor(hex);
+			}
+		}
+		if (hex) { // 6 digit hex string
+			hex = cutHex(hex);
+			let r = HexToR(hex).toString();
+			let g = HexToG(hex).toString();
+			let b = HexToB(hex).toString();
+			return "rgba(" + r + ',' + g + ',' + b + ',' + alpha.toString() +')';
+		}
+		else {
+			util.logDebug ("Can not retrieve color value: " + hexIn);
+			return "#666";
+		}
+	},
+	
 };  // Util
 
 // var utilMOT = MenuOnTop.Util;
@@ -1421,12 +1531,12 @@ MenuOnTop.Preferences = {
 		}
 	},
 	
-  getCharPref: function getCharPref(p) {
+  getStringPref: function getStringPref(p) {
 		try {
-      return this.service.getCharPref("extensions.menuontop." + p);
+      return this.service.getStringPref("extensions.menuontop." + p);
 		}
 		catch(ex) {
-			MenuOnTop.Util.logException("getCharPref(extensions.menuontop." + p + ")", ex);
+			MenuOnTop.Util.logException("getStringPref(extensions.menuontop." + p + ")", ex);
 			return '';
 		}
 	},
@@ -1459,12 +1569,12 @@ MenuOnTop.Preferences = {
 		}
 	},  
   
-  setCharPref: function setCharPref(term, val) {
+  setStringPref: function setStringPref(term, val) {
 		try {
-			return this.service.setCharPref("extensions.menuontop." + term, val);
+			return this.service.setStringPref("extensions.menuontop." + term, val);
 		}
 		catch(ex) {
-			MenuOnTop.Util.logException("setCharPref(extensions.menuontop." + term + ")", ex);
+			MenuOnTop.Util.logException("setStringPref(extensions.menuontop." + term + ")", ex);
 		}
   },
   
@@ -1497,7 +1607,7 @@ MenuOnTop.Preferences = {
   } ,
   
   get customMenuIconURL() {
-    return this.getCharPref('customMenu.icon.url')
+    return this.getStringPref('customMenu.icon.url')
   } ,
 	
 	get customMenuLabelTitle() {
@@ -1512,11 +1622,11 @@ MenuOnTop.Preferences = {
 	} ,
 	
   get customMenuTitle() {
-		return this.getCharPref('customMenu.title');
+		return this.getStringPref('customMenu.title');
   } ,
   
   set customMenuTitle(val) {
-    this.setCharPref('customMenu.title', val);
+    this.setStringPref('customMenu.title', val);
   },
   
 	get iconSizeNormal() {
@@ -1560,19 +1670,19 @@ MenuOnTop.Preferences = {
 	} ,
 	
 	get menuRadiusValue() {
-		return this.getCharPref('menuRadiusValue'); // in em!
+		return this.getStringPref('menuRadiusValue'); // in em!
 	} ,
 	
 	get menuBorderWidth() {
-		return this.getCharPref('menuBorderWidth'); // css string
+		return this.getStringPref('menuBorderWidth'); // css string
 	},
 	
 	get menuBorderColor() {
-		return this.getCharPref('menuBorderColor'); 
+		return this.getStringPref('menuBorderColor'); 
 	},
 	
 	get menuBorderStyle() {
-    return this.getCharPref('menuBorderStyle');
+    return this.getStringPref('menuBorderStyle');
 	} ,
 	
 	get menuRadiusLeft() {
@@ -1584,27 +1694,27 @@ MenuOnTop.Preferences = {
 	} ,
 	
 	get menuBackground() {
-		return this.getCharPref('menuBackground');
+		return this.getStringPref('menuBackground');
 	} ,
 	
 	get menuFontColor() {
-		return this.getCharPref('menuFontColor');
+		return this.getStringPref('menuFontColor');
 	} ,
 	
 	get menuBackgroundHover() {
-		return this.getCharPref('menuBackground.hover');
+		return this.getStringPref('menuBackground.hover');
 	} ,
 	
 	get menuFontColorHover() {
-		return this.getCharPref('menuFontColor.hover');
+		return this.getStringPref('menuFontColor.hover');
 	} ,
 	
 	get menuBackgroundActive() {
-		return this.getCharPref('menuBackground.active');
+		return this.getStringPref('menuBackground.active');
 	} ,
 	
 	get menuFontColorActive() {
-		return this.getCharPref('menuFontColor.active');
+		return this.getStringPref('menuFontColor.active');
 	} ,
   
 	get menuTransparent() {
@@ -1637,6 +1747,12 @@ MenuOnTop.TopMenu = {
   _document: null,
   get document() { // document of option window
     if (this._document) return this._document;
+		let win = MenuOnTop.TopMenu.optionsWindow;
+		this._document = win ? win.document : null;
+    return  this._document;
+  },
+	
+	get optionsWindow() {
     let mediator = Components.classes["@mozilla.org/appshell/window-mediator;1"].getService(Components.interfaces.nsIWindowMediator),
         getWindowEnumerator = 
             (MenuOnTop.Util.isLinux) ?
@@ -1646,12 +1762,12 @@ MenuOnTop.TopMenu = {
 		if (getWindowEnumerator ('addon:MenuOnTop', true).hasMoreElements()) {
 			try {
 				let optionsWindow = getWindowEnumerator ('addon:MenuOnTop', true).getNext();
-				this._document = optionsWindow ? optionsWindow.document : null;
+				return optionsWindow;
 			}
 			catch( ex) { ; }
 		}
-    return  this._document;
-  },
+		return null;
+	} , 
   
   get ListBox() {
     return this.document.getElementById('bookmarksList');
@@ -2151,7 +2267,6 @@ MenuOnTop.TopMenu = {
   } ,
   
   loadCustomMenu: function loadCustomMenu(fromOptions) {
-    if (prefs.isDebug) debugger;
     const util = MenuOnTop.Util;
     fromOptions = fromOptions ? true : false;
     util.logDebug ('loadCustomMenu(' + fromOptions + ')...'); 

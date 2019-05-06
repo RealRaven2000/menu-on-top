@@ -3,6 +3,7 @@ pref("extensions.menuontop.customMenu.title", "");
 pref("extensions.menuontop.customMenu.title.remote", false);
 pref("extensions.menuontop.debug", false);
 pref("extensions.menuontop.debug.default", false);
+pref("extensions.menuontop.debug.appStart", false);
 pref("extensions.menuontop.flavor.coloronly", false);
 pref("extensions.menuontop.forceSmall", false);
 pref("extensions.menuontop.iconSize.forceSmall", true);
