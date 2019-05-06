@@ -1064,23 +1064,28 @@ MenuOnTop.Util = {
         addonId = MenuOnTop.Id;
     util.logDebug('checkVersion() for ' + addonId);
 		const platformVer = util.simplifyVersion(util.PlatformVersion);
+		/*
 		if (platformVer >= 61) { // don't use AddonManager for now
 			util.checkFirstRun(MenuOnTop._CurrentBuild);
 		}
 		else
+		*/
     win.setTimeout (function () {
-				if (typeof AddonManager != 'object')
-					Components.utils.import("resource://gre/modules/AddonManager.jsm");
-        AddonManager.getAddonByID(addonId,
-          function(addon) {
-            // This is an asynchronous callback function that might not be called immediately, ah well...
-            if (addon.version)
-              util.checkFirstRun(addon.version);
-            else
-              util.checkVersion(); // retry
-          }
-        );
-    }, 750);
+			Components.utils.import("resource://gre/modules/AddonManager.jsm");
+			AddonManager.getAddonByID(addonId).then(
+				function mot_gotAddon(addon) {
+					if (addon.version)
+						util.checkFirstRun(addon.version);
+					else
+						util.checkVersion(); // retry
+				}
+				,
+				function mot_failedAddon(ex) {
+					Services.prompt.alert(null, 'MenuOnTop - checkVersion', ' AddonManager.getAddonByID promise failed!\n' + ex.toString()); 
+					util.logDebug('getAddonByID promise - failed');
+				}
+			);
+    }, 150);
   } ,
 
   checkFirstRun: function checkFirstRun(ver) {
