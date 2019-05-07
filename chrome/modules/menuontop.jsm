@@ -723,24 +723,44 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
   },
 	
   showOptions: function showOptions(evt, win) {
-    var windowManager = Components.classes['@mozilla.org/appshell/window-mediator;1']
-        .getService(Components.interfaces.nsIWindowMediator);
-    var addonWin = windowManager.getMostRecentWindow("addon:MenuOnTop"); // use windowtype to set this
+		var optionsURL = "menuOnTop_options66.xul"; // new options dialog.
     if (evt && !win) {
       win = evt.view.window;
     }
+		// test
+		win.openDialog("chrome://menuontop/content/menuOnTop_options66.xul",'menuontop-options','chrome,titlebar,centerscreen,resizable,alwaysRaised');
+		
+		/*
+    var windowManager = Components.classes['@mozilla.org/appshell/window-mediator;1']
+        .getService(Components.interfaces.nsIWindowMediator);
+    var addonWin = windowManager.getMostRecentWindow("addon:MenuOnTop"); // use windowtype to set this
+		var pv = util.PlatformVersion;
+
     
     if (addonWin)
       addonWin.focus();
     else {
       util.logDebug('Calling openDialog...');
       try {
-        win.openDialog("chrome://menuontop/content/menuOnTop_options.xul",'menuontop-options','chrome,titlebar,centerscreen,resizable,alwaysRaised');
+				var compareResult = 
+							Components.classes["@mozilla.org/xpcom/version-comparator;1"]
+												.getService(Components.interfaces.nsIVersionComparator)
+												.compare(pv, "66")>=1;
+				
+				debugger;
+				if (Components.classes["@mozilla.org/xpcom/version-comparator;1"]
+												.getService(Components.interfaces.nsIVersionComparator)
+												.compare(pv, "66")<1) {
+					alert('loading old dialog version')
+				  // optionsURL = "menuOnTop_options.xul";
+        }
+        win.openDialog("chrome://menuontop/content/" + optionsURL,'menuontop-options','chrome,titlebar,centerscreen,resizable,alwaysRaised');
       }
       catch(ex) {
         util.logException("openDialog()",ex);
       }
     }
+		*/
   } ,
   
 	showAddonButton :function showAddonButton(mainWindow) {
@@ -1400,7 +1420,27 @@ MenuOnTop.Util = {
         theTreeView = win.gFolderTreeView;
     theTreeView.selectFolder(msgFolder);
     return true;
-  }
+  } ,
+	
+	loadPreferences: function qf_loadPreferences() {
+		util.logDebug("loadPreferences - start:");
+		debugger;
+		let myprefs = document.getElementsByTagName("preference");
+		if (myprefs.length) {
+			let prefArray = [];
+			for (let it of myprefs) {
+				let p = new Object({ id: it.id, 
+						      name: it.getAttribute('name'),
+						      type: it.getAttribute('type') });
+				if (it.getAttribute('instantApply') == "true") p.instantApply = true;
+				prefArray.push(p);
+			}
+			util.logDebug("Adding " + prefArray.length + " preferences to Preferences loader...")
+			if (Preferences)
+				Preferences.addAll(prefArray);
+		}
+		util.logDebug("loadPreferences - finished.");
+	} 	
 };  // Util
 
 // var utilMOT = MenuOnTop.Util;

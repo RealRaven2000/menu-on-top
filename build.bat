@@ -6,4 +6,5 @@ pwsh -Command "(gc -en UTF8NoBOM install.rdf) -replace 'pre%oldRev%'.trim(), 'pr
 "C:\Program Files\7-Zip\7z" a -xr!.svn menuOnTop.zip avatars chrome skin install.rdf icon.png chrome.manifest bootstrap.js
 echo %menuOnTopRev% > revision.txt
 move *.xpi "..\..\Test\1.13\"
+pwsh -Command "Start-Sleep -m 150"
 rename menuOnTop.zip menuOnTop-1.13pre%menuOnTopRev%.xpi
