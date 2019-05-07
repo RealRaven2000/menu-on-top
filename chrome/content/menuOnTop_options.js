@@ -672,10 +672,6 @@ MenuOnTop.Options = {
 	
 	loadPreferences: function mot_loadPreferences() {
 		const util = MenuOnTop.Util;
-		if (typeof Preferences == 'undefined') {
-			util.logDebug("Skipping loadPreferences - Preferences object not defined");
-			return; // older versions of Thunderbird do not need this.
-		}
 		util.logDebug("loadPreferences - start:");
 		let myprefs = document.getElementsByTagName("preference");
 		if (myprefs.length) {
@@ -688,7 +684,8 @@ MenuOnTop.Options = {
 				prefArray.push(p);
 			}
 			util.logDebug("Adding " + prefArray.length + " preferences to Preferences loader...")
-			Preferences.addAll(prefArray);
+			if (Preferences)
+				Preferences.addAll(prefArray);
 		}
 		util.logDebug("loadPreferences - finished.");
 	} ,
