@@ -149,14 +149,16 @@ END LICENSE BLOCK
     # Improved positioning of status bar icon when it is configured 
     # Added cleanup code that hides the Status bar icon when uinstalling / updating.
 
-   1.13 - 21/02/2019 - Released for Interlink
+  1.13 - 21/02/2019 - Released for Interlink
     # Resolved Positioning problems in Interlink Mail Client.
 		
-	 1.14 - WIP
+	1.14 - 06/05/2019
 	  # Make compatible with Thunderbird beta 67.0
 		# Replaced all colorpickers with HTML elements (standard color picker, OS dependant).
 		# Replaced all groupbox elements with HTML fieldsets
 
+	1.14.1 - 07/05/2019
+	  # removed javascript console warnings caused by MenuOnTop unnecessarily running on dialog windows.
 		
 */
 Components.utils.import("resource://gre/modules/Services.jsm");
