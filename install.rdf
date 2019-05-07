@@ -5,7 +5,7 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>menuOnTop@agrude.com</em:id>
-    <em:version>1.14</em:version>
+    <em:version>1.14.1</em:version>
     <em:type>2</em:type>
 		<em:unpack>true</em:unpack>
 	<em:optionsURL>chrome://menuontop/content/menuOnTop_options66.xul</em:optionsURL>

@@ -7,4 +7,4 @@ pwsh -Command "(gc -en UTF8NoBOM install.rdf) -replace 'pre%oldRev%'.trim(), 'pr
 echo %menuOnTopRev% > revision.txt
 move *.xpi "..\..\..\Test\1.14\"
 pwsh -Command "Start-Sleep -m 150"
-rename menuOnTop.zip menuOnTop-1.14pre%menuOnTopRev%.xpi
+rename menuOnTop.zip menuOnTop-1.14.1pre%menuOnTopRev%.xpi

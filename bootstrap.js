@@ -183,9 +183,10 @@ function start(window){
   // We're starting up in a window
   const util = MenuOnTop.Util,
         prefs = MenuOnTop.Preferences;
-  util.logDebugOptional ('appStart', "MenuOnTop.start()");
-  let document = window.document,
-      navigationBox = document.getElementById(util.ToolboxId), // mail-toolbox
+  let document = window.document;
+	if (document.firstElementChild && document.firstElementChild.tagName=='dialog') return; // dialogs are not styled by MenuOnTop
+	
+  let navigationBox = document.getElementById(util.ToolboxId), // mail-toolbox
 	    menubar =  document.getElementById(util.ToolbarId);      // mail-toolbar-menubar2
 			
   if (!(menubar && navigationBox)) {

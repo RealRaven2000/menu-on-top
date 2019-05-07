@@ -165,7 +165,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
     MenuOnTop = {
   Id: "menuOnTop@agrude.com",
   _Version: "",
-	_CurrentBuild: "1.14",  // workaround for missing AddonManager in Tb 63
+	_CurrentBuild: "1.14.1",  // workaround for missing AddonManager in Tb 63
   mAppName: null,
 	mAppNameFull: "",
   CSSid: "menuOnTop-style",
