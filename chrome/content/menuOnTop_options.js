@@ -54,23 +54,32 @@ MenuOnTop.Options = {
     MenuOnTop.Options.enableCustomMenuControls();
 			
     // populate version - simple first
-    document.getElementById('lblVersion').value = prefs.getCharPref('version');
+    document.getElementById('lblVersion').value = prefs.getStringPref('version');
     // populate version - complete
     let w = window;
     w.setTimeout (function () {
-			  if (typeof AddonManager != 'object')
-					Components.utils.import("resource://gre/modules/AddonManager.jsm");
-        AddonManager.getAddonByID(MenuOnTop.Id,
-          function(addon) {
-            w.document.getElementById('lblVersion').value = addon.version;
-          }
-        );
-    }, 500); // delay is just for effect
+			  let mot_isDebug = prefs.isDebug;
+				Components.utils.import("resource://gre/modules/AddonManager.jsm");
+				// let promise = 
+				AddonManager.getAddonByID(MenuOnTop.Id).then(
+					function mot_gotAddon(addon) {
+						util.logDebug('getAddonByID promise - success');
+						w.document.getElementById('lblVersion').value = addon.version;
+						// return promise;
+					}
+					,
+					function mot_failedAddon(ex) {
+						Services.prompt.alert(null, 'MenuOnTop', ' AddonManager.getAddonByID promise failed!\n' + ex.toString()); 
+						util.logDebug('getAddonByID promise - failed');
+						// return null;
+					}
+				);
+    }, 250); // delay is just for effect
     
 	},
   
   showVersionHistory: function showVersionHistory() {
-    MenuOnTop.Util.showHistory(MenuOnTop.Preferences.getCharPref('version'));
+    MenuOnTop.Util.showHistory(MenuOnTop.Preferences.getStringPref('version'));
   } ,
 	
   onSelectionChange: function onSelectionChange(evt) {
@@ -197,9 +206,9 @@ MenuOnTop.Options = {
 						try {
 							let fileURL = fp.fileURL,
                   iconURL = fileURL.asciiSpec;
-              prefs.setCharPref('customMenu.icon.url', iconURL);
+              prefs.setStringPref('customMenu.icon.url', iconURL);
               MenuOnTop.setCustomIcon(iconURL);
-							prefs.setCharPref('customMenu.icon.defaultPath', file.path);
+							prefs.setStringPref('customMenu.icon.defaultPath', file.path);
 						}
 						catch(ex) { ;	}
           }
@@ -217,7 +226,7 @@ MenuOnTop.Options = {
 		  Components.utils.import("resource://gre/modules/osfile.jsm", {}) :
 		  ChromeUtils.import("resource://gre/modules/osfile.jsm", {});
 		let localFile = Cc["@mozilla.org/file/local;1"].createInstance(NSIFILE),
-		    lastPath = prefs.getCharPref('customMenu.icon.defaultPath'),
+		    lastPath = prefs.getStringPref('customMenu.icon.defaultPath'),
         // default to extensions/menuontop/
         defaultPath = OS.Path.join(OS.Constants.Path.profileDir, "extensions", "menuOnTop@agrude.com", "avatars");
 		localFile.initWithPath(lastPath || defaultPath); // default to menuontop avatars folder
@@ -226,15 +235,18 @@ MenuOnTop.Options = {
   } ,  
   
   onIconSizeChange: function onIconSizeChange(txt) {
-    const prefs = MenuOnTop.Preferences;
-    let maxHeight = prefs.getIntPref('maxHeight');
-    try {
-      let icSize = parseInt(txt.value, 10);
-      if (icSize > maxHeight) {
-        prefs.setIntPref('maxHeight', icSize);
-      }
-    }
-    catch(ex) { ; }
+		window.setTimeout(function() {
+			let prefs = window.MenuOnTop.Preferences,
+					maxHeight = prefs.getIntPref('maxHeight');
+			try {
+				let icSize = parseInt(txt.value, 10);
+				if (icSize > maxHeight) {
+					document.getElementById('txtMaxHeight').value = icSize;
+					prefs.setIntPref('maxHeight', icSize);
+				}
+			}
+			catch(ex) { ; }
+		}, 100); // for some reason value == "0" during onchange event
   } ,
 	
 	accept: function accept() {
@@ -283,13 +295,16 @@ MenuOnTop.Options = {
 		this.apply();
 	},
 	
+	
 	selectScheme: function selectScheme(event, el) {
 	  // set a value and notify the bound preference via an input event; thanks to John-Galt !!
 	  function setElementValue(id, val) {
 			let doc = window.document,
 			    element = doc.getElementById(id);
-      if (element.tagName=='colorpicker') 
-        element.color = val;
+      if (element.getAttribute('type')=='color') {
+				// convert rgb and system colors to hex for the dumbed down html:input type color
+        element.value = util.getSystemColor(val, doc); 
+			}
 			else if (typeof val == 'boolean')
 				element.checked = val;
 			else
@@ -299,7 +314,9 @@ MenuOnTop.Options = {
 			evt.initUIEvent('input', true, true, doc.defaultView, 1);
 			element.dispatchEvent(evt);
 		}
-    const prefs = MenuOnTop.Preferences;
+    const prefs = MenuOnTop.Preferences,
+		      util = MenuOnTop.Util,
+					options = MenuOnTop.Options;
 		this.bypassObserver = true
 		let target = event.target,
 		    sel = target.value,
@@ -446,8 +463,8 @@ MenuOnTop.Options = {
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(228, 208, 155, 0.95), rgba(228, 208, 155, 0.5))');
 				setElementValue('txtMenuFontColorDefault', 'rgb(15,15,15)');
 				setElementValue('txtMenuBackgroundHover',  'linear-gradient(to bottom, rgb(220,180,110), rgb(220,180,110))');
-				setElementValue('txtMenuFontColorHover', ' rgb(105,41,3)');
-				setElementValue('txtMenuBackgroundActive',  'linear-gradient(to bottom, rgb(105,41,3), rgb(105,41,3))');
+				setElementValue('txtMenuFontColorHover', 'rgb(105,41,3)');
+				setElementValue('txtMenuBackgroundActive', 'linear-gradient(to bottom, rgb(105,41,3), rgb(105,41,3))');
 				setElementValue('txtMenuFontColorActive', 'rgb(255,255,255)');
 				setElementValue('txtMenuBorderColor', 'transparent');
 				break;
@@ -536,7 +553,7 @@ MenuOnTop.Options = {
 				setElementValue('chkMenuShadow', true);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(3,185,173,0.8) 0%,rgba(2,105,108,0.8) 47%,rgba(0,78,92,0.8) 100%)');
 				setElementValue('txtMenuFontColorDefault', 'rgba(225, 255, 250, 0.95)');
-				setElementValue('txtMenuFontColorHover', '#FFFF33');
+				setElementValue('txtMenuFontColorHover', '#55FF7B');
 				setElementValue('txtMenuBorderColor', 'transparent');
 				break;	
       case 14:  // Lime - green
@@ -574,7 +591,7 @@ MenuOnTop.Options = {
           setElementValue('txtMenuIconSmall', 16);
           setElementValue('txtMenuIconNormal', 24);
 					setElementValue('txtMenuBorderWidth', '1');
-					MenuOnTop.Options.selectBorderStyle("solid");
+					options.selectBorderStyle("solid");
         }
 				setElementValue('chkMenuShadow', true);
 				setElementValue('txtMenuBackgroundDefault',  'linear-gradient(to bottom, rgba(254,189,0,1) 0%,rgba(255,142,0,1) 66%,rgba(239,71,3,1) 100%)');
@@ -646,8 +663,8 @@ MenuOnTop.Options = {
 		}
 		this.apply();
 		window.setTimeout( function() { 
-			MenuOnTop.Util.logDebug ("enabling prefs observer...");
-			MenuOnTop.Options.bypassObserver = false; 
+			util.logDebug ("enabling prefs observer...");
+			options.bypassObserver = false; 
 		}, 500); // avoid too many loadCSS calls.
 		// this.bypassObserver = false;
 	} ,
@@ -674,6 +691,43 @@ MenuOnTop.Options = {
 			Preferences.addAll(prefArray);
 		}
 		util.logDebug("loadPreferences - finished.");
-	} 		
+	} ,
+	
+  showAboutConfig: function(clickedElement, filter, readOnly) {
+    const name = "Preferences:ConfigManager",
+		      util = MenuOnTop.Util,
+          Ci = Components.interfaces, 
+          Cc = Components.classes;
+    let uri = "chrome://global/content/config.xul";
+		if (util.Application)
+			uri += "?debug";
+
+    let mediator = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator),
+        w = mediator.getMostRecentWindow(name),
+        win = clickedElement ?
+		          (clickedElement.ownerDocument.defaultView ? clickedElement.ownerDocument.defaultView : window)
+							: window;
+    if (!w) {
+      let watcher = Cc["@mozilla.org/embedcomp/window-watcher;1"].getService(Ci.nsIWindowWatcher);
+      w = watcher.openWindow(win, uri, name, "dependent,chrome,resizable,centerscreen,alwaysRaised,width=500px,height=350px", null);
+    }
+    w.focus();
+    w.addEventListener('load', 
+      function () {
+        let flt = w.document.getElementById("textbox");
+        if (flt) {
+          flt.value=filter;
+          // make filter box readonly to prevent damage!
+          if (!readOnly)
+            flt.focus();
+          else
+            flt.setAttribute('readonly',true);
+          if (w.self.FilterPrefs) {
+            w.self.FilterPrefs();
+          }
+        }
+      });
+  }
+	
 
 }

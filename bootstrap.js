@@ -78,6 +78,7 @@ function install(data, reason){
 
 function uninstall(data, reason){
   // We'll get deleted and have to clean up
+	MenuOnTop = Cu.import("chrome://menuontopmod/content/menuontop.jsm", {}).MenuOnTop; 
   const util = MenuOnTop.Util,
         prefs = MenuOnTop.Preferences;
 	if (prefs.isStatusIcon)
@@ -85,18 +86,24 @@ function uninstall(data, reason){
 };
 
 function startup(data, reason){
-  try { // remove from cache!
-    Cu.unload("chrome://menuontopmod/content/menuontop.jsm");
-    Cu.unload("chrome://shimMenuOnTopECMA/content/menuontop_shim.jsm");
-  } 
-  catch(ex) {;}
+	if (reason!=1) { // APP_STARTUP - creates ReferenceError: BOOTSTRAP_REASONS is not defined
+		try { // remove from cache!
+			Cu.unload("chrome://menuontopmod/content/menuontop.jsm");
+			Cu.unload("chrome://shimMenuOnTopECMA/content/menuontop_shim.jsm");
+		} 
+		catch(ex) {;}
+	}
   MenuOnTop = Cu.import("chrome://menuontopmod/content/menuontop.jsm", {}).MenuOnTop; 
   MenuOnTop.Shim = Cu.import("chrome://shimMenuOnTopECMA/content/menuontop_shim.jsm", {}).MenuOnTop_Shim; 
-//  Cu.import("chrome://menuontopmod/content/mot_util.jsm", MOT.MenuOnTop); // Add .Util
-//  Cu.import("chrome://menuontopmod/content/mot_prefs.jsm", MOT.MenuOnTop);  // Add .Preferences
-//  Cu.import("chrome://menuontopmod/content/mot_prefs.jsm", MOT.MenuOnTop);  // Add .TopMenu
-  
 	MenuOnTop.Shim.setDefaultPrefs(PREF_BRANCH, MenuOnTop.defaultPREFS); // we need to do this every time!
+	
+	const util = MenuOnTop.Util,
+	      prefs = MenuOnTop.Preferences;
+	if (prefs.isDebugOption('appStart')) {
+		let txt = 'MenuOnTop startup\nreason = ' + reason
+		util.logDebug(txt);
+		Services.prompt.alert(null,"Menu On Top",txt);
+	}
   
   // We're starting up
   var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"].
@@ -116,6 +123,13 @@ function startup(data, reason){
 				|| reason == ADDON_DOWNGRADE 
 				|| reason == ADDON_ENABLE) {
 			MenuOnTop.ensureMenuBarVisible(window);
+			// force the menu visible on install
+			if (reason == ADDON_INSTALL) {
+				let toolbar = window.document.getElementById(util.ToolbarId);
+				toolbar.setAttribute("autohide", false);
+				Services.xulStore.persist(toolbar, "autohide");
+			}
+			
 		}
   }
   
@@ -126,6 +140,8 @@ function startup(data, reason){
     let styleSheetURI = Services.io.newURI(styleSheets[i], null, null);
     styleSheetService.loadAndRegisterSheet(styleSheetURI, styleSheetService.AUTHOR_SHEET);
   }
+	
+
   
   // Start in new windows:
   wm.addListener(winListener);
@@ -162,9 +178,10 @@ function start(window){
   // We're starting up in a window
   const util = MenuOnTop.Util,
         prefs = MenuOnTop.Preferences;
-  util.logDebug ("MenuOnTop.start()");
-  let document = window.document,
-      navigationBox = document.getElementById(util.ToolboxId), // mail-toolbox
+  let document = window.document;
+	if (document.firstElementChild && document.firstElementChild.tagName=='dialog') return; // dialogs are not styled by MenuOnTop
+	
+  let navigationBox = document.getElementById(util.ToolboxId), // mail-toolbox
 	    menubar =  document.getElementById(util.ToolbarId);      // mail-toolbar-menubar2
 			
   if (!(menubar && navigationBox)) {

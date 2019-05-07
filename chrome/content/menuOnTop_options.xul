@@ -9,23 +9,23 @@
 <!DOCTYPE prefwindow SYSTEM "chrome://menuontop/locale/options.dtd" >
 
 <!-- tabsize = 2 -->
-<prefwindow xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-            windowtype = "addon:MenuOnTop"
-            id="MenuOnTop-preferences"
-            title="&mot.window.title;"
-            buttons="accept,extra1,extra2"
-            ondialogaccept="MenuOnTop.Options.accept();"
-						buttonlabelextra2="&mot.btn.donate;"
-						tooltipextra2="&mot.btn.donate.tooltip;"
-            ondialogextra2="MenuOnTop.Util.openURL(null,'http://quickfolders.org/menuOnTopDonate.html');"
-            buttonlabelextra1="&mot.btn.moreInfo;"
-            buttonaccesskeyextra1="&mot.btn.moreInfo.accessKey;"
-            tooltipextra1="&mot.btn.moreInfo.tooltip;"
-            ondialogextra1="MenuOnTop.Util.openURL(null,'http://quickfolders.org/menuOnTop.html');"
-            onload="MenuOnTop.Options.onLoad();"
-            onunload="MenuOnTop.Options.onUnload();"
-            minwidth="420">
-            <!--persist="screenX, screenY"-->
+<dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+				windowtype = "addon:MenuOnTop"
+				id="MenuOnTop-preferences"
+				title="&mot.window.title;"
+				buttons="accept,extra1,extra2"
+				ondialogaccept="MenuOnTop.Options.accept();"
+				buttonlabelextra2="&mot.btn.donate;"
+				tooltipextra2="&mot.btn.donate.tooltip;"
+				ondialogextra2="MenuOnTop.Util.openURL(null,'http://quickfolders.org/menuOnTopDonate.html');"
+				buttonlabelextra1="&mot.btn.moreInfo;"
+				buttonaccesskeyextra1="&mot.btn.moreInfo.accessKey;"
+				tooltipextra1="&mot.btn.moreInfo.tooltip;"
+				ondialogextra1="MenuOnTop.Util.openURL(null,'http://quickfolders.org/menuOnTop.html');"
+				onload="MenuOnTop.Options.onLoad();"
+				onunload="MenuOnTop.Options.onUnload();"
+				minwidth="420">
+				<!--persist="screenX, screenY"-->
 
 <script type="application/x-javascript" src="chrome://menuontop/content/menuOnTop_options.js" />
 <script type="text/javascript">
@@ -636,4 +636,9 @@
 	</tabbox>
 	  
   </prefpane>
-</prefwindow>
+	<script type="application/javascript" src="chrome://global/content/preferencesBindings.js" />
+	<script type="text/javascript">
+		MenuOnTop.Options.loadPreferences();
+	</script>
+	
+</dialog>
