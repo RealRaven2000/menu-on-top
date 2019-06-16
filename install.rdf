@@ -5,7 +5,7 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>menuOnTop@agrude.com</em:id>
-    <em:version>1.15pre2</em:version>
+    <em:version>1.15</em:version>
     <em:type>2</em:type>
 		<em:unpack>true</em:unpack>
 	<em:optionsURL>chrome://menuontop/content/menuOnTop_options66.xul</em:optionsURL>
@@ -16,7 +16,7 @@
       <Description>
         <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
         <em:minVersion>60.0</em:minVersion>
-        <em:maxVersion>67.*</em:maxVersion>
+        <em:maxVersion>60.*</em:maxVersion>
       </Description>
     </em:targetApplication>
 	  <!-- Firefox, Waterfox -->
@@ -43,7 +43,7 @@
 			-->
 			
     <em:name>Menu On Top</em:name>
-    <em:description>Moves the main menu bar to the Top and adds Style.</em:description>
+    <em:description>Moves the main Menu bar to the Top and adds style - and simple bookmarks.</em:description>
     <em:creator>Axel Grude</em:creator>
 		
 		<!-- this might get installed/uninstalled on the fly -->

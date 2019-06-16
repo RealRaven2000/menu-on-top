@@ -15,10 +15,12 @@
  *    For version history, please refer to http://quickfolders.org/menuOnTopHistory.html
  */
 
-var   Cu = Components.utils;
+var Cu = Components.utils;
 
-Cu.import("resource://gre/modules/Services.jsm");
-
+if (typeof ChromeUtils != 'undefined')
+	var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+else
+	Components.utils.import("resource://gre/modules/Services.jsm");
 
 /*
 (function(global) global.include = function include(src) {
@@ -39,15 +41,25 @@ var MenuOnTop  = {};
 var styleSheets = ["chrome://menuontop/skin/menuOnTop_main.css"];
 var winListener = {
   onOpenWindow: function(aWindow) {
-    // Wait for the window to finish loading
-    let domWindow = aWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor).
+		let domWindow = aWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor).
                           getInterface(Components.interfaces.nsIDOMWindow);
-    domWindow.addEventListener("load", function() {
-      domWindow.removeEventListener("load", arguments.callee, false);
-      try{
-        start(domWindow);
-      } catch (e) {Components.utils.reportError(e);}
-    }, false);
+    // Wait for the window to finish loading
+		new Promise(function(resolve) {
+			if (domWindow.document.readyState == "complete") {
+				resolve();
+				return;
+			}
+			domWindow.addEventListener("load", resolve, { once: true });
+		}).then(		
+			function() {
+				domWindow.removeEventListener("load", arguments.callee, false);
+				try{
+					start(domWindow);
+				} catch (e) {Components.utils.reportError(e);}
+			}
+		);
+    
+    // domWindow.addEventListener("load", , false);
     /*// Do not clean up in unloading windows, so we don't leak listeners on removal
 		  domWindow.addEventListener("unload", function() {
       try{
@@ -86,6 +98,11 @@ function uninstall(data, reason){
 };
 
 function startup(data, reason){
+	// MenuOnTop = Cu.import
+	MenuOnTop = Cu.import("chrome://menuontopmod/content/menuontop.jsm", {}).MenuOnTop; 
+  MenuOnTop.Shim = Cu.import("chrome://shimMenuOnTopECMA/content/menuontop_shim.jsm", {}).MenuOnTop_Shim; 
+	const util = MenuOnTop.Util,
+	      prefs = MenuOnTop.Preferences;
 	if (reason!=1) { // APP_STARTUP - creates ReferenceError: BOOTSTRAP_REASONS is not defined
 		try { // remove from cache!
 			Cu.unload("chrome://menuontopmod/content/menuontop.jsm");
@@ -93,26 +110,20 @@ function startup(data, reason){
 		} 
 		catch(ex) {;}
 	}
-  MenuOnTop = Cu.import("chrome://menuontopmod/content/menuontop.jsm", {}).MenuOnTop; 
-  MenuOnTop.Shim = Cu.import("chrome://shimMenuOnTopECMA/content/menuontop_shim.jsm", {}).MenuOnTop_Shim; 
+
 	MenuOnTop.Shim.setDefaultPrefs(PREF_BRANCH, MenuOnTop.defaultPREFS); // we need to do this every time!
 	
-	const util = MenuOnTop.Util,
-	      prefs = MenuOnTop.Preferences;
 	if (prefs.isDebugOption('appStart')) {
 		let txt = 'MenuOnTop startup\nreason = ' + reason
 		util.logDebug(txt);
-		Services.prompt.alert(null,"Menu On Top",txt);
+		// Services.prompt.alert(null,"Menu On Top",txt);
 	}
   
   // We're starting up
   var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"].
                       getService(Components.interfaces.nsIWindowMediator);
   // Start in all current windows:
-  var enumerator = wm.getEnumerator(MenuOnTop.Util.MainWindowXulId); // "mail:3pane"
-	/* gone since Fx 9.0! See https://bugzilla.mozilla.org/show_bug.cgi?id=1528489#c15
-		Components.manager.addBootstrappedManifestLocation(data.installPath);
-		*/
+  var enumerator = wm.getEnumerator(util.MainWindowXulId); // "mail:3pane"
 	
   while (enumerator.hasMoreElements()) {
     var window = enumerator.getNext().QueryInterface(Components.interfaces.nsIDOMWindow);
@@ -178,6 +189,7 @@ function start(window){
   // We're starting up in a window
   const util = MenuOnTop.Util,
         prefs = MenuOnTop.Preferences;
+	if (prefs.isDebugOption('appStart')) debugger;
   let document = window.document;
 	if (document.firstElementChild && document.firstElementChild.tagName=='dialog') return; // dialogs are not styled by MenuOnTop
 	
@@ -185,7 +197,11 @@ function start(window){
 	    menubar =  document.getElementById(util.ToolbarId);      // mail-toolbar-menubar2
 			
   if (!(menubar && navigationBox)) {
-    util.logDebug ("MenuOnTop.start(): early exit, no navigation-toolbox or menubar found");
+		let docInfo = document.URL || "no URL";
+    util.logDebug ("MenuOnTop.start(): early exit, no navigation-toolbox or menubar found\n" + docInfo)
+    if (docInfo.endsWith("messenger.xul")) {
+			window.setTimeout ( function(){start(window);},1500); // retry for now.
+		}
     return; // We're only interested in windows with the menubar in it
   }
 
@@ -253,7 +269,7 @@ function start(window){
 	if (prefs.isCustomMenu) {
     MenuOnTop.showCustomMenu(window);
     if (prefs.isCustomMenuIcon) {
-      MenuOnTop.setCustomIcon(prefs.customMenuIconURL);
+      MenuOnTop.setCustomIcon(window, prefs.customMenuIconURL);
     }
   }
   MenuOnTop.Util.checkVersion(window);

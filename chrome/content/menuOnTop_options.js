@@ -305,6 +305,8 @@ MenuOnTop.Options = {
 				// convert rgb and system colors to hex for the dumbed down html:input type color
         element.value = util.getSystemColor(val, doc); 
 			}
+      else if (element.tagName=='colorpicker') 
+        element.color = val;
 			else if (typeof val == 'boolean')
 				element.checked = val;
 			else

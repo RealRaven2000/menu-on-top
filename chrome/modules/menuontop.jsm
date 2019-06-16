@@ -162,21 +162,29 @@ END LICENSE BLOCK
 	1.14.1 - 07/05/2019
 	  # removed javascript console warnings caused by MenuOnTop unnecessarily running on dialog windows.
 
+  1.15 - 
+	  # Improved loading UI on Thunderbird 68 beta.
+		# Support for new HTML color picker which replaces the XUL version of same in modern versions orf Thunderbird.
+		# Support for new Preferences system, but backwards compatible with Thunderbird 60.
+		# Replacement of document.createElement with createXULElement
+		# Improved loading custom icon (avatar) in modern versions of Thunderbird.
 		
 */
 Components.utils.import("resource://gre/modules/Services.jsm");
+//  { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 
 var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
     MenuOnTop = {
   Id: "menuOnTop@agrude.com",
   _Version: "",
-	_CurrentBuild: "1.14.1",  // workaround for missing AddonManager in Tb 63
+	_CurrentBuild: "1.15", 
   mAppName: null,
 	mAppNameFull: "",
   CSSid: "menuOnTop-style",
   CustomMenuId: "menuOnTop-menu-Custom",
   CustomMenuPopupId: "menu_menuOnTopPopup",
 	loadCSS: function loadCSS(window) {
+		const util = this.Util;
 		// Inject CSS for themes with the menubar under the tabbar, which looks terrible after moving the toolbar up
 		try {
 			let document = window.document,
@@ -187,10 +195,10 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 			var css = document.getElementById(util.MainWindowId).
 								appendChild(document.createElementNS("http://www.w3.org/1999/xhtml", "style"));
 			css.setAttribute("type", "text/css");
-			css.id = MenuOnTop.CSSid;
+			css.id = this.CSSid;
 			
 			
-			let Prefs = MenuOnTop.Preferences,
+			let Prefs = this.Preferences,
 			    m = '-' + (Math.abs(Prefs.negativeMargin)).toString(),
 			
 			    shadowString = Prefs.isTextShadow ? 'text-shadow: 1px 1px 1px rgba(128, 128, 128, 0.6) !important;' : '',
@@ -302,7 +310,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 								titlebarplaceholder;
       if (Prefs.isCustomMenuIcon) {
 
-        let Id = MenuOnTop.CustomMenuId;
+        let Id = this.CustomMenuId;
         cssCode += " #" + Id + " > image { width:" + Prefs.customMenuIconSize + "px; height:" + Prefs.customMenuIconSize + "px; margin-left: 5px; }";
         if (Prefs.getBoolPref('customMenu.label.specialFont')) {
           cssCode += " #" + Id + " > label { "
@@ -314,34 +322,34 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
       // apply all styles
 			css.appendChild(document.createTextNode(cssCode));
       util.logDebug ("Appended CSS: " + cssCode);
-      MenuOnTop.forceIconSize(window);
+      this.forceIconSize(window);
       // Avatar
-      MenuOnTop.setCustomIcon(Prefs.customMenuIconURL);
+      this.setCustomIcon(window, Prefs.customMenuIconURL);
 			let controlsPlaceholder = document.getElementById("titlebar-placeholder-on-TabsToolbar-for-captions-buttons");
 			if (controlsPlaceholder) {
 				controlsPlaceholder.collapsed=true;
 			}
 		}
 		catch (ex) {
-			util.logDebug ("MenuOnTop.loadCSS() failed\n" + ex);
+			this.Util.logDebug ("MenuOnTop.loadCSS() failed\n" + ex);
 		}
 	},
 	
 	resetCSS: function resetCSS(window) {
 		try {
-			util.logDebug ("MenuOnTop.resetCSS()...");
+			this.Util.logDebug ("MenuOnTop.resetCSS()...");
 			let document = window.document, 
-          styleId = MenuOnTop.CSSid,
+          styleId = this.CSSid,
 			    css = document.getElementById(styleId);
       if (css)
         css.parentNode.removeChild(css);
       else
-        util.logDebug ("Could not find the css style element:" + css);
+        this.Util.logDebug ("Could not find the css style element:" + css);
 			let controlsPlaceholder = document.getElementById("titlebar-placeholder-on-TabsToolbar-for-captions-buttons");
 			if (controlsPlaceholder) controlsPlaceholder.collapsed=false;			
 		}
 		catch (ex) {
-			util.logDebug ("MenuOnTop.resetCSS() failed\n" + ex);
+			this.Util.logDebug ("MenuOnTop.resetCSS() failed\n" + ex);
 		}
   } ,
 	
@@ -351,7 +359,8 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 	} ,
   
   makeMenuItem : function makeMenuItem(doc, url, label, cmdType) {
-    let menuitem = doc.createElement('menuitem'),
+		const util = this.Util;
+    let menuitem = doc.createXULElement ? doc.createXULElement('menuitem') : doc.createElement('menuitem'),
         className = 'menuitem-iconic',
         tm;
     // get to the original MenuOnTop object (of the main window):
@@ -476,6 +485,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
   } ,
   
   deconstructMenu: function deconstructMenu(doc, menu) {
+		const util = this.Util;
     function removeChildren(tagName) {
       let elements = menu.getElementsByTagName(tagName);
       if (elements && elements.length) {
@@ -497,9 +507,13 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
   } ,
   
   populateMenu: function populateMenu(doc, menu) {
+		const util = this.Util,
+		      topMenu = this.TopMenu,
+					_mot = this,
+					createElement = doc.createXULElement ? doc.createXULElement.bind(doc) : doc.createElement.bind(doc);
     try {
       if (!menu) {
-        menu = doc.getElementById(MenuOnTop.CustomMenuId);
+        menu = doc.getElementById(this.CustomMenuId);
       }
       const getBundleString = util.getBundleString.bind(util);
       if (!menu) {
@@ -510,19 +524,18 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
           '******************************\n'
         + '** populateMenu()  ' + menu.id + '\n'
         + '******************************');
-      if (prefs.isDebug) debugger;
       
       this.deconstructMenu(doc, menu);
       
-      let menuPopup = doc.getElementById(MenuOnTop.CustomMenuPopupId);
+      let menuPopup = doc.getElementById(this.CustomMenuPopupId);
       if (!menuPopup) {
-        menuPopup = doc.createElement('menupopup');
-        menuPopup.id = MenuOnTop.CustomMenuPopupId;
+        menuPopup = createElement('menupopup');
+        menuPopup.id = this.CustomMenuPopupId;
       }
       
       menu.appendChild(menuPopup);
-      for (let i = 0; i < MenuOnTop.TopMenu.Entries.length; i++) {
-        let entry = MenuOnTop.TopMenu.Entries[i];
+      for (let i = 0; i < topMenu.Entries.length; i++) {
+        let entry = topMenu.Entries[i];
         menuPopup.appendChild(this.makeMenuItem(doc, entry.url, entry.label, entry.bookmarkType));
       }
       
@@ -530,7 +543,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
       // for bookmarks handling, read
       // http://mxr.mozilla.org/mozilla-central/source/browser/base/content/browser-places.js#640
       const ellipsis = "\u2026".toString();
-      menuPopup.appendChild(doc.createElement('menuseparator'));
+      menuPopup.appendChild(createElement('menuseparator')) ;
 			let lblAddItem = (util.Application == 'Thunderbird') ?
            			getBundleString('menuontop.custommenu.addcurrentitem', 'Add current Item' + ellipsis) :
            			getBundleString('menuontop.custommenu.addcurrentpage', 'Add current Webpage' + ellipsis),
@@ -539,7 +552,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
       menuPopup.appendChild(
 				this.makeMenuItem(
 					doc, 
-					function() { MenuOnTop.TopMenu.appendBookmark(menuPopup); }, 
+					function() { _mot.appendBookmark(menuPopup); }, 
 					lblAddItem,  
 					'function'
 				)
@@ -547,7 +560,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
       menuPopup.appendChild(
 				this.makeMenuItem(
 					doc, 
-					function(evt) { MenuOnTop.showOptions(evt); },
+					function(evt) { _mot.showOptions(evt); },
 					lblOptions, 'function'
 				)
       ); // add my own command
@@ -560,8 +573,11 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
   } ,
   
   showCustomMenu: function showCustomMenu(win, fromOptions) {
+		const prefs = this.Preferences,
+		      util = this.Util,
+					_mot = this;
     let display = prefs.isCustomMenu,
-        menuId = MenuOnTop.CustomMenuId, 
+        menuId = this.CustomMenuId, 
         doc = win.document,
         menubar = doc.getElementById(util.MenubarId),
         label = prefs.customMenuLabelTitle;
@@ -571,7 +587,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
       if (display) {
         let menu = doc.getElementById(menuId);
         if (!menu) {
-          menu = doc.createElement('menu');
+          menu = doc.createXULElement ? doc.createXULElement('menu') : doc.createElement('menu');
           // menu.id=menuId;
           menu.setAttribute("id", menuId);
         }
@@ -583,10 +599,10 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
         
         // menu.collapsed = false;
         // empty will be shown as collapsed
-        MenuOnTop.TopMenu.loadCustomMenu(fromOptions).then(
+        this.TopMenu.loadCustomMenu(fromOptions).then(
           function onSuccess() {
             util.logDebug('showCustomMenu - after loadCustomMenu - populate');
-            MenuOnTop.populateMenu(doc, menu);
+            _mot.populateMenu(doc, menu);
 						menu.style.visibility = "visible";
           },
           function onFailure(ex) {
@@ -605,14 +621,16 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
   hideCustomMenu: function hideCustomMenu(win) {
     let doc = win.document,
         menuId = "menuOnTop-menu-Custom",
-        menubar = doc.getElementById(util.MenubarId),
+        menubar = doc.getElementById(this.Util.MenubarId),
         menu = doc.getElementById(menuId);
     if (menu)
       menubar.removeChild(menu);
   } ,
   
-  setCustomIcon: function setCustomIcon(iconURL) {
-    let menuItem = util.MainWindow.document.getElementById('menuOnTop-menu-Custom');
+  setCustomIcon: function setCustomIcon(win, iconURL) {
+		const prefs = this.Preferences;
+		const util = this.Util;
+    let menuItem = win.document.getElementById('menuOnTop-menu-Custom');
     if (menuItem) {
       if (prefs.isCustomMenuIcon) {
         util.logDebug('Setting avatar icon, URL: ' + iconURL);
@@ -646,9 +664,10 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 	ensureMenuBarVisible: function ensureMenuBarVisible(win) {
 		// see also  c-c/source/suite/common/utilityOverlay.js
 		// goToggleToolbar  
+		const prefs = this.Preferences,
+		      util = this.Util;
 		util.logDebug('ensureMenuBarVisible()');
     try {
-      if (prefs.isDebug) debugger;
       let id = util.ToolbarId,
           doc = win.document,
           toolbar = doc.getElementById(id);
@@ -664,11 +683,11 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
           function() {
 						if (doc.persist)
 							doc.persist(toolbar.id, hidingAttribute);
-            MenuOnTop.Util.logDebug('ensureMenuBarVisible() - after document.persist();');
+            util.logDebug('ensureMenuBarVisible() - after document.persist();');
           }
         );
       }
-      MenuOnTop.showCustomMenu(win);
+      this.showCustomMenu(win);
     }
     catch(ex) {
       util.logException('ensureMenuBarVisible()', ex);
@@ -676,6 +695,8 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 	} ,
   
   forceIconSize: function forceIconSize(win) {
+		const prefs = this.Preferences;
+		const util = this.Util;
     try {
       let id = util.ToolbarId,
           isForce = prefs.isForceIconSmall;
@@ -699,39 +720,49 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
     }
   } ,
 	
+	// This must contain the complete list of pref from the defaults folder to work!
   // replace pref1.pref2 with pref1_pref2
 	defaultPREFS : {
-		negativeMargin: 0,
+		customMenu: false,
+		customMenu_icon_size: 20,
+		customMenu_icon_url: '',
+		customMenu_icon_usee: false,
+		customMenu_label_bold: false,
+		customMenu_label_size: 9,
+		customMenu_label_specialFont: false,
+		customMenu_title: 'MenuOnTop',
+		customMenu_title_remote: false,
+		debug: false,
+		debug_appStart: false,
+		debug_customMenu: false,
+		debug_default: false,
+		debug_optionsDialog: false,
+		flavor_coloronly: false,
+		iconSize_forceSmall: true, // new setting to avoid smudged icons in menu bar!
+		iconSize_forced: false,
+		iconSize_normal: 16,
+		iconSize_small: 16,
+		maxHeight: 20,
+		menuBackground: "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3))",
+		menuBackground_active: "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3))",
+		menuBackground_hover: "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3))",
+		menuBorderColor: "#FFFFFF",
+		menuBorderStyle: "solid",
+		menuBorderWidth: "0",
+		menuFontColor: "rgb(15,15,15)",
+		menuFontColor_active: "rgb(15,15,15)",
+		menuFontColor_hover: "rgb(15,15,15)",
 		menuMargin: 6,
 		menuMargin_left: 2,
-		tabbarMargin: 3,
-		maxHeight: 20,
-    menuBorderWidth: "0",
-		menuBorderStyle: "solid",
-		menuRadiusValue: "4px",
 		menuRadiusLeft: false,
 		menuRadiusRight: true,
+		menuRadiusValue: "4px",
 		menubar_transparent: true,
-		menuBackground: "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3))",
-		menuFontColor: "rgb(15,15,15)",
-		menuBackground_hover: "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3))",
-		menuFontColor_hover: "rgb(15,15,15)",
-		menuBackground_active: "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3))",
-		menuFontColor_active: "rgb(15,15,15)",
-		iconSize_small: 16,
-		iconSize_normal: 16,
-		iconSize_forced: false,
-    iconSize_forceSmall: true, // new setting to avoid smudged icons in menu bar!
-		textShadow: false,
-		debug: false,
-		debug_default: false,
+		negativeMargin: 0,
 		statusIcon: true,
-    customMenu: false,
-    customMenu_title: 'MenuOnTop',
-    toolbarMargin_right: 350,
-    customMenu_label_specialFont: false,
-    customMenu_label_size: 9,
-    customMenu_label_bold: false
+		tabbarMargin: 3,
+		textShadow: false,
+		toolbarMargin_right: 350,
   },
 	
   showOptions: function showOptions(evt, win) {
@@ -754,7 +785,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
   } ,
   
 	showAddonButton :function showAddonButton(mainWindow) {
-		
+		const util = this.Util;
 		util.logDebug ("MenuOnTop.showAddonButton()...");
 		if (!mainWindow) return;
 
@@ -764,8 +795,9 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 
 		// Place the new button after the last button in the top set
 		let doc = mainWindow.document,
-		    panel = doc.createElement("statusbarpanel"),
-		    button = doc.createElement("toolbarbutton");
+				createElement = doc.createXULElement ? doc.createXULElement.bind(doc) : doc.createElement.bind(doc),
+		    panel = createElement("statusbarpanel"),
+		    button = createElement("toolbarbutton");
 		panel.setAttribute("id", "menuOnTop-statusPanel");
 		panel.classList.add("statusbarpanel");
 		
@@ -776,9 +808,9 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 		button.style.listStyleImage = "url(chrome://menuontop/content/menuOnTop16.png)";
 		// button.style.mozImageRegion = "rect(0px, 16px, 16px, 0px)"; // this probably won't work as it isn't declared in CSS2 ElementCSSInlineStyle.style
 
-		let menuOnTop = MenuOnTop; // closure this
+		let menuOnTop = this; // closure this
 		button.addEventListener("click", function() {
-      menuOnTop.Util.logDebug('click');
+      util.logDebug('click');
       menuOnTop.showOptions(null, mainWindow);
 		}, false);
 
@@ -790,7 +822,7 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 	} ,
 	
 	hideAddonButton : function hideAddonButton(window) {
-		util.logDebug ("MenuOnTop.hideAddonButton()...");
+		this.Util.logDebug ("MenuOnTop.hideAddonButton()...");
 		if (!window) return;
 		let button = true, panel = true;
 		while (button) {
@@ -844,19 +876,26 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop' ],
 		return this.mAppNameFull;
 	}
 
-};
+};  // MenuOnTop
 
 // Components.utils.import("resource://gre/modules/osfile.jsm")
-Components.utils.import("resource://gre/modules/Services.jsm");
+// MenuOnTop is undefined?
+
 
 MenuOnTop.Util = {
 	mPlatformVer: null,
+	get util() {
+    return this._mot.Util;
+	} ,
+	get prefs() {
+    return this._mot.Preferences;
+	} ,
   get Application() {
-    return MenuOnTop.Application;
+    return this._mot.Application;
   } ,
 	
 	get ApplicationName() {
-    return MenuOnTop.ApplicationName; // the real name - e.g. Palemoon, Interlink
+    return this._mot.ApplicationName; // the real name - e.g. Palemoon, Interlink
 	} ,
   
   get AppVersion() {
@@ -894,7 +933,7 @@ MenuOnTop.Util = {
   
   
   get MainWindowXulId() {
-    switch(this.Application) {
+    switch(this.util.Application) {
       case 'Thunderbird':
         return "mail:3pane";
       case 'Firefox':
@@ -906,17 +945,17 @@ MenuOnTop.Util = {
 	get MainWindow() {
     var windowManager = Components.classes['@mozilla.org/appshell/window-mediator;1']
         .getService(Components.interfaces.nsIWindowMediator);
-    switch(this.Application) {
+    switch(this.util.Application) {
       case 'Thunderbird':
       case 'Firefox':
-        let win = windowManager.getMostRecentWindow(this.MainWindowXulId);
+        let win = windowManager.getMostRecentWindow(this.util.MainWindowXulId);
         return win;
     }
     return null;
 	} ,
   
   get MainWindowId() {
-    switch(this.Application) {
+    switch(this.util.Application) {
       case 'Thunderbird':
         return 'messengerWindow';
       case 'Firefox':
@@ -927,7 +966,7 @@ MenuOnTop.Util = {
   } ,
 
   get ToolbarId() {
-    switch(this.Application) {
+    switch(this.util.Application) {
       case 'Thunderbird':
         return 'mail-toolbar-menubar2';
       case 'Firefox':
@@ -937,9 +976,9 @@ MenuOnTop.Util = {
   } ,  
   
   get ToolboxId() {
-    switch(this.Application) {
+    switch(this.util.Application) {
       case 'Thunderbird':
-			  if (this.ApplicationName=='Interlink')
+			  if (this.util.ApplicationName=='Interlink')
 					return 'mail-toolbox';
         return 'navigation-toolbox';
       case 'Firefox':
@@ -949,7 +988,7 @@ MenuOnTop.Util = {
   } ,  
   
 	get TabInTitleBoolPref() {
-		switch (this.Application) {
+		switch (this.util.Application) {
 			case 'Thunderbird':
 				return 'mail.tabs.drawInTitlebar';
 			case 'Firefox':
@@ -966,6 +1005,7 @@ MenuOnTop.Util = {
 	get StringBundle() {
 		if (!this.MyBundle) try {
 			const bundlePath = "chrome://menuontop/locale/menuontop.properties";
+			Components.utils.import("resource://gre/modules/Services.jsm");
 			if (Services.strings) {
 				this.MyBundle = Services.strings.createBundle(bundlePath);
 			}
@@ -1050,7 +1090,7 @@ MenuOnTop.Util = {
     if (id) {
       txt += '\nDetermined id of button container:' + id;
     }
-    util.logDebug(txt);
+    this.util.logDebug(txt);
     return bar;
   } ,
   
@@ -1065,8 +1105,9 @@ MenuOnTop.Util = {
   } ,
   
   checkVersion: function checkVersion(win) {
-		let current = MenuOnTop.Version,
-        addonId = MenuOnTop.Id;
+		const util = this.util;
+		let current = this._mot.Version,
+        addonId = this._mot.Id;
     util.logDebug('checkVersion() for ' + addonId);
 		const platformVer = util.simplifyVersion(util.PlatformVersion);
 		/*
@@ -1086,6 +1127,7 @@ MenuOnTop.Util = {
 				}
 				,
 				function mot_failedAddon(ex) {
+					Components.utils.import("resource://gre/modules/Services.jsm");
 					Services.prompt.alert(null, 'MenuOnTop - checkVersion', ' AddonManager.getAddonByID promise failed!\n' + ex.toString()); 
 					util.logDebug('getAddonByID promise - failed');
 				}
@@ -1094,7 +1136,8 @@ MenuOnTop.Util = {
   } ,
 
   checkFirstRun: function checkFirstRun(ver) {
-		let loggedVer = prefs.getStringPref('version'),
+		const util = this.util;
+		let loggedVer = this.prefs.getStringPref('version'),
         freshInstall = false;
     if (util.Version == ver) return; // we have been here!
     util.Version = ver;
@@ -1105,7 +1148,7 @@ MenuOnTop.Util = {
     util.logDebug('checkFirstRun() Running version: ' + pureVersion + '   [' + ver + ']\n'
                   + 'logged Version = ' + loggedVer + ' , freshInstall = ' + freshInstall);
     // save current version
-    prefs.setStringPref('version', pureVersion);
+    this.prefs.setStringPref('version', pureVersion);
     if (freshInstall)
       util.showHistory();
     else if (pureVersion != loggedVer) {
@@ -1116,15 +1159,15 @@ MenuOnTop.Util = {
   showHistory: function showHistory(ver) {
     let url = 'http://quickfolders.org/menuOnTopHistory.html';
     if (ver) url+= '?version#' + ver;
-    util.openURL(null, url);
+    this.util.openURL(null, url);
   } ,
   
   get Version() {
-    return MenuOnTop._Version;
+    return this._mot._Version;
   } ,
   
   set Version(v) {
-    MenuOnTop._Version = v;
+    this._mot._Version = v;
   } ,
 
 	lastTime:0,
@@ -1147,18 +1190,19 @@ MenuOnTop.Util = {
 	},
 	
 	logToConsole: function logToConsole(msg, optionTag) {
+		Components.utils.import("resource://gre/modules/Services.jsm");
 		Services.console.logStringMessage("MenuOnTop "
 			+ (optionTag ? '{' + optionTag.toUpperCase() + '} ' : '')
 			+ this.logTime() + "\n"+ msg);
 	},	
 
   logDebug: function logDebug(msg) {
-	  if (prefs.isDebug)
+	  if (this.prefs.isDebug)
 			this.logToConsole(msg);	
 	},
 	
 	logDebugOptional: function logDebugOptional(option, msg) {
-		if (prefs.isDebugOption(option))
+		if (this.prefs.isDebugOption(option))
 			this.logToConsole(msg, option);
 	},
 	
@@ -1225,6 +1269,7 @@ MenuOnTop.Util = {
 	} ,
 	
 	findMailTab: function findMailTab(tabmail, URL) {
+		const util = this.util;
 		// mail: tabmail.tabInfo[n].browser		
 		let baseURL = util.getBaseURI(URL),
 				numTabs = util.getTabInfoLength(tabmail);
@@ -1245,6 +1290,7 @@ MenuOnTop.Util = {
 	} ,		
 	
   findBrowserTab: function findTab(URL) {
+		const util = this.util;
 		const Cc = Components.classes,
 					Ci = Components.interfaces;
 					
@@ -1293,6 +1339,7 @@ MenuOnTop.Util = {
 	} ,
 	
 	openURLInTab: function openURLInTab(URL) {
+		const util = this.util;
 		try {
 			let sTabMode="",
 			    wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
@@ -1310,7 +1357,7 @@ MenuOnTop.Util = {
       if (tabmail) { // Tb Content Tab
         this.mailWindow.focus()
 				sTabMode = "contentTab";
-        let browser = MenuOnTop.TopMenu.getBrowser(); // tabmail.getBrowserForDocument(content);
+        let browser = this.TopMenu.getBrowser(); // tabmail.getBrowserForDocument(content);
         tabmail.openTab(sTabMode,
             { contentPage: URL,
               background: false,
@@ -1334,6 +1381,7 @@ MenuOnTop.Util = {
 	}	,
   
   openMessage: function (msgHdr, forceMethod)  {
+		const util = this.util;
     let doc = util.MainWindow.document,
         tabmail = doc.getElementById("tabmail"),
         method = forceMethod || 'currentTab'; // || prefs.getStringPref('bookmarks.openMethod');
@@ -1376,10 +1424,12 @@ MenuOnTop.Util = {
 
   // open an email in a new tab
   openMessageFromUri: function openMessageFromUri(messageUri, event) {
+		const util = this.util;
     let isAlt, isCtrl, isShift, hdr,
         win = Components.classes["@mozilla.org/appshell/window-mediator;1"]
                  .getService(Components.interfaces.nsIWindowMediator)
                  .getMostRecentWindow("mail:3pane");  
+		Components.utils.import("resource://gre/modules/Services.jsm");
     if (!win) {
       Services.prompt.alert(null, 'MenuOnTop - openMessageFromUri', 'No open mail window found!'); 
       return;
@@ -1406,6 +1456,7 @@ MenuOnTop.Util = {
   } ,
 
   openFolderFromUri: function openFolder(uri) {
+		const util = this.util;
     const win = util.MainWindow;
     if (!win) return false;
     if (util.Application == 'Thunderbird') {
@@ -1418,14 +1469,12 @@ MenuOnTop.Util = {
   } ,
 
 	getSystemColor: function getSystemColor(sColorString, doc) {
+		const util = this.util;
     function hex(x) { return ("0" + parseInt(x).toString(16)).slice(-2); }
 
 		let getContainer = function() {
 			return doc.getElementById('mot-options-prefpane');
 		}
-		
-		const prefs = MenuOnTop.Preferences,
-		      util = MenuOnTop.Util;
 		
 		try {
 			if (sColorString.startsWith('rgb')) {
@@ -1438,14 +1487,12 @@ MenuOnTop.Util = {
 			if (sColorString.startsWith('#') || sColorString=='transparent')
 				return sColorString;
 			
-			if (prefs.isDebug) debugger;
-			
-			let win = MenuOnTop.TopMenu.optionsWindow || util.MainWindow;
+			let win = this._mot.TopMenu.optionsWindow || util.MainWindow;
 			if (!doc) {
 				doc = win.document;
 			}
 			let theColor, // convert system colors such as menubackground etc. to hex
-			    d = doc.createElement("div");
+			    d = doc.createXULElement ? doc.createXULElement("div") : doc.createElement("div");
 			d.style.color = sColorString;
 			getContainer().appendChild(d)
 			theColor = win.getComputedStyle(d,null).color;
@@ -1461,7 +1508,7 @@ MenuOnTop.Util = {
 			}
 		}
 		catch(ex) { // Bug 26387
-			if (prefs.isDebug) debugger;
+			if (this.prefs.isDebug) debugger;
 			this.logException('getSystemColor(' + sColorString + ') failed', ex);
 			return "#000000";
 		}
@@ -1469,6 +1516,7 @@ MenuOnTop.Util = {
 	},
 
 	getRGBA: function getRGBA(hexIn, alpha) {
+		const util = this.util;
 		function cutHex(h) {
 			let rv = ((h.toString()).charAt(0)=='#') ? h.substring(1,7) : h;
 			return rv.toString();
@@ -1483,8 +1531,6 @@ MenuOnTop.Util = {
 		  return parseInt(h.substring(4,6),16);
 		}
 		
-		const util = MenuOnTop.Util;
-
 		let hex = hexIn,
 		    isRGB = (hexIn.indexOf('rgb')>=0),
 		    isRGBA = (hexIn.indexOf('rgba')>=0);
@@ -1520,13 +1566,12 @@ MenuOnTop.Util = {
 			util.logDebug ("Can not retrieve color value: " + hexIn);
 			return "#666";
 		}
-	},
+	}
 	
 };  // Util
 
+MenuOnTop.Util._mot = MenuOnTop;
 // var utilMOT = MenuOnTop.Util;
-
-
 
 MenuOnTop.Preferences = {
 	service: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch),
@@ -1536,17 +1581,19 @@ MenuOnTop.Preferences = {
 			return this.service.getBoolPref("extensions.menuontop." + term);
 		}
 		catch(ex) {
-			MenuOnTop.Util.logException("getBoolPref(extensions.menuontop." + term + ")", ex);
+			this.util.logException("getBoolPref(extensions.menuontop." + term + ")", ex);
 			return false;
 		}
 	},
 	
   getStringPref: function getStringPref(p) {
 		try {
+			if (this.service.getCharPref)
+				return this.service.getCharPref("extensions.menuontop." + p);
       return this.service.getStringPref("extensions.menuontop." + p);
 		}
 		catch(ex) {
-			MenuOnTop.Util.logException("getStringPref(extensions.menuontop." + p + ")", ex);
+			this.util.logException("getStringPref(extensions.menuontop." + p + ")", ex);
 			return '';
 		}
 	},
@@ -1556,7 +1603,7 @@ MenuOnTop.Preferences = {
       return this.service.getIntPref("extensions.menuontop." + p);
 		}
 		catch(ex) {
-			MenuOnTop.Util.logException("getIntPref(extensions.menuontop." + p + ")", ex);
+			this.util.logException("getIntPref(extensions.menuontop." + p + ")", ex);
 			return 0;
 		}
 	},
@@ -1566,7 +1613,7 @@ MenuOnTop.Preferences = {
 			return this.service.setBoolPref("extensions.menuontop." + term, val);
 		}
 		catch(ex) {
-			MenuOnTop.Util.logException("setBoolPref(extensions.menuontop." + term + ")", ex);
+			this.util.logException("setBoolPref(extensions.menuontop." + term + ")", ex);
 		}
 	},  
   
@@ -1575,16 +1622,18 @@ MenuOnTop.Preferences = {
 			return this.service.setIntPref("extensions.menuontop." + term, val);
 		}
 		catch(ex) {
-			MenuOnTop.Util.logException("setIntPref(extensions.menuontop." + term + ")", ex);
+			this.util.logException("setIntPref(extensions.menuontop." + term + ")", ex);
 		}
 	},  
   
   setStringPref: function setStringPref(term, val) {
 		try {
+			if (this.service.setCharPref)
+			  return this.service.setCharPref("extensions.menuontop." + term, val);
 			return this.service.setStringPref("extensions.menuontop." + term, val);
 		}
 		catch(ex) {
-			MenuOnTop.Util.logException("setStringPref(extensions.menuontop." + term + ")", ex);
+			this.util.logException("setStringPref(extensions.menuontop." + term + ")", ex);
 		}
   },
   
@@ -1748,6 +1797,8 @@ MenuOnTop.Preferences = {
 	}
 };  // Preferences
  
+MenuOnTop.Preferences.util = MenuOnTop.Util;
+ 
 Components.utils.import("resource://gre/modules/FileUtils.jsm");
 Components.utils.import("resource://gre/modules/Promise.jsm");
 
@@ -1757,7 +1808,7 @@ MenuOnTop.TopMenu = {
   _document: null,
   get document() { // document of option window
     if (this._document) return this._document;
-		let win = MenuOnTop.TopMenu.optionsWindow;
+		let win = this.optionsWindow;
 		this._document = win ? win.document : null;
     return  this._document;
   },
@@ -1765,7 +1816,7 @@ MenuOnTop.TopMenu = {
 	get optionsWindow() {
     let mediator = Components.classes["@mozilla.org/appshell/window-mediator;1"].getService(Components.interfaces.nsIWindowMediator),
         getWindowEnumerator = 
-            (MenuOnTop.Util.isLinux) ?
+            (this._mot.Util.isLinux) ?
             mediator.getXULWindowEnumerator :
             mediator.getZOrderXULWindowEnumerator;
 		// Thunderbird 63 getNext throws!			
@@ -1784,7 +1835,7 @@ MenuOnTop.TopMenu = {
   },
   
   get BookmarkTypes() {
-    const util = MenuOnTop.Util;
+    const util = this._mot.Util;
     switch (util.Application) {
       case 'Firefox':
         return  ['addon', 'browser', 'function', 'contentTab.about'];
@@ -1807,7 +1858,7 @@ MenuOnTop.TopMenu = {
   },
   
   clearList: function clearList(onlyUI) {
-    const util = MenuOnTop.Util;
+    const util = this._mot.Util;
     if (!onlyUI) {
       util.logDebug ('clearList() - empty bookmarks list'); 
       while (this.Entries.length)
@@ -1846,9 +1897,9 @@ MenuOnTop.TopMenu = {
       }
     }
     // main menu
-    let win = MenuOnTop.Util.MainWindow,
+    let win = this._mot.Util.MainWindow,
         doc = win.document;
-    MenuOnTop.populateMenu(doc);
+    this._mot.populateMenu(doc);
   },
    
   onEdit: function onEdit(txt) {
@@ -1884,7 +1935,7 @@ MenuOnTop.TopMenu = {
   } ,  
   
   checkUrlLabel: function checkUrlLabel(label) {
-    const util = MenuOnTop.Util,
+    const util = this._mot.Util,
 		      getBundleString = util.getBundleString.bind(util),
           prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
                               .getService(Components.interfaces.nsIPromptService),
@@ -1898,16 +1949,17 @@ MenuOnTop.TopMenu = {
   } ,
   
   update: function update(isNew) {
-    const util = MenuOnTop.Util,
+    const util = this._mot.Util,
 		      getBundleString = util.getBundleString.bind(util);
-    if (prefs.isDebug) debugger;
+
     let url = this.document.getElementById('linkURL').value,
         label = this.document.getElementById('linkLabel').value,
         bookmarkType = this.document.getElementById('linkType').value,
         existingEntry = null, 
         existingIndex = null;
-				
-   // check if it exists and replace label
+		
+		Components.utils.import("resource://gre/modules/Services.jsm");
+    // check if it exists and replace label
     if (!isNew) {
       let lb = this.ListBox;      
       existingIndex = lb.selectedIndex;
@@ -1964,7 +2016,7 @@ MenuOnTop.TopMenu = {
   },
   
   remove: function remove() {
-    if (prefs.isDebug) debugger;
+    if (this.prefs.isDebug) debugger;
     let listbox = this.ListBox,
         idx = listbox.selectedIndex;
     if (idx<0) return;
@@ -2008,7 +2060,7 @@ MenuOnTop.TopMenu = {
   
   getBrowser: function getBrowser() {
 		const Ci = Components.interfaces;
-    let util = MenuOnTop.Util, 
+    let util = this._mot.Util, 
 		    interfaceType = Ci.nsIDOMWindow, 
         mediator = Components.classes["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator), 
         browsers = null,
@@ -2060,7 +2112,7 @@ MenuOnTop.TopMenu = {
   
   getActiveUri: function getActiveUri() {
     let uriObject= {url:'',label:'', bookmarkType: null},
-        util = MenuOnTop.Util,
+        util = this._mot.Util,
         browser = this.getBrowser(),
         tabmail = null,
         currentURI = '',
@@ -2154,6 +2206,7 @@ MenuOnTop.TopMenu = {
                   return null;
                 }
                 if (!currentLabel) {
+									Components.utils.import("resource://gre/modules/Services.jsm");
                   Services.prompt.alert(null, 'MenuOnTop - getActiveUri', 'Failed - could not retrieve  label from content Tab!');
                   return null;
                 }
@@ -2204,6 +2257,7 @@ MenuOnTop.TopMenu = {
                 currentType = 'addon';
                 break;
 							default:  // case 'tasks':
+								Components.utils.import("resource://gre/modules/Services.jsm");
                 Services.prompt.alert(null, 'MenuOnTop - getActiveUri', 'Not supported: bookmarking ' + theMode + ' tab!');
 								break;
 						}
@@ -2243,6 +2297,7 @@ MenuOnTop.TopMenu = {
   getFromContext: function getFromContext() {
     let uriObject = this.getActiveUri();
     if (null == uriObject || Object.keys(uriObject).length === 0) {
+			Components.utils.import("resource://gre/modules/Services.jsm");
       Services.prompt.alert(null, 'MenuOnTop - getFromContext', 
         'Could not safely determine context URL! This type of tab may not be supported.');
       return;
@@ -2277,7 +2332,8 @@ MenuOnTop.TopMenu = {
   } ,
   
   loadCustomMenu: function loadCustomMenu(fromOptions) {
-    const util = MenuOnTop.Util;
+    const util = this._mot.Util,
+		      menuOnTop = this._mot;
     fromOptions = fromOptions ? true : false;
     util.logDebug ('loadCustomMenu(' + fromOptions + ')...'); 
     let promise3;
@@ -2288,7 +2344,7 @@ MenuOnTop.TopMenu = {
         function onSuccess(CustomMenuData) {
           // populate the bookmarks
           util.logDebug ('readStringFile() - Success'); 
-          if (prefs.isDebug) debugger;
+          
           topMenu.clearList(false);
           let entries = JSON.parse(CustomMenuData);  
           util.logDebug ('parsed ' + entries.length + ' entries'); 
@@ -2312,6 +2368,7 @@ MenuOnTop.TopMenu = {
           }
           else {
             // Some other error
+						Components.utils.import("resource://gre/modules/Services.jsm");
             Services.prompt.alert(null, 'MenuOnTop - loadCustomMenu', 'Reading the bookmarks file failed\n' + ex);
           }     
           // no changes to Entries array
@@ -2320,14 +2377,15 @@ MenuOnTop.TopMenu = {
       
       promise3 = promise2.then(
         function promise2_populateMenu() {
-          const util = MenuOnTop.Util,
+          const // util = MenuOnTop.Util,
                 doc = util.MainWindow.document;
           util.logDebug ('promise2.then populateMenu() ...'); 
-          MenuOnTop.populateMenu(doc);
+          menuOnTop.populateMenu(doc);
           return promise2; // make loadCustomMenu chainable
         },
         function promise2_onFail(ex) {
-          MenuOnTop.Util.logDebug ('promise2.then onFail():\n' + ex); 
+          util.logDebug ('promise2.then onFail():\n' + ex); 
+					Components.utils.import("resource://gre/modules/Services.jsm");
           Services.prompt.alert(null, 'MenuOnTop - promise2.then', 'Did not load main menu\n' + ex);
           return promise2; // make loadCustomMenu chainable
         }
@@ -2340,15 +2398,14 @@ MenuOnTop.TopMenu = {
   } ,
 
   saveCustomMenu: function saveCustomMenu()  {
-    if (prefs.isDebug) debugger;
-    const util = MenuOnTop.Util;
+    const util = this._mot.Util;
+    
     try {
       // const {OS} = Components.utils.import("resource://gre/modules/osfile.jsm", {});
 			const {OS} = (typeof ChromeUtils.import == "undefined") ?
 				Components.utils.import("resource://gre/modules/osfile.jsm", {}) :
 				ChromeUtils.import("resource://gre/modules/osfile.jsm", {});
 				
-      if (prefs.isDebug) debugger;
       let topMenu = this, // closure this
           profileDir = OS.Constants.Path.profileDir,
           path = OS.Path.join(profileDir, "extensions", "menuOnTop.json"),
@@ -2397,7 +2454,7 @@ MenuOnTop.TopMenu = {
   },
   
   appendBookmark: function appendBookmark(menu) {
-    const topMenu = MenuOnTop.TopMenu,
+    const topMenu = this,
           uriObject = topMenu.getActiveUri();
     if (Object.keys(uriObject).length === 0) {
       Services.prompt.alert(null, 'MenuOnTop - getFromContext', 'Could not generate bookmark! This type of content might not be supported');
@@ -2422,6 +2479,8 @@ MenuOnTop.TopMenu = {
   
 };  // TopMenu
 
+MenuOnTop.TopMenu._mot = MenuOnTop;
+
 // my "globals"
-const util = MenuOnTop.Util,
-      prefs = MenuOnTop.Preferences;
+var util = MenuOnTop.Util;
+var prefs = MenuOnTop.Preferences;
