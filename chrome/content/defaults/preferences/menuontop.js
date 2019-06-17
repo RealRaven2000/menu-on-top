@@ -19,18 +19,15 @@ pref("extensions.menuontop.iconSize.forced", false);
 pref("extensions.menuontop.iconSize.normal", 24);
 pref("extensions.menuontop.iconSize.small", 16);
 pref("extensions.menuontop.maxHeight", 22);
-pref("extensions.menuontop.menuBackground", 
-pref("extensions.menuontop.menuBackground.active", 
-     "linear-gradient(to bottom, rgba(4,160,238,0.8) 0%,rgba(2,79,138,0.8) 47%,rgba(0,53,118,0.8) 100%)");
-pref("extensions.menuontop.menuBackground.hover", 
-     "linear-gradient(to bottom, rgba(4,160,238,0.8) 0%,rgba(2,79,138,0.8) 47%,rgba(0,53,118,0.8) 100%)");
+pref("extensions.menuontop.menuBackground", "linear-gradient(to bottom, rgba(4,160,238,0.8) 0%,rgba(2,79,138,0.8) 47%,rgba(0,53,118,0.8) 100%)");
+pref("extensions.menuontop.menuBackground.active", "linear-gradient(to bottom, rgba(4,160,238,0.8) 0%,rgba(2,79,138,0.8) 47%,rgba(0,53,118,0.8) 100%)");
+pref("extensions.menuontop.menuBackground.hover", "linear-gradient(to bottom, rgba(4,160,238,0.8) 0%,rgba(2,79,138,0.8) 47%,rgba(0,53,118,0.8) 100%)");
 pref("extensions.menuontop.menuBorderColor", "#FFFFFF");
 pref("extensions.menuontop.menuBorderStyle", "solid");
 pref("extensions.menuontop.menuBorderWidth", "0");
 pref("extensions.menuontop.menuFontColor", "#FFFFFF");
 pref("extensions.menuontop.menuFontColor.active", "#FFFFFF");
 pref("extensions.menuontop.menuFontColor.hover", "#FFFFFF");
-     "linear-gradient(to bottom, rgba(4,160,238,0.8) 0%,rgba(2,79,138,0.8) 47%,rgba(0,53,118,0.8) 100%)");
 pref("extensions.menuontop.menuMargin", 5);
 pref("extensions.menuontop.menuMargin.left", 9);
 pref("extensions.menuontop.menuRadiusLeft", true);

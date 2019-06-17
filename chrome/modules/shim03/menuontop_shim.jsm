@@ -23,7 +23,6 @@ var EXPORTED_SYMBOLS = [ 'MenuOnTop_Shim' ],
 			}
 			
 			var { Services } = ChromeUtils.import('resource://gre/modules/Services.jsm');
-			debugger;
 			let branch = Services.prefs.getDefaultBranch(prefBranch);
 			
 			for (let key in defaultPREFS) {
