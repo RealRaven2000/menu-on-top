@@ -1,12 +1,12 @@
 Menu on Top
 =========================
 
-youre Menu for Thunderbird on top
+Customized Main Menu for Thunderbird, on top of the application where it belongs. Also supports "avatar icons" and customizable "mini-bookmarks" menu that allows bookmarking pretty much anything.
 
 #### Info
 http://quickfolders.org/menuOnTop.html
 
-#### History
+#### Change Log
 http://quickfolders.org/menuOnTopHistory.html
 
 
